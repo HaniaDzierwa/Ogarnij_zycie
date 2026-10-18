@@ -14,6 +14,7 @@ type Props = {
   today: DateKey
   expanded: boolean
   onExpand: () => void
+  onEdit: () => void
   onToggleDone: () => void
   onToggleSub: (subId: string) => void
   onRemoveSub: (subId: string) => void
@@ -28,6 +29,7 @@ export function TaskRow({
   today,
   expanded,
   onExpand,
+  onEdit,
   onToggleDone,
   onToggleSub,
   onRemoveSub,
@@ -62,9 +64,25 @@ export function TaskRow({
         >
           <Box color={p.line} />
         </button>
-        <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 5 }}>
+        <button
+          type="button"
+          onClick={onEdit}
+          aria-label={`Edytuj zadanie: ${task.title}`}
+          style={{
+            flex: 1,
+            minWidth: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 5,
+            padding: 0,
+            border: 0,
+            background: 'transparent',
+            color: 'inherit',
+            textAlign: 'left',
+          }}
+        >
           <span style={{ fontSize: 16, fontWeight: 700, lineHeight: 1.3 }}>{task.title}</span>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
             <span
               style={{
                 display: 'inline-flex',
@@ -108,14 +126,21 @@ export function TaskRow({
                   {due}
                 </span>
               ))}
-          </div>
+          </span>
           {pct !== null && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <div
-                style={{ width: 110, height: 3, borderRadius: 3, background: colors.borderSoft }}
+            <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span
+                style={{
+                  display: 'block',
+                  width: 110,
+                  height: 3,
+                  borderRadius: 3,
+                  background: colors.borderSoft,
+                }}
               >
-                <div
+                <span
                   style={{
+                    display: 'block',
                     height: '100%',
                     borderRadius: 3,
                     background: colors.green900,
@@ -123,7 +148,7 @@ export function TaskRow({
                     transition: 'width 200ms ease',
                   }}
                 />
-              </div>
+              </span>
               <span style={{ fontFamily: fonts.serif, fontSize: 14, fontWeight: 600 }}>{pct}%</span>
               <span
                 style={{
@@ -135,9 +160,9 @@ export function TaskRow({
               >
                 {subDone} / {task.subtasks.length} KROKI
               </span>
-            </div>
+            </span>
           )}
-        </div>
+        </button>
         <button
           type="button"
           onClick={onExpand}

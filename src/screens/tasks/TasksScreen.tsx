@@ -7,10 +7,11 @@ import { CloseIcon, SlidersIcon } from '../../components/icons.tsx'
 import { shortDayLabel } from '../../data/dates.ts'
 import { useStore } from '../../data/MockStore.tsx'
 import { plural } from '../../data/plural.ts'
+import { addSubtask, removeSubtask, toggleSubtask, toggleTask } from '../../data/taskOps.ts'
 import type { Task } from '../../data/types.ts'
 import { colors, fonts, priorities, sizes } from '../../theme'
 import { FiltersPanel, TextButton } from './FiltersPanel.tsx'
-import { NewTaskSheet } from './NewTaskSheet.tsx'
+import { TaskSheet } from './TaskSheet.tsx'
 import { Chevron, TaskRow } from './TaskRow.tsx'
 import {
   categoriesWithNone,
@@ -37,6 +38,8 @@ export function TasksScreen() {
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({})
   const [expanded, setExpanded] = useState<string | null>(() => tasks[0]?.id ?? null)
   const [showDoneToggle, setShowDoneToggle] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const editing = tasks.find((t) => t.id === editingId)
 
   const sheetOpen = params.get('nowe') === 'zadanie'
   const setSheetOpen = (open: boolean) =>
@@ -371,29 +374,14 @@ export function TasksScreen() {
                       today={today}
                       expanded={expanded === t.id}
                       onExpand={() => setExpanded((e) => (e === t.id ? null : t.id))}
-                      onToggleDone={() => updateTask(t.id, (x) => ({ ...x, done: !x.done }))}
-                      onToggleSub={(sid) =>
-                        updateTask(t.id, (x) => ({
-                          ...x,
-                          subtasks: x.subtasks.map((s) =>
-                            s.id === sid ? { ...s, done: !s.done } : s,
-                          ),
-                        }))
-                      }
-                      onRemoveSub={(sid) =>
-                        updateTask(t.id, (x) => ({
-                          ...x,
-                          subtasks: x.subtasks.filter((s) => s.id !== sid),
-                        }))
-                      }
+                      onEdit={() => setEditingId(t.id)}
+                      onToggleDone={() => updateTask(t.id, toggleTask)}
+                      onToggleSub={(sid) => updateTask(t.id, (x) => toggleSubtask(x, sid))}
+                      onRemoveSub={(sid) => updateTask(t.id, (x) => removeSubtask(x, sid))}
                       onAddSub={(title) =>
-                        updateTask(t.id, (x) => ({
-                          ...x,
-                          subtasks: [
-                            ...x.subtasks,
-                            { id: `${x.id}s${Date.now()}`, title, done: false },
-                          ],
-                        }))
+                        updateTask(t.id, (x) =>
+                          addSubtask(x, { id: `${x.id}s${Date.now()}`, title, done: false }),
+                        )
                       }
                     />
                   ))}
@@ -505,9 +493,24 @@ export function TasksScreen() {
                         </svg>
                       </span>
                     </button>
-                    <span style={{ flex: 1, fontSize: 15, textDecoration: 'line-through' }}>
+                    <button
+                      type="button"
+                      onClick={() => setEditingId(t.id)}
+                      aria-label={`Edytuj zadanie: ${t.title}`}
+                      style={{
+                        flex: 1,
+                        minHeight: 44,
+                        padding: 0,
+                        border: 0,
+                        background: 'transparent',
+                        color: 'inherit',
+                        textAlign: 'left',
+                        fontSize: 15,
+                        textDecoration: 'line-through',
+                      }}
+                    >
                       {t.title}
-                    </span>
+                    </button>
                     <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '1px' }}>
                       {categoryName(t).toUpperCase()}
                     </span>
@@ -519,19 +522,38 @@ export function TasksScreen() {
         )}
       </main>
 
-      <NewTaskSheet
-        open={sheetOpen}
-        onClose={() => setSheetOpen(false)}
-        categories={categories}
-        today={today}
-        onAddCategory={addCategory}
-        onAdd={(task) => {
-          const id = `t${Date.now()}`
-          store.setTasks((list) => [{ ...task, id }, ...list])
-          if (task.subtasks.length) setExpanded(id)
-          setSheetOpen(false)
-        }}
-      />
+      {sheetOpen && (
+        <TaskSheet
+          onClose={() => setSheetOpen(false)}
+          categories={categories}
+          today={today}
+          onAddCategory={addCategory}
+          onSave={(task) => {
+            const id = `t${Date.now()}`
+            store.setTasks((list) => [{ ...task, id }, ...list])
+            if (task.subtasks.length) setExpanded(id)
+            setSheetOpen(false)
+          }}
+        />
+      )}
+      {editing && (
+        <TaskSheet
+          key={editing.id}
+          task={editing}
+          onClose={() => setEditingId(null)}
+          categories={categories}
+          today={today}
+          onAddCategory={addCategory}
+          onSave={(task) => {
+            updateTask(editing.id, () => ({ ...task, id: editing.id }))
+            setEditingId(null)
+          }}
+          onDelete={() => {
+            store.setTasks((list) => list.filter((x) => x.id !== editing.id))
+            setEditingId(null)
+          }}
+        />
+      )}
 
       <TabBar active="zadania" onAddTask={() => setSheetOpen(true)} />
     </div>

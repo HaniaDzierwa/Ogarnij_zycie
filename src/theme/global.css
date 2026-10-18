@@ -204,3 +204,8 @@ button {
   clip: rect(0 0 0 0);
   white-space: nowrap;
 }
+
+/* Treść arkusza przewija się zamiast ściskać elementy. */
+.sheet-body > * {
+  flex-shrink: 0;
+}

@@ -120,3 +120,60 @@ test('usunięcie kategorii przenosi zadania do „Bez kategorii”', () => {
   fireEvent.click(screen.getByRole('button', { name: 'Usuń kategorię Auto' }))
   expect(screen.getAllByText('BEZ KATEGORII').length).toBeGreaterThan(0)
 })
+
+test('odhaczenie wszystkich podzadań ogarnia całe zadanie', () => {
+  renderAt('/zadania')
+  fireEvent.click(screen.getByRole('button', { name: 'Zapakować' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Odebrać kwiaty w piątek rano' }))
+  expect(screen.getByText('11 otwartych')).toBeDefined()
+  expect(
+    screen.queryByRole('button', { name: /Oznacz jako zrobione: Prezent dla mamy/ }),
+  ).toBeNull()
+  fireEvent.click(screen.getByRole('button', { name: /Już ogarnięte/ }))
+  expect(
+    screen.getByRole('button', { name: 'Edytuj zadanie: Prezent dla mamy na imieniny' }),
+  ).toBeDefined()
+})
+
+test('edycja: dotknięcie zadania otwiera wypełniony arkusz, zapis zmienia zadanie', () => {
+  renderAt('/zadania')
+  fireEvent.click(screen.getByRole('button', { name: 'Edytuj zadanie: Baterie AA do pilota' }))
+  const sheet = screen.getByRole('dialog', { name: 'Edytuj zadanie' })
+  const title = within(sheet).getByLabelText('CO TRZEBA ZROBIĆ?') as HTMLInputElement
+  expect(title.value).toBe('Baterie AA do pilota')
+  expect(
+    within(sheet)
+      .getByRole('radio', { name: /Przy okazji/ })
+      .getAttribute('aria-checked'),
+  ).toBe('true')
+  fireEvent.change(title, { target: { value: 'Baterie AAA do pilota' } })
+  fireEvent.click(within(sheet).getByRole('radio', { name: /Pilne/ }))
+  fireEvent.click(within(sheet).getByRole('button', { name: 'Zapisz zmiany' }))
+  expect(screen.queryByRole('dialog')).toBeNull()
+  expect(screen.getByText('Baterie AAA do pilota')).toBeDefined()
+  expect(screen.getByText('5 pilnych')).toBeDefined()
+})
+
+test('edycja: termin spoza chipów pokazuje „Inna data” z datą', () => {
+  renderAt('/zadania')
+  fireEvent.click(screen.getByRole('button', { name: 'Edytuj zadanie: Zapłacić rachunek za prąd' }))
+  const sheet = screen.getByRole('dialog', { name: 'Edytuj zadanie' })
+  expect(
+    within(sheet).getByRole('button', { name: 'CZ 15 PAŹ' }).getAttribute('aria-pressed'),
+  ).toBe('true')
+  expect((within(sheet).getByLabelText('Data terminu') as HTMLInputElement).value).toBe(
+    '2026-10-15',
+  )
+})
+
+test('edycja: „Usuń zadanie” z potwierdzeniem', () => {
+  renderAt('/zadania')
+  fireEvent.click(screen.getByRole('button', { name: 'Edytuj zadanie: Baterie AA do pilota' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Usuń zadanie' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Zostaw' }))
+  expect(screen.getByRole('dialog', { name: 'Edytuj zadanie' })).toBeDefined()
+  fireEvent.click(screen.getByRole('button', { name: 'Usuń zadanie' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Usuń' }))
+  expect(screen.queryByText('Baterie AA do pilota')).toBeNull()
+  expect(screen.getByText('11 otwartych')).toBeDefined()
+})

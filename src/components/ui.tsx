@@ -404,7 +404,7 @@ export function Sheet({
         }}
       />
       <div
-        className="sheet-up"
+        className="sheet-up sheet-body"
         style={{
           position: 'absolute',
           left: 0,

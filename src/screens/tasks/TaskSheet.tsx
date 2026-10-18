@@ -1,78 +1,85 @@
 import { useState } from 'react'
 import { Box, Chip, Dot, Field, PrimaryButton, Sheet } from '../../components/ui.tsx'
 import { CloseIcon, PlusIcon } from '../../components/icons.tsx'
-import { addDays, weekStart, type DateKey } from '../../data/dates.ts'
-import type { Category, Task } from '../../data/types.ts'
+import { addDays, dueLabel, weekStart, type DateKey } from '../../data/dates.ts'
+import type { Category, Subtask, Task } from '../../data/types.ts'
 import { colors, fonts, priorities, type Priority } from '../../theme'
 import { NewCategoryButton, NewCategoryForm } from './NewCategoryForm.tsx'
 
-const DUES = ['Bez terminu', 'Dziś', 'Jutro', 'W tym tygodniu'] as const
-type Due = (typeof DUES)[number]
+const PRESETS = ['Bez terminu', 'Dziś', 'Jutro', 'W tym tygodniu'] as const
+type Preset = (typeof PRESETS)[number]
+type DueChoice = Preset | 'Inna data'
 
-function dueDate(due: Due, today: DateKey): DateKey | null {
-  if (due === 'Dziś') return today
-  if (due === 'Jutro') return addDays(today, 1)
-  if (due === 'W tym tygodniu') return addDays(weekStart(today), 6)
+function presetDate(p: Preset, today: DateKey): DateKey | null {
+  if (p === 'Dziś') return today
+  if (p === 'Jutro') return addDays(today, 1)
+  if (p === 'W tym tygodniu') return addDays(weekStart(today), 6)
   return null
 }
 
-/** Arkusz „Nowe zadanie”: tytuł, kategoria, priorytet, kroki, termin. */
-export function NewTaskSheet({
-  open,
-  onClose,
-  categories,
-  today,
-  onAdd,
-  onAddCategory,
-}: {
-  open: boolean
+/** Który chip terminu zaznaczyć dla istniejącej daty. */
+function choiceFor(due: DateKey | null, today: DateKey): DueChoice {
+  return PRESETS.find((p) => presetDate(p, today) === due) ?? 'Inna data'
+}
+
+type Props = {
   onClose: () => void
   categories: Category[]
   today: DateKey
-  onAdd: (task: Omit<Task, 'id'>) => void
   /** Zwraca id nowej kategorii. */
   onAddCategory: (name: string, color: string) => string
-}) {
-  const [title, setTitle] = useState('')
-  const [categoryId, setCategoryId] = useState<string | null>(categories[0]?.id ?? null)
-  const [priority, setPriority] = useState<Priority>('mid')
-  const [due, setDue] = useState<Due>('Bez terminu')
-  const [steps, setSteps] = useState<string[]>([])
+} & (
+  | { task?: undefined; onSave: (task: Omit<Task, 'id'>) => void; onDelete?: undefined }
+  | { task: Task; onSave: (task: Omit<Task, 'id'>) => void; onDelete: () => void }
+)
+
+/**
+ * Arkusz „Nowe zadanie” / „Edytuj zadanie”: tytuł, kategoria, priorytet, kroki, termin.
+ * Otwierany warunkowo – stan formularza startuje od nowa przy każdym otwarciu.
+ */
+export function TaskSheet({
+  onClose,
+  categories,
+  today,
+  onAddCategory,
+  task,
+  onSave,
+  onDelete,
+}: Props) {
+  const editing = task !== undefined
+  const [title, setTitle] = useState(task?.title ?? '')
+  const [categoryId, setCategoryId] = useState<string | null>(
+    editing ? task.categoryId : (categories[0]?.id ?? null),
+  )
+  const [priority, setPriority] = useState<Priority>(task?.priority ?? 'mid')
+  const [choice, setChoice] = useState<DueChoice>(
+    editing ? choiceFor(task.due, today) : 'Bez terminu',
+  )
+  const [customDate, setCustomDate] = useState<DateKey>(task?.due ?? addDays(today, 7))
+  const [steps, setSteps] = useState<Subtask[]>(task?.subtasks ?? [])
   const [step, setStep] = useState('')
   const [addingCategory, setAddingCategory] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(false)
 
-  const reset = () => {
-    setTitle('')
-    setPriority('mid')
-    setDue('Bez terminu')
-    setSteps([])
-    setStep('')
-    setAddingCategory(false)
-  }
+  const due = choice === 'Inna data' ? customDate : presetDate(choice, today)
+
   const addStep = () => {
     const s = step.trim()
     if (!s) return
-    setSteps((list) => [...list, s])
+    setSteps((list) => [...list, { id: `k${Date.now()}`, title: s, done: false }])
     setStep('')
   }
   const submit = () => {
     const t = title.trim()
     if (!t) return
-    onAdd({
-      title: t,
-      categoryId,
-      priority,
-      due: dueDate(due, today),
-      done: false,
-      subtasks: steps.map((s, i) => ({ id: `nowy-${Date.now()}-${i}`, title: s, done: false })),
-    })
-    reset()
+    const done = steps.length > 0 ? steps.every((s) => s.done) : editing ? task.done : false
+    onSave({ title: t, categoryId, priority, due, done, subtasks: steps })
   }
 
   return (
-    <Sheet open={open} onClose={onClose} label="Nowe zadanie">
+    <Sheet open onClose={onClose} label={editing ? 'Edytuj zadanie' : 'Nowe zadanie'}>
       <span style={{ fontFamily: fonts.serif, fontSize: 28, fontWeight: 500 }}>
-        Nowe <em style={{ color: colors.brass700 }}>zadanie</em>
+        {editing ? 'Edytuj' : 'Nowe'} <em style={{ color: colors.brass700 }}>zadanie</em>
       </span>
       <Field
         id="tytul"
@@ -155,9 +162,9 @@ export function NewTaskSheet({
           </>
         }
       >
-        {steps.map((s, i) => (
+        {steps.map((s) => (
           <div
-            key={`${s}-${i}`}
+            key={s.id}
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -171,15 +178,25 @@ export function NewTaskSheet({
                 width: 18,
                 height: 18,
                 borderRadius: 6,
-                border: `2px solid ${colors.brass500}`,
                 flex: 'none',
+                ...(s.done
+                  ? { background: colors.green900 }
+                  : { border: `2px solid ${colors.brass500}` }),
               }}
             />
-            <span style={{ flex: 1, fontSize: 15 }}>{s}</span>
+            <span
+              style={{
+                flex: 1,
+                fontSize: 15,
+                ...(s.done ? { color: '#8A968E', textDecoration: 'line-through' } : {}),
+              }}
+            >
+              {s.title}
+            </span>
             <button
               type="button"
-              onClick={() => setSteps((list) => list.filter((_, j) => j !== i))}
-              aria-label={`Usuń podzadanie: ${s}`}
+              onClick={() => setSteps((list) => list.filter((x) => x.id !== s.id))}
+              aria-label={`Usuń podzadanie: ${s.title}`}
               style={{
                 width: 36,
                 height: 40,
@@ -251,15 +268,110 @@ export function NewTaskSheet({
 
       <Group label="TERMIN">
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-          {DUES.map((d) => (
-            <Chip key={d} on={due === d} onClick={() => setDue(d)}>
+          {PRESETS.map((d) => (
+            <Chip key={d} on={choice === d} onClick={() => setChoice(d)}>
               {d}
             </Chip>
           ))}
+          <Chip on={choice === 'Inna data'} onClick={() => setChoice('Inna data')}>
+            {choice === 'Inna data' ? dueLabel(customDate, today) : 'Inna data'}
+          </Chip>
         </div>
+        {choice === 'Inna data' && (
+          <>
+            <label htmlFor="termin-data" className="sr-only">
+              Data terminu
+            </label>
+            <input
+              id="termin-data"
+              type="date"
+              value={customDate}
+              onChange={(e) => e.target.value && setCustomDate(e.target.value)}
+              style={{
+                height: 48,
+                border: `1px solid ${colors.border}`,
+                borderRadius: 14,
+                padding: '0 14px',
+                fontSize: 16,
+                color: colors.green900,
+                background: colors.white,
+                outlineColor: colors.green900,
+              }}
+            />
+          </>
+        )}
       </Group>
 
-      <PrimaryButton onClick={submit}>Dodaj zadanie</PrimaryButton>
+      <PrimaryButton onClick={submit}>{editing ? 'Zapisz zmiany' : 'Dodaj zadanie'}</PrimaryButton>
+
+      {editing &&
+        (confirmDelete ? (
+          <div
+            role="alertdialog"
+            aria-label="Usunąć zadanie?"
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 10,
+              padding: 14,
+              borderRadius: 16,
+              background: priorities.high.bg,
+            }}
+          >
+            <span style={{ fontSize: 15, fontWeight: 700, color: priorities.high.fg }}>
+              Usunąć „{task.title}”?
+            </span>
+            <div
+              style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8 }}
+            >
+              <button
+                type="button"
+                onClick={() => setConfirmDelete(false)}
+                style={{
+                  height: 42,
+                  border: `1px solid ${colors.border}`,
+                  borderRadius: 21,
+                  background: colors.white,
+                  color: colors.green900,
+                  fontSize: 14,
+                  fontWeight: 700,
+                }}
+              >
+                Zostaw
+              </button>
+              <button
+                type="button"
+                onClick={onDelete}
+                style={{
+                  height: 42,
+                  border: 0,
+                  borderRadius: 21,
+                  background: priorities.high.line,
+                  color: colors.white,
+                  fontSize: 14,
+                  fontWeight: 800,
+                }}
+              >
+                Usuń
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setConfirmDelete(true)}
+            style={{
+              minHeight: 44,
+              border: 0,
+              background: 'transparent',
+              color: priorities.high.fg,
+              fontSize: 14,
+              fontWeight: 800,
+            }}
+          >
+            Usuń zadanie
+          </button>
+        ))}
     </Sheet>
   )
 }
