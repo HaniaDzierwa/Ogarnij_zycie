@@ -1,5 +1,6 @@
 import { Link, useSearchParams } from 'react-router'
 import type { Screen } from '../app/screens.ts'
+import { Logo } from '../components/Logo.tsx'
 import { colors, fonts, radii, sectionLabel, shadows } from '../theme'
 
 /** Pusty ekran z nazwą i przejściami z projektu (etap 0; w etapie 1 zastąpią go prawdziwe ekrany). */
@@ -21,7 +22,10 @@ export function PlaceholderScreen({ screen }: { screen: Screen }) {
           justifyContent: 'space-between',
         }}
       >
-        <span style={{ ...sectionLabel, color: colors.brass300 }}>Ekran {screen.number}</span>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Logo color={colors.cream} />
+          <span style={{ ...sectionLabel, color: colors.brass300 }}>Ekran {screen.number}</span>
+        </span>
         <h1 style={{ margin: 0, fontFamily: fonts.serif, fontSize: 24, fontWeight: 500 }}>
           {screen.name}
         </h1>
