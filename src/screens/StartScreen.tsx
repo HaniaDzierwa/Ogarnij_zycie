@@ -4,7 +4,7 @@ import { paths } from '../app/screens.ts'
 import { Accent, Header } from '../components/Header.tsx'
 import { Logo } from '../components/Logo.tsx'
 import { TabBar } from '../components/TabBar.tsx'
-import { Box, Card, Screen, SyncBadge } from '../components/ui.tsx'
+import { Box, Card, Screen, OfflineBadge } from '../components/ui.tsx'
 import {
   DAYS_SHORT,
   MONTHS_SHORT,
@@ -66,7 +66,7 @@ export function StartScreen() {
             {longDayLabel(today)}
           </>
         }
-        topRight={<SyncBadge tone={day ? 'day' : 'dark'} />}
+        topRight={<OfflineBadge tone={day ? 'day' : 'dark'} />}
         title={
           <>
             {day ? 'Dzień dobry' : 'Dobry wieczór'}

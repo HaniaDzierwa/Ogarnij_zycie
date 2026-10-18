@@ -45,7 +45,7 @@ Cel: wszystkie ekrany z projektu w aplikacji, na przykładowych danych (w pamię
 3. Start: kafelki, „Ten tydzień”, „Pilne”, „Najbliższe wydarzenia”; wersja dzienna i nocna nagłówka; skróty do filtrów.
 4. Zadania: zakładki Do zrobienia / Ogarnięte, grupy, zwijanie, „Zwiń/Rozwiń wszystko”, panel filtrów (zamykany kliknięciem obok), chipy aktywnych filtrów, podzadania z %, gesty przeciągania, arkusz zadania, arkusz „Nowe zadanie”, pasek „Cofnij”, arkusz „Wyczyść”. Kalendarz: arkusz edycji wydarzenia, przeciąganie w lewo, „Cofnij”. Ustawienia → Porządki → wspólny Kosz (zadania i wydarzenia).
 5. Kalendarz: tydzień i miesiąc, „Dziś”, agenda dnia, „Później”, arkusz wydarzenia z rodzajami.
-6. Ustawienia, Synchronizacja (Domownicy), Zmiany od domownika, Zaproś domownika, Dołącz do domu – z tekstami i zmianami z `docs/TEKSTY.md`.
+6. Ustawienia, Domownicy (bez ekranu synchronizacji i bez „Zmian od domownika” – Firebase synchronizuje sam, decyzja Hani 2026-10-18), Zaproś domownika, Dołącz do domu – z tekstami i zmianami z `docs/TEKSTY.md`.
 7. Ekrany konta (nowe – nie ma ich w `docs/design/ekrany/`): Zaloguj się, Załóż konto, Nie pamiętam hasła. Projektuje Claude w stylu pozostałych ekranów (nagłówek 120 px z panoramą, karty, pola 48 px, przycisk główny); Hania akceptuje wygląd przed etapem 2.
 
 **Odbiór:**
@@ -124,8 +124,8 @@ Cel: wszystkie ekrany z projektu w aplikacji, na przykładowych danych (w pamię
 
 1. **Zaproszenie:** jednorazowy link oraz kod QR i 6 cyfr (ważne 10 min); „Dołącz do domu” realizuje je, reguły Firestore sprawdzają ważność i jednorazowość.
 2. **Zakres:** domownik widzi wszystko albo wybrane kategorie i kalendarz; reguły to wymuszają.
-3. **Zmiany od domowników:** ekran „Zmiany od …” i push, gdy ktoś doda lub ogarnie zadanie.
-4. **Konflikty:** nowsza zmiana wygrywa; „usunął vs. zmieniła” trafia do „Do decyzji”.
+3. **Zmiany od domowników:** push, gdy ktoś doda lub ogarnie zadanie (bez osobnego ekranu – zmiany widać od razu na listach).
+4. **Konflikty:** nowsza zmiana wygrywa; usunięte zawsze można przywrócić z Kosza.
 
 **Odbiór:**
 - [ ] Zadanie dodane na jednym telefonie pojawia się na drugim w kilka sekund
@@ -164,5 +164,5 @@ Blokuje przejście dalej: utrata lub pomieszanie danych, ekran różny od projek
 | Push na iPhonie tylko ze strony dodanej do ekranu głównego | Instrukcja przy pierwszym włączeniu powiadomień |
 | Przekroczenie limitów planu Spark | Bez karty usługa się zatrzymuje, nie nalicza opłat; przy 2–3 osobach mało prawdopodobne |
 | Błędne reguły bezpieczeństwa | Reguły od etapu 2, testy w emulatorze przy każdej zmianie |
-| Konflikty offline | Czas i autor przy każdej zmianie; „nowsza wygrywa” + „Do decyzji” |
+| Konflikty offline | Czas i autor przy każdej zmianie; „nowsza wygrywa”; usunięte do Kosza (można przywrócić) |
 | Ograniczenia Safari (pamięć, aparat do QR) | Testy na iPhonie od etapu 1; dołączanie także linkiem lub 6 cyframi |

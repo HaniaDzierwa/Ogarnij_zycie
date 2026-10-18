@@ -12,7 +12,6 @@ export type ScreenId =
   | 'kalendarz'
   | 'ustawienia'
   | 'domownicy'
-  | 'zmiany'
   | 'zapros'
   | 'dolacz'
 
@@ -57,7 +56,6 @@ export const paths = {
   kalendarzNowe: '/kalendarz?nowe=wydarzenie',
   ustawienia: '/ustawienia',
   domownicy: '/ustawienia/domownicy',
-  zmiany: '/ustawienia/domownicy/zmiany',
   zapros: '/ustawienia/domownicy/zapros',
   dolacz: '/dolacz',
 } as const
@@ -139,7 +137,6 @@ export const screens: Screen[] = [
       { label: 'Kafelek „Ogarnięte dziś”', to: paths.zadaniaOgarniete },
       { label: 'Wydarzenie: imieniny (16 paź)', to: paths.kalendarzDzien('2026-10-16') },
       { label: 'Wydarzenie: urodziny (17 paź)', to: paths.kalendarzDzien('2026-10-17') },
-      { label: 'Plakietka synchronizacji', to: paths.domownicy },
     ],
   },
   {
@@ -150,7 +147,7 @@ export const screens: Screen[] = [
     name: 'Zadania',
     source:
       'Zadania.dc.html, ZadaniaPilne.dc.html, ZadaniaOgarniete.dc.html, ZadaniaPrawo/Lewo/Arkusz/Wyczysc.dc.html',
-    transitions: [...tabs, { label: 'Plakietka synchronizacji', to: paths.domownicy }],
+    transitions: tabs,
   },
   {
     id: 'kosz',
@@ -190,30 +187,17 @@ export const screens: Screen[] = [
     tab: 'ustawienia',
     path: paths.domownicy,
     number: '5a',
-    name: 'Synchronizacja / Domownicy',
-    source: 'Synchronizacja.dc.html',
+    name: 'Domownicy',
+    source: 'Synchronizacja.dc.html (bez części o synchronizacji)',
     transitions: [
       { label: 'Wróć do Ustawień', to: paths.ustawienia },
-      { label: 'Zmiany od domownika', to: paths.zmiany },
       { label: 'Zaproś domownika', to: paths.zapros },
       ...tabs,
     ],
   },
   {
-    id: 'zmiany',
-    back: { to: paths.domownicy, label: 'SYNCHRONIZACJA' },
-    path: paths.zmiany,
-    number: '5b',
-    name: 'Zmiany od domownika',
-    source: 'Import.dc.html',
-    transitions: [
-      { label: 'Wróć do Domowników', to: paths.domownicy },
-      { label: 'Gotowe → Zadania', to: paths.zadania },
-    ],
-  },
-  {
     id: 'zapros',
-    back: { to: paths.domownicy, label: 'SYNCHRONIZACJA' },
+    back: { to: paths.domownicy, label: 'DOMOWNICY' },
     path: paths.zapros,
     number: '5c–d',
     name: 'Zaproś domownika',

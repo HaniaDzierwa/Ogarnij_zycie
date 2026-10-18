@@ -27,6 +27,8 @@ Projekt ekranów zakładał aplikację „bez konta i bez chmury”, z wymianą 
 | 17 | 5 Ustawienia (Wspólny dom, pod „Domownicy i synchronizacja”) | KRZYŚ · WI‑FI · DZIŚ 13:05 | KRZYŚ · DZIŚ 13:05 |
 | 18 | 5b Zmiany od domownika – nagłówek | PRZED CHWILĄ · WI‑FI | PRZED CHWILĄ |
 
+**Aktualizacja 2026-10-18 (decyzja Hani):** ekranu Synchronizacji i „Zmian od domownika” nie robimy – Firebase synchronizuje sam. Z 5a zostaje ekran „Domownicy” (lista + „Zaproś”) z kartą „Na razie tylko Ty” (#4–6). Teksty #7–9 i #18 oraz B4–B5 nie są już używane; plakietka w nagłówku pokazuje tylko „OFFLINE”.
+
 #17–18 dopisane w etapie 1 (te same zasady co zaakceptowane wyżej – usunięte „Wi‑Fi”).
 
 ## B. Elementy, które przy Firebase tracą sens (do decyzji)

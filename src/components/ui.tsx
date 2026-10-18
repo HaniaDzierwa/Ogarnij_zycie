@@ -1,6 +1,5 @@
 import type { CSSProperties, ReactNode } from 'react'
-import { Link } from 'react-router'
-import { paths } from '../app/screens.ts'
+import { useOnline } from '../data/useOnline.ts'
 import { colors, priorities, radii, shadows, sizes } from '../theme'
 
 /** Układ ekranu: kremowe tło, odstępy 16 px, miejsce na dolny pasek. */
@@ -32,19 +31,25 @@ export function Screen({
   )
 }
 
-/** Plakietka synchronizacji w nagłówku (ONLINE / OFFLINE) – prowadzi do Domowników. */
-export function SyncBadge({
+/**
+ * Plakietka „OFFLINE” w nagłówku – tylko gdy telefon nie ma internetu (zmiany wyślą się same,
+ * gdy wróci). Online nic nie pokazuje (Firebase synchronizuje sam – decyzja Hani 2026-10-18).
+ */
+export function OfflineBadge({
   tone = 'dark',
-  online = true,
+  online: onlineProp,
 }: {
   tone?: 'dark' | 'day'
+  /** Domyślnie – stan sieci z przeglądarki. */
   online?: boolean
 }) {
   const day = tone === 'day'
+  const network = useOnline()
+  if (onlineProp ?? network) return null
   return (
-    <Link
-      to={paths.domownicy}
-      aria-label={online ? 'Synchronizacja – zsynchronizowano' : 'Synchronizacja – offline'}
+    <span
+      role="status"
+      aria-label="Offline – zmiany wyślą się same, gdy wróci internet"
       style={{
         display: 'flex',
         alignItems: 'center',
@@ -53,24 +58,16 @@ export function SyncBadge({
         padding: '0 10px',
         borderRadius: 14,
         border: `1px solid ${day ? 'rgba(31,61,46,0.3)' : 'rgba(232,201,142,0.5)'}`,
-        color: day ? colors.successText : colors.brass300,
+        color: day ? colors.green900 : colors.brass300,
         fontSize: 11,
         fontWeight: 800,
         letterSpacing: '0.6px',
-        textDecoration: 'none',
         flex: 'none',
       }}
     >
-      <span
-        style={{
-          width: 6,
-          height: 6,
-          borderRadius: 3,
-          background: online ? (day ? colors.success : colors.onlineDot) : colors.brass500,
-        }}
-      />
-      {online ? 'ONLINE' : 'OFFLINE'}
-    </Link>
+      <span style={{ width: 6, height: 6, borderRadius: 3, background: colors.brass500 }} />
+      OFFLINE
+    </span>
   )
 }
 

@@ -1,6 +1,6 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { createMemoryRouter, RouterProvider } from 'react-router'
-import { afterEach, expect, test } from 'vitest'
+import { afterEach, expect, test, vi } from 'vitest'
 import { routes } from '../../app/router.tsx'
 import { MockStoreProvider } from '../../data/MockStore.tsx'
 
@@ -55,6 +55,40 @@ test('Porządki → Kosz i Wspólny dom → Domownicy', () => {
   fireEvent.click(screen.getByRole('link', { name: /Kosz/ }))
   expect(router.state.location.pathname).toBe('/ustawienia/kosz')
   fireEvent.click(screen.getByRole('link', { name: /USTAWIENIA/ }))
-  fireEvent.click(screen.getByRole('link', { name: /Domownicy i synchronizacja/ }))
+  fireEvent.click(screen.getByRole('link', { name: /^Domownicy/ }))
   expect(router.state.location.pathname).toBe('/ustawienia/domownicy')
+})
+
+test('Domownicy: lista z zakresem i „Zaproś”, bez synchronizacji (Firebase robi to sam)', () => {
+  const router = renderAt('/ustawienia/domownicy')
+  expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Wspólny dom')
+  expect(screen.getByText('Krzyś')).toBeDefined()
+  expect(screen.getByText('WSZYSTKIE KATEGORIE I KALENDARZ')).toBeDefined()
+  for (const gone of [
+    'ONLINE · ZSYNCHRONIZOWANO',
+    'DO WYSŁANIA',
+    'TRYB PRACY',
+    'Synchronizuj teraz',
+  ]) {
+    expect(screen.queryByText(gone)).toBeNull()
+  }
+  fireEvent.click(screen.getByRole('link', { name: /ZAPROŚ DOMOWNIKA/ }))
+  expect(router.state.location.pathname).toBe('/ustawienia/domownicy/zapros')
+})
+
+test('Domownicy: pusty dom – „Na razie tylko Ty” (podgląd ?stan=sam)', () => {
+  renderAt('/ustawienia/domownicy?stan=sam')
+  expect(screen.getByText('TYLKO TY')).toBeDefined()
+  expect(screen.getByText(/Zaproś domownika, żeby mieć wspólny dom z bliskimi/)).toBeDefined()
+})
+
+test('plakietka OFFLINE tylko bez internetu; online – nic', () => {
+  renderAt('/ustawienia')
+  expect(screen.queryByText('OFFLINE')).toBeNull()
+  expect(screen.queryByText('ONLINE')).toBeNull()
+  cleanup()
+  const spy = vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false)
+  renderAt('/ustawienia')
+  expect(screen.getByRole('status', { name: /Offline/ }).textContent).toBe('OFFLINE')
+  spy.mockRestore()
 })

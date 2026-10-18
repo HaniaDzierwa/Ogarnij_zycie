@@ -29,8 +29,8 @@ Styl „domowy elegancki”: butelkowa zieleń, mosiądz i krem, szeryfowy Fraun
 | 4a Kalendarz – usuwanie | `KalendarzLewo`, `KalendarzArkusz` | Przeciągnięcie wydarzenia w lewo = do kosza; klik w wydarzenie = arkusz wydarzenia. **Arkusz zostaje jak w aplikacji** (edycja w miejscu z polem DZIEŃ i „Gotowe”, nie „Edytuj wydarzenie / Zapisz zmiany” z projektu – decyzja Hani 2026-10-18) |
 | 4 Kalendarz | `Kalendarz.dc.html` | Tydzień/miesiąc, agenda, arkusz nowego i edytowanego wydarzenia, przeciąganie w lewo, pasek „Cofnij”; wariant `demo` |
 | 5 Ustawienia | `Ustawienia.dc.html` | Ty, Wspólny dom, Porządki (sprzątanie ogarniętych 7/30 dni/nigdy, Kosz), Powiadomienia, Wygląd (motyw – ukryty na start) |
-| 5a Synchronizacja / Domownicy | `Synchronizacja.dc.html` | Teksty i zmiany wg `docs/TEKSTY.md` (bez trybu lokalnego, Wi‑Fi i „Synchronizuj teraz”) |
-| 5b Zmiany od domownika | `Import.dc.html` | Nowe, zmienione, „Do decyzji” |
+| 5a Domownicy | `Synchronizacja.dc.html` – **tylko** część „Domownicy” (lista + „Zaproś domownika”) i karta „Na razie tylko Ty” (TEKSTY #4–6) | Bez karty synchronizacji, liczników, trybu pracy i ustawień sieci – Firebase synchronizuje sam (decyzja Hani 2026-10-18). Ustawienia → Wspólny dom → „Domownicy” |
+| ~~5b Zmiany od domownika~~ | `Import.dc.html` | **Nie robimy** (decyzja Hani 2026-10-18): zmiany domownika pojawiają się same w kilka sekund; informuje o nich push (etap 8) |
 | 5c–d Zaproś domownika | `Zaproszenie.dc.html`, `ZaproszenieGotowe.dc.html` | Dodać opcję „jednorazowy link” |
 | 5e–f Dołącz do domu | `Dolacz.dc.html`, `DolaczZnaleziono.dc.html` | Skan QR / 6 cyfr / link |
 
@@ -119,6 +119,7 @@ Zakupy `#5E8C6A` · Dom `#B8925A` · Zdrowie `#A4492F` · Urzędy `#6E5F8C` · A
 - Usunięcie zadania lub wydarzenia (gest w lewo, „Usuń” w arkuszu) zawsze poprzedza okienko „Usunąć zadanie?” / „Usunąć wydarzenie?” z tekstem „„…” trafi do kosza. Możesz je przywrócić przez 30 dni.” (Anuluj / Usuń); po usunięciu pasek COFNIJ (ustalone 2026-10-18).
 - Kalendarz: wydarzenie jak zadanie – dotknięcie = arkusz z edycją w miejscu, w lewo = do kosza; termin zadania w kalendarzu = wiersz zadania (dotknięcie = arkusz zadania, w prawo ogarnij, w lewo do kosza). Tak samo wiersze w „Później”; po zamknięciu arkusza kalendarz przechodzi do dnia wpisu (ustalone 2026-10-18). Te zasady mają pierwszeństwo przed aktualizacją projektu 2, w której terminów zadań nie dało się ruszać z kalendarza, a pytania przed usunięciem nie było (decyzja Hani 2026-10-18).
 - Odhaczenie wszystkich podzadań ogarnia zadanie; odznaczenie kroku w ogarniętym zadaniu przywraca je (ustalone 2026-10-18).
+- Plakietka w nagłówkach (Start, Zadania, Ustawienia): tylko „OFFLINE”, gdy telefon nie ma internetu – nie jest linkiem; online nic nie pokazuje (ustalone 2026-10-18, zamiast „ONLINE” prowadzącego do Synchronizacji).
 
 ### Zakładki i kosz
 
@@ -163,4 +164,4 @@ houses/{houseId}/events/{id}        title, date, allDay, from, to, typeId, remin
 invites/{code}              houseId, createdBy, expiresAt, usedBy|null, scope
 ```
 
-Usuwanie jako `deleted: true` + `deletedAt` (miękkie) = Kosz. Po 30 dniach od `deletedAt` dokument usuwamy naprawdę. Dzięki temu da się też pokazać konflikty „usunął vs. zmieniła” w „Do decyzji”.
+Usuwanie jako `deleted: true` + `deletedAt` (miękkie) = Kosz. Po 30 dniach od `deletedAt` dokument usuwamy naprawdę. Konflikt „usunął vs. zmieniła”: usunięte jest w Koszu i można je przywrócić (bez osobnego „Do decyzji”).

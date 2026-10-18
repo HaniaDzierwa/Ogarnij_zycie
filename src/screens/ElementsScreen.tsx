@@ -13,7 +13,7 @@ import {
   SectionLabel,
   Segmented,
   Sheet,
-  SyncBadge,
+  OfflineBadge,
   ToggleRow,
 } from '../components/ui.tsx'
 import { PlusIcon } from '../components/icons.tsx'
@@ -37,7 +37,7 @@ export function ElementsScreen() {
           </>
         }
         tone="day"
-        topRight={<SyncBadge tone="day" />}
+        topRight={<OfflineBadge tone="day" online={false} />}
         title={
           <>
             Dzień dobry, <Accent>Hania</Accent>
@@ -52,7 +52,7 @@ export function ElementsScreen() {
             NAGŁÓWEK · NOC
           </>
         }
-        topRight={<SyncBadge />}
+        topRight={<OfflineBadge online={false} />}
         title={
           <>
             Dobry wieczór, <Accent>Hania</Accent>
@@ -61,7 +61,7 @@ export function ElementsScreen() {
       />
       <Header
         label="ZADANIA · PIĄTEK 9 PAŹ"
-        topRight={<SyncBadge />}
+        topRight={<OfflineBadge online={false} />}
         title={
           <>
             Do <Accent>ogarnięcia</Accent>

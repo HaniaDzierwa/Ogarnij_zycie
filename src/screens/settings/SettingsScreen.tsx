@@ -5,7 +5,7 @@ import { Accent, Header } from '../../components/Header.tsx'
 import { ChevronRightIcon, TrashIcon, UsersIcon } from '../../components/icons.tsx'
 import { Logo } from '../../components/Logo.tsx'
 import { TabBar } from '../../components/TabBar.tsx'
-import { Card, Screen, SectionLabel, SyncBadge, ToggleRow } from '../../components/ui.tsx'
+import { Card, Screen, SectionLabel, OfflineBadge, ToggleRow } from '../../components/ui.tsx'
 import { useStore } from '../../data/MockStore.tsx'
 import { plural } from '../../data/plural.ts'
 import type { CleanupDays, NotificationSettings } from '../../data/types.ts'
@@ -49,7 +49,7 @@ export function SettingsScreen() {
     <Screen gap={22}>
       <Header
         label="USTAWIENIA"
-        topRight={<SyncBadge />}
+        topRight={<OfflineBadge />}
         title={
           <>
             Po <Accent>swojemu</Accent>
@@ -129,7 +129,7 @@ export function SettingsScreen() {
           icon={<UsersIcon />}
           iconBg={colors.successBg}
           iconFg={colors.green900}
-          title="Domownicy i synchronizacja"
+          title="Domownicy"
           meta={
             other
               ? `${other.name.toUpperCase()} · ${other.lastSeen}`

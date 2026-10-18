@@ -4,7 +4,7 @@ import { Accent, Header } from '../../components/Header.tsx'
 import { TabBar } from '../../components/TabBar.tsx'
 import { UndoToast } from '../../components/UndoToast.tsx'
 import { useConfirmDelete } from '../../components/useConfirmDelete.tsx'
-import { Box, Dot, SyncBadge } from '../../components/ui.tsx'
+import { Box, Dot, OfflineBadge } from '../../components/ui.tsx'
 import { CloseIcon, SlidersIcon, TrashIcon } from '../../components/icons.tsx'
 import { shortDayLabel, whenLabel } from '../../data/dates.ts'
 import { useStore } from '../../data/MockStore.tsx'
@@ -135,7 +135,7 @@ export function TasksScreen() {
       >
         <Header
           label={`ZADANIA · ${shortDayLabel(today)}`}
-          topRight={<SyncBadge />}
+          topRight={<OfflineBadge />}
           title={
             <>
               Do <Accent>ogarnięcia</Accent>

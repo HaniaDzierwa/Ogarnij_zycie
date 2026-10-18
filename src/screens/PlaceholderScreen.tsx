@@ -3,7 +3,7 @@ import type { Screen as ScreenDef } from '../app/screens.ts'
 import { Header } from '../components/Header.tsx'
 import { Logo } from '../components/Logo.tsx'
 import { TabBar } from '../components/TabBar.tsx'
-import { Card, Screen, SectionLabel, SyncBadge } from '../components/ui.tsx'
+import { Card, Screen, SectionLabel, OfflineBadge } from '../components/ui.tsx'
 import { ChevronRightIcon } from '../components/icons.tsx'
 import { colors } from '../theme'
 
@@ -22,7 +22,7 @@ export function PlaceholderScreen({ screen }: { screen: ScreenDef }) {
             EKRAN {screen.number}
           </>
         }
-        topRight={screen.tab ? <SyncBadge /> : undefined}
+        topRight={screen.tab ? <OfflineBadge /> : undefined}
         title={screen.name}
       />
 
