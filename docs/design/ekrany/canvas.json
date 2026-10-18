@@ -203,7 +203,7 @@
       "y": 4152,
       "w": 390,
       "h": 844,
-      "title": "3a · Kosz (30 dni na odzyskanie)",
+      "title": "3a · Kosz – zadania i wydarzenia (z Ustawień)",
       "is_interactive": true
     },
     "KoszPotwierdzenie.dc.html": {
@@ -212,6 +212,22 @@
       "w": 390,
       "h": 844,
       "title": "3a · Kosz – opróżnij na zawsze",
+      "is_interactive": true
+    },
+    "KalendarzLewo.dc.html": {
+      "x": 2820,
+      "y": 4152,
+      "w": 390,
+      "h": 844,
+      "title": "3a · Kalendarz: przeciągnięcie w lewo – do kosza",
+      "is_interactive": true
+    },
+    "KalendarzArkusz.dc.html": {
+      "x": 3290,
+      "y": 4152,
+      "w": 390,
+      "h": 844,
+      "title": "3a · Kalendarz: edycja wydarzenia (klik)",
       "is_interactive": true
     }
   },
@@ -241,7 +257,9 @@
     "ZadaniaArkusz.dc.html",
     "ZadaniaWyczysc.dc.html",
     "Kosz.dc.html",
-    "KoszPotwierdzenie.dc.html"
+    "KoszPotwierdzenie.dc.html",
+    "KalendarzLewo.dc.html",
+    "KalendarzArkusz.dc.html"
   ],
   "notes": {
     "glowne": {
@@ -275,9 +293,9 @@
     "zadaniagesty": {
       "x": 0,
       "y": 3852,
-      "text": "Zadania: gesty, arkusz zadania, ogarnięte i kosz",
+      "text": "Gesty, arkusze i wspólny Kosz (zadania i wydarzenia)",
       "kind": "title1",
-      "maxW": 2740
+      "maxW": 3680
     }
   },
   "designSystems": []

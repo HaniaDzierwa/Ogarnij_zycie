@@ -45,7 +45,7 @@ Nie zmieniaj stosu bez pytania Hani.
 - „Domownik”, „Wspólny dom”, „Zaproś domownika”, „Dołącz do domu”.
 - Filtr „Pokaż”: Wszystkie · Pilne · Ważne · Przy okazji (bez „Na dziś” i bez „Ogarnięte” – ogarnięte mają własną zakładkę).
 - Zakładki na ekranie Zadania: „Do zrobienia” i „Ogarnięte”.
-- „Kosz”: usunięte zadania czekają 30 dni na przywrócenie, potem znikają same.
+- „Kosz”: **jeden wspólny** na zadania i wydarzenia; usunięte czekają 30 dni na przywrócenie, potem znikają same. Stałe wejście tylko w Ustawienia → Porządki → Kosz (bez ikon kosza na ekranach Zadania i Kalendarz); na co dzień pomyłki naprawia pasek „Cofnij”.
 
 ## Interakcje na liście zadań (ustalone)
 

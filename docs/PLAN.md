@@ -43,7 +43,7 @@ Cel: wszystkie ekrany z projektu w aplikacji, na przykładowych danych (w pamię
 1. Elementy wspólne: nagłówek 120 px z panoramą dachów, pływający dolny pasek (Start, Zadania, +, Kalendarz, Ustawienia) z menu „Co dodajesz?”, kremowe wyciszenie pod paskiem, karty, chipy, przełączniki, arkusze (bottom sheet), przycisk główny.
 2. Ładowanie (słońce 6:00–18:00, księżyc wieczorem) i Pierwsze uruchomienie.
 3. Start: kafelki, „Ten tydzień”, „Pilne”, „Najbliższe wydarzenia”; wersja dzienna i nocna nagłówka; skróty do filtrów.
-4. Zadania: zakładki Do zrobienia / Ogarnięte, grupy, zwijanie, „Zwiń/Rozwiń wszystko”, panel filtrów (zamykany kliknięciem obok), chipy aktywnych filtrów, podzadania z %, gesty przeciągania, arkusz zadania, arkusz „Nowe zadanie”, pasek „Cofnij”, arkusz „Wyczyść”, ekran Kosza.
+4. Zadania: zakładki Do zrobienia / Ogarnięte, grupy, zwijanie, „Zwiń/Rozwiń wszystko”, panel filtrów (zamykany kliknięciem obok), chipy aktywnych filtrów, podzadania z %, gesty przeciągania, arkusz zadania, arkusz „Nowe zadanie”, pasek „Cofnij”, arkusz „Wyczyść”. Kalendarz: arkusz edycji wydarzenia, przeciąganie w lewo, „Cofnij”. Ustawienia → Porządki → wspólny Kosz (zadania i wydarzenia).
 5. Kalendarz: tydzień i miesiąc, „Dziś”, agenda dnia, „Później”, arkusz wydarzenia z rodzajami.
 6. Ustawienia, Synchronizacja (Domownicy), Zmiany od domownika, Zaproś domownika, Dołącz do domu – z tekstami i zmianami z `docs/TEKSTY.md`.
 7. Ekrany konta (nowe – nie ma ich w `docs/design/ekrany/`): Zaloguj się, Załóż konto, Nie pamiętam hasła. Projektuje Claude w stylu pozostałych ekranów (nagłówek 120 px z panoramą, karty, pola 48 px, przycisk główny); Hania akceptuje wygląd przed etapem 2.
@@ -72,7 +72,7 @@ Cel: wszystkie ekrany z projektu w aplikacji, na przykładowych danych (w pamię
 - Dodawanie (arkusz „Nowe zadanie”), edycja w arkuszu zadania (klik w treść), odhaczanie kwadracikiem.
 - Zakładki „Do zrobienia” / „Ogarnięte”; ogarnięte pogrupowane po dacie, z informacją kto i kiedy.
 - Gesty: przeciągnięcie w prawo = ogarnij / przywróć, w lewo = do kosza; pasek „Cofnij” po każdej akcji.
-- Kosz: miękkie usuwanie (`deleted`, `deletedAt`), przywracanie, „Opróżnij kosz” z potwierdzeniem, licznik „zniknie za N dni”.
+- Wspólny Kosz (wejście z Ustawień → Porządki): miękkie usuwanie (`deleted`, `deletedAt`, `deletedBy`), przywracanie, „Opróżnij kosz” z potwierdzeniem, licznik „zniknie za N dni”, chipy Wszystko / Zadania / Wydarzenia (wydarzenia dochodzą w etapie 5).
 - „Wyczyść” w zakładce Ogarnięte: starsze niż 7 dni / 30 dni / wszystkie → do kosza.
 - Podzadania z % postępu, termin (czerwona plakietka „DZIŚ”), priorytet Pilne/Ważne/Przy okazji.
 
@@ -93,8 +93,11 @@ Cel: wszystkie ekrany z projektu w aplikacji, na przykładowych danych (w pamię
 
 - Wydarzenia: rodzaj (wbudowane + własne), cały dzień lub od–do, przypomnienie (zapisane, wysyłka w etapie 7).
 - Widok tygodnia i miesiąca, agenda dnia, „Później”, „Dziś”; terminy zadań widoczne w kalendarzu.
+- Edycja wydarzenia (klik w agendzie i w „Później”), usuwanie z arkusza i przeciągnięciem w lewo (z pytaniem) → wspólny Kosz, pasek „Cofnij”. Terminy zadań w kalendarzu działają jak wiersz zadania.
 
-**Odbiór:** wydarzenia zapisują się poprawnie i są widoczne u wszystkich domowników.
+**Odbiór:**
+- [ ] Wydarzenia zapisują się poprawnie i są widoczne u wszystkich domowników
+- [ ] Usunięte wydarzenie jest w Koszu i po „Przywróć” wraca na swój dzień
 
 ## Etap 6 – Start
 
@@ -107,7 +110,7 @@ Cel: wszystkie ekrany z projektu w aplikacji, na przykładowych danych (w pamię
 ## Etap 7 – Ustawienia i powiadomienia push
 
 - Profil (imię lub pseudonim), cztery przełączniki powiadomień zapisane w Firestore.
-- Zadania: „Sprzątanie ogarniętych” (7 / 30 dni / nigdy) i wejście do Kosza. Automatyczne sprzątanie i trwałe usuwanie z kosza po 30 dniach wykonuje Worker raz dziennie (zapasowo: aplikacja przy uruchomieniu).
+- Porządki: „Sprzątanie ogarniętych” (7 / 30 dni / nigdy) i wejście do Kosza. Automatyczne sprzątanie i trwałe usuwanie z kosza po 30 dniach wykonuje Worker raz dziennie (zapasowo: aplikacja przy uruchomieniu).
 - Web Push: zgoda w przeglądarce, subskrypcja zapisana przy użytkowniku, instrukcja „Dodaj do ekranu głównego” na iPhonie.
 - Cloudflare Worker (darmowy plan, cron co minutę): sprawdza, co jest do wysłania (terminy, wydarzenia, poranne podsumowanie o 8:00), wysyła push. Instrukcja dla Hani: konto Cloudflare, klucze VAPID, konto serwisowe Firebase jako sekret Workera.
 - Motyw: tylko jasny, wybór ukryty.

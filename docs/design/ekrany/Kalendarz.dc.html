@@ -118,29 +118,36 @@ input{font-family:inherit}
         <div style="padding: 18px; border-radius: 20px; border: 1px dashed #D9D0BE; font-family: 'Fraunces', serif; font-style: italic; font-size: 16px; color: #5E6D63; text-align: center">Spokojny dzień – nic zaplanowanego</div>
       </sc-if>
       <sc-for list="{{agenda}}" as="e" hint-placeholder-count="2">
-        <div style="display: flex; align-items: center; gap: 14px; padding: 12px 16px 12px 12px; border-radius: 20px; background: #FFFFFF; box-shadow: 0 6px 20px rgba(31,61,46,0.07)">
+        <div style="position: relative; border-radius: 20px; overflow: hidden; box-shadow: 0 6px 20px rgba(31,61,46,0.07)">
+          <div aria-hidden="true" style="{{e.bgStyle}}">
+            <span style="{{e.rightAct}}">Usuń <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"></path><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path><path d="M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12"></path><path d="M10 11v6M14 11v6"></path></svg></span>
+          </div>
+          <div onPointerDown="{{e.pDown}}" onPointerMove="{{e.pMove}}" onPointerUp="{{e.pUp}}" onPointerCancel="{{e.pCancel}}" style="{{e.frontStyle}}">
+            <button type="button" onClick="{{e.open}}" aria-label="{{e.openLabel}}" style="flex: 1; min-width: 0; display: flex; align-items: center; gap: 14px; padding: 12px 16px 12px 12px; border: 0; background: transparent; text-align: left; color: #1F3D2E; font-family: inherit">
           <span style="{{e.iconBox}}">
-            <sc-if value="{{e.isDeadline}}" hint-placeholder-val="{{ false }}">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4"></path><path d="M5 4h11l-2 4 2 4H5"></path></svg>
-            </sc-if>
-            <sc-if value="{{e.isBday}}" hint-placeholder-val="{{ false }}">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16"></path><path d="M5 20v-7h14v7"></path><path d="M5 16c2.3 1.3 4.7 1.3 7 0s4.7-1.3 7 0"></path><path d="M12 13V9"></path><path d="M12 6.5c-.8-.7-.8-1.8 0-2.5.8.7.8 1.8 0 2.5z"></path></svg>
-            </sc-if>
-            <sc-if value="{{e.isParty}}" hint-placeholder-val="{{ false }}">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l5-14 9 9z"></path><path d="M14 4v2M19 9h2M17.5 5.5L16 7"></path></svg>
-            </sc-if>
-            <sc-if value="{{e.isEvent}}" hint-placeholder-val="{{ true }}">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="15" rx="4"></rect><path d="M4 10h16M9 3v4M15 3v4"></path></svg>
-            </sc-if>
-            <sc-if value="{{e.isCustom}}" hint-placeholder-val="{{ false }}">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 12.5V5a1.5 1.5 0 0 1 1.5-1.5h7.5L21 12l-9 9z"></path><circle cx="8.5" cy="8.5" r="1.5"></circle></svg>
-            </sc-if>
-          </span>
-          <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px">
-            <span style="font-size: 16px; font-weight: 700; line-height: 1.3">{{e.title}}</span>
-            <span style="font-size: 11px; font-weight: 800; letter-spacing: 1px; color: #5E6D63">{{e.meta}}</span>
-          </span>
-          <span style="font-family: 'Fraunces', serif; font-size: 16px; font-weight: 600; color: #1F3D2E; white-space: nowrap">{{e.time}}</span>
+                <sc-if value="{{e.isDeadline}}" hint-placeholder-val="{{ false }}">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4"></path><path d="M5 4h11l-2 4 2 4H5"></path></svg>
+                </sc-if>
+                <sc-if value="{{e.isBday}}" hint-placeholder-val="{{ false }}">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16"></path><path d="M5 20v-7h14v7"></path><path d="M5 16c2.3 1.3 4.7 1.3 7 0s4.7-1.3 7 0"></path><path d="M12 13V9"></path><path d="M12 6.5c-.8-.7-.8-1.8 0-2.5.8.7.8 1.8 0 2.5z"></path></svg>
+                </sc-if>
+                <sc-if value="{{e.isParty}}" hint-placeholder-val="{{ false }}">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l5-14 9 9z"></path><path d="M14 4v2M19 9h2M17.5 5.5L16 7"></path></svg>
+                </sc-if>
+                <sc-if value="{{e.isEvent}}" hint-placeholder-val="{{ true }}">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="15" rx="4"></rect><path d="M4 10h16M9 3v4M15 3v4"></path></svg>
+                </sc-if>
+                <sc-if value="{{e.isCustom}}" hint-placeholder-val="{{ false }}">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 12.5V5a1.5 1.5 0 0 1 1.5-1.5h7.5L21 12l-9 9z"></path><circle cx="8.5" cy="8.5" r="1.5"></circle></svg>
+                </sc-if>
+              </span>
+              <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px">
+                <span style="font-size: 16px; font-weight: 700; line-height: 1.3">{{e.title}}</span>
+                <span style="font-size: 11px; font-weight: 800; letter-spacing: 1px; color: #5E6D63">{{e.meta}}</span>
+              </span>
+              <span style="font-family: 'Fraunces', serif; font-size: 16px; font-weight: 600; color: #1F3D2E; white-space: nowrap">{{e.time}}</span>
+            </button>
+          </div>
         </div>
       </sc-for>
     </div>
@@ -214,7 +221,7 @@ input{font-family:inherit}
       <div style="position: absolute; left: 0; right: 0; bottom: 0; max-height: 800px; overflow-y: auto; box-sizing: border-box; background: #FFFCF6; border-radius: 30px 30px 0 0; padding: 12px 22px 28px; display: flex; flex-direction: column; gap: 16px">
         <div style="width: 40px; height: 4px; border-radius: 4px; background: #D9D0BE; align-self: center"></div>
         <div style="display: flex; flex-direction: column; gap: 2px">
-          <span style="font-family: 'Fraunces', serif; font-size: 28px; font-weight: 500">Nowe <em style="font-style: italic; color: #7A5C2C">wydarzenie</em></span>
+          <span style="font-family: 'Fraunces', serif; font-size: 28px; font-weight: 500">{{sheetA}} <em style="font-style: italic; color: #7A5C2C">wydarzenie</em></span>
           <span style="font-size: 11px; font-weight: 800; letter-spacing: 1.4px; color: #5E6D63">{{selUpper}}</span>
         </div>
         <div style="display: flex; flex-direction: column; gap: 6px">
@@ -273,14 +280,28 @@ input{font-family:inherit}
             </sc-for>
           </div>
         </div>
-        <button type="button" onClick="{{add}}" style="height: 56px; border: 0; border-radius: 28px; background: #1F3D2E; color: #F6F1E7; font-size: 17px; font-weight: 800">Dodaj do kalendarza</button>
+        <sc-if value="{{isNewEv}}" hint-placeholder-val="{{ true }}">
+          <button type="button" onClick="{{add}}" style="height: 56px; border: 0; border-radius: 28px; background: #1F3D2E; color: #F6F1E7; font-size: 17px; font-weight: 800">Dodaj do kalendarza</button>
+        </sc-if>
+        <sc-if value="{{isEditEv}}" hint-placeholder-val="{{ false }}">
+          <div style="display: grid; grid-template-columns: 1fr 1.4fr; gap: 8px">
+            <button type="button" onClick="{{delEv}}" style="height: 54px; border: 1px solid #E7B8A8; border-radius: 27px; background: #FFFFFF; color: #A4492F; font-size: 16px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 8px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"></path><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path><path d="M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12"></path><path d="M10 11v6M14 11v6"></path></svg>Usuń</button>
+            <button type="button" onClick="{{add}}" style="height: 54px; border: 0; border-radius: 27px; background: #1F3D2E; color: #F6F1E7; font-size: 16px; font-weight: 800">Zapisz zmiany</button>
+          </div>
+        </sc-if>
       </div>
     </div>
   </sc-if>
 
+  <sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}">
+    <div role="status" style="position: absolute; left: 16px; right: 16px; bottom: 104px; z-index: 8; display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 0 8px 0 18px; border-radius: 18px; background: #1F3D2E; color: #F6F1E7; box-shadow: 0 10px 26px rgba(31,61,46,0.3); box-sizing: border-box">
+      <span style="flex: 1; min-width: 0; font-size: 14px; font-weight: 700; line-height: 1.3">{{toastText}}</span>
+      <button type="button" onClick="{{undo}}" style="height: 40px; padding: 0 12px; border: 0; background: transparent; color: #E8C98E; font-size: 13px; font-weight: 800; letter-spacing: 1px">COFNIJ</button>
+    </div>
+  </sc-if>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"dzien":{"editor":"text","default":"","section":"Wybrany dzień (RRRR-MM-DD)"},"$preview":{"width":390,"height":844}}'>
+<script type="text/x-dc" data-dc-script data-props='{"dzien":{"editor":"text","default":"","section":"Wybrany dzień (RRRR-MM-DD)"},"demo":{"editor":"enum","options":["brak","przeciągnięcie w lewo","arkusz wydarzenia"],"default":"brak","section":"Stan do pokazania"},"$preview":{"width":390,"height":844}}'>
 var TODAY = '2026-10-09';
 var MONTHS = ['Styczeń', 'Luty', 'Marzec', 'Kwiecień', 'Maj', 'Czerwiec', 'Lipiec', 'Sierpień', 'Wrzesień', 'Październik', 'Listopad', 'Grudzień'];
 var MONTHS_GEN = ['stycznia', 'lutego', 'marca', 'kwietnia', 'maja', 'czerwca', 'lipca', 'sierpnia', 'września', 'października', 'listopada', 'grudnia'];
@@ -335,7 +356,47 @@ function inDays(n) { return n === 0 ? 'dziś' : (n === 1 ? 'jutro' : 'za ' + n +
 class Component extends DCLogic {
   constructor(props) {
     super(props);
-    this.state = { view: 'week', menu: false, sel: (props && props.dzien) || TODAY, events: SEED, types: BASE_TYPES, sheet: false, draft: '', dType: 'bday', allDay: false, tFrom: '18:00', tTo: '', dRem: 'Dzień wcześniej', nextId: 100, newType: false, ntName: '', ntColor: '#5E8C6A', typeId: 1, monthYear: 2026, monthIdx: 9 };
+    var demo = (props && props.demo) || 'brak';
+    this.state = { demo: demo, editId: null, drag: null, toast: null, toastId: 0, view: 'week', menu: false, sel: demo !== 'brak' ? '2026-10-10' : ((props && props.dzien) || TODAY), events: SEED, types: BASE_TYPES, sheet: false, draft: '', dType: 'bday', allDay: false, tFrom: '18:00', tTo: '', dRem: 'Dzień wcześniej', nextId: 100, newType: false, ntName: '', ntColor: '#5E8C6A', typeId: 1, monthYear: 2026, monthIdx: 9 };
+    if (demo === 'arkusz wydarzenia') Object.assign(this.state, this.editFields(SEED.filter(function (e) { return e.id === 3; })[0]));
+  }
+  editFields(e) {
+    var parts = (e.time || '').split('–');
+    var rem = /tydzień/.test(e.note || '') ? 'Tydzień wcześniej' : (/dzień wcześniej/.test(e.note || '') ? 'Dzień wcześniej' : 'Brak');
+    return { editId: e.id, sheet: true, menu: false, draft: e.title, dType: e.type, allDay: !e.time, tFrom: parts[0] || '18:00', tTo: parts[1] || '', dRem: rem };
+  }
+  showToast(text, prev) {
+    var self = this, tid = (this.state.toastId || 0) + 1;
+    this.setState({ toast: { text: text, events: prev }, toastId: tid, demo: 'brak' });
+    setTimeout(function () { if (self.state.toastId === tid) self.setState({ toast: null }); }, 4500);
+  }
+  deleteEvent(id) {
+    var s = this.state, ev = s.events.filter(function (e) { return e.id === id; })[0];
+    if (!ev) return;
+    var prev = s.events;
+    this.setState({ events: prev.filter(function (e) { return e.id !== id; }), sheet: false, editId: null });
+    this.showToast('Przeniesiono do kosza: ' + ev.title, prev);
+  }
+  dragStart(id, e) { this._drag = { id: id, x: e.clientX, y: e.clientY, dx: 0, moved: false }; }
+  dragMove(id, e) {
+    var d = this._drag; if (!d || d.id !== id) return;
+    var dx = e.clientX - d.x, dy = e.clientY - d.y;
+    if (!d.moved) {
+      if (Math.abs(dx) < 8) return;
+      if (Math.abs(dy) > Math.abs(dx)) { this._drag = null; return; }
+      d.moved = true;
+      try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) {}
+    }
+    d.dx = Math.max(-150, Math.min(0, dx));
+    this.setState({ drag: { id: id, dx: d.dx }, demo: 'brak' });
+  }
+  dragEnd(id) {
+    var d = this._drag; this._drag = null;
+    if (!d || d.id !== id || !d.moved) return;
+    var self = this;
+    this._justDragged = true; setTimeout(function () { self._justDragged = false; }, 60);
+    this.setState({ drag: null });
+    if (d.dx < -90) this.deleteEvent(id);
   }
   findType(id) {
     var t = this.state.types.filter(function (x) { return x.id === id; })[0];
@@ -366,7 +427,12 @@ class Component extends DCLogic {
     if (!t) return;
     var s = this.state;
     var time = s.allDay || !s.tFrom ? '' : (s.tFrom + (s.tTo ? '–' + s.tTo : ''));
-    var ev = { id: s.nextId, date: s.sel, type: s.dType, title: t, time: time, note: s.dRem === 'Brak' ? '' : 'Przypomnienie: ' + s.dRem.toLowerCase() };
+    var note = s.dRem === 'Brak' ? '' : 'Przypomnienie ' + s.dRem.toLowerCase();
+    if (s.editId != null) {
+      this.setState({ events: s.events.map(function (e) { return e.id === s.editId ? Object.assign({}, e, { title: t, type: s.dType, time: time, note: note }) : e; }), draft: '', sheet: false, editId: null });
+      return;
+    }
+    var ev = { id: s.nextId, date: s.sel, type: s.dType, title: t, time: time, note: note };
     this.setState({ events: s.events.concat([ev]), draft: '', nextId: s.nextId + 1, sheet: false });
   }
   renderVals() {
@@ -435,7 +501,19 @@ class Component extends DCLogic {
       return ra - rb || (a.time < b.time ? -1 : 1);
     }).map(function (e) {
       var T = self.findType(e.type);
+      var isDl = e.type === 'deadline';
+      var dragging = !!(s.drag && s.drag.id === e.id);
+      var dx = dragging ? s.drag.dx : (s.demo === 'przeciągnięcie w lewo' && e.id === 3 ? -116 : 0);
       return {
+        openLabel: isDl ? e.title + ' – termin zadania' : 'Otwórz wydarzenie ' + e.title,
+        open: function () { if (isDl || self._justDragged) return; self.setState(Object.assign(self.editFields(e), { demo: 'brak' })); },
+        bgStyle: 'position: absolute; left: 0; top: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: flex-end; padding: 0 22px; background: ' + (dx < 0 ? '#A4492F' : 'transparent'),
+        rightAct: 'display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 800; color: #FFFFFF; opacity: ' + (dx < 0 ? 1 : 0),
+        frontStyle: 'position: relative; display: flex; background: #FFFFFF; touch-action: pan-y; user-select: none; -webkit-user-select: none; transform: translateX(' + dx + 'px); transition: ' + (dragging ? 'none' : 'transform 180ms ease'),
+        pDown: function (ev) { if (!isDl) self.dragStart(e.id, ev); },
+        pMove: function (ev) { self.dragMove(e.id, ev); },
+        pUp: function () { self.dragEnd(e.id); },
+        pCancel: function () { self._drag = null; self.setState({ drag: null }); },
         title: e.title,
         time: e.time || (e.type === 'deadline' ? 'termin' : 'cały dzień'),
         meta: (T.name + (e.note ? ' · ' + e.note : '')).toUpperCase(),
@@ -487,11 +565,18 @@ class Component extends DCLogic {
       later: later,
       showLater: isWeek && later.length > 0,
       sheetOpen: s.sheet,
-      closeSheet: function () { self.setState({ sheet: false }); },
+      closeSheet: function () { self.setState({ sheet: false, editId: null, draft: '' }); },
+      sheetA: s.editId != null ? 'Edytuj' : 'Nowe',
+      isNewEv: s.editId == null,
+      isEditEv: s.editId != null,
+      delEv: function () { if (s.editId != null) self.deleteEvent(s.editId); },
+      hasToast: !!s.toast,
+      toastText: s.toast ? s.toast.text : '',
+      undo: function () { if (s.toast) self.setState({ events: s.toast.events, toast: null }); },
       menuOpen: s.menu,
       openMenu: function () { self.setState({ menu: true }); },
       closeMenu: function () { self.setState({ menu: false }); },
-      newEvent: function () { self.setState({ menu: false, sheet: true }); },
+      newEvent: function () { self.setState({ menu: false, sheet: true, editId: null, draft: '' }); },
       draft: s.draft,
       setDraft: function (e) { self.setState({ draft: e.target.value }); },
       onKey: function (e) { if (e.key === 'Enter') self.addEvent(); },

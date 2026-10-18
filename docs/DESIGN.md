@@ -25,9 +25,10 @@ Styl „domowy elegancki”: butelkowa zieleń, mosiądz i krem, szeryfowy Fraun
 | 3a Gesty | `ZadaniaPrawo`, `ZadaniaLewo` | Odsłonięte tło przy przeciąganiu w prawo (ogarnij) i w lewo (do kosza) |
 | 3a Arkusz zadania | `ZadaniaArkusz` | Edycja w miejscu: nazwa, kategoria, priorytet, termin, kroki; Usuń / Ogarnij |
 | 3a Wyczyść ogarnięte | `ZadaniaWyczysc` | Zakładka Ogarnięte + arkusz: starsze niż 7 dni / 30 dni / wszystkie |
-| 3a Kosz | `Kosz.dc.html` (+ `KoszPotwierdzenie`) | Lista usuniętych z licznikiem dni, Przywróć, Opróżnij kosz z potwierdzeniem |
-| 4 Kalendarz | `Kalendarz.dc.html` | Tydzień/miesiąc, agenda, arkusz wydarzenia |
-| 5 Ustawienia | `Ustawienia.dc.html` | Ty, Wspólny dom, Zadania (sprzątanie ogarniętych 7/30 dni/nigdy, Kosz), Powiadomienia, Wygląd (motyw – ukryty na start) |
+| 3a Kosz | `Kosz.dc.html` (+ `KoszPotwierdzenie`) | Wspólny kosz zadań i wydarzeń (wejście z Ustawień): chipy Wszystko / Zadania / Wydarzenia, licznik dni, Przywróć, Opróżnij kosz z potwierdzeniem |
+| 4a Kalendarz – usuwanie | `KalendarzLewo`, `KalendarzArkusz` | Przeciągnięcie wydarzenia w lewo = do kosza; klik w wydarzenie = arkusz wydarzenia. **Arkusz zostaje jak w aplikacji** (edycja w miejscu z polem DZIEŃ i „Gotowe”, nie „Edytuj wydarzenie / Zapisz zmiany” z projektu – decyzja Hani 2026-10-18) |
+| 4 Kalendarz | `Kalendarz.dc.html` | Tydzień/miesiąc, agenda, arkusz nowego i edytowanego wydarzenia, przeciąganie w lewo, pasek „Cofnij”; wariant `demo` |
+| 5 Ustawienia | `Ustawienia.dc.html` | Ty, Wspólny dom, Porządki (sprzątanie ogarniętych 7/30 dni/nigdy, Kosz), Powiadomienia, Wygląd (motyw – ukryty na start) |
 | 5a Synchronizacja / Domownicy | `Synchronizacja.dc.html` | Teksty i zmiany wg `docs/TEKSTY.md` (bez trybu lokalnego, Wi‑Fi i „Synchronizuj teraz”) |
 | 5b Zmiany od domownika | `Import.dc.html` | Nowe, zmienione, „Do decyzji” |
 | 5c–d Zaproś domownika | `Zaproszenie.dc.html`, `ZaproszenieGotowe.dc.html` | Dodać opcję „jednorazowy link” |
@@ -116,16 +117,24 @@ Zakupy `#5E8C6A` · Dom `#B8925A` · Zdrowie `#A4492F` · Urzędy `#6E5F8C` · A
 - Pod listą jednozdaniowa podpowiedź o gestach.
 - Na iPhonie gest zaczyna się na wierszu (margines 16 px od krawędzi), żeby nie wywołać „wstecz” w Safari.
 - Usunięcie zadania lub wydarzenia (gest w lewo, „Usuń” w arkuszu) zawsze poprzedza okienko „Usunąć zadanie?” / „Usunąć wydarzenie?” z tekstem „„…” trafi do kosza. Możesz je przywrócić przez 30 dni.” (Anuluj / Usuń); po usunięciu pasek COFNIJ (ustalone 2026-10-18).
-- Kalendarz: wydarzenie jak zadanie – dotknięcie = arkusz z edycją w miejscu, w lewo = do kosza; termin zadania w kalendarzu = wiersz zadania (w prawo ogarnij). Tak samo wiersze w „Później”; po zamknięciu arkusza kalendarz przechodzi do dnia wpisu. Kosz zbiera zadania i wydarzenia (ustalone 2026-10-18).
+- Kalendarz: wydarzenie jak zadanie – dotknięcie = arkusz z edycją w miejscu, w lewo = do kosza; termin zadania w kalendarzu = wiersz zadania (dotknięcie = arkusz zadania, w prawo ogarnij, w lewo do kosza). Tak samo wiersze w „Później”; po zamknięciu arkusza kalendarz przechodzi do dnia wpisu (ustalone 2026-10-18). Te zasady mają pierwszeństwo przed aktualizacją projektu 2, w której terminów zadań nie dało się ruszać z kalendarza, a pytania przed usunięciem nie było (decyzja Hani 2026-10-18).
 - Odhaczenie wszystkich podzadań ogarnia zadanie; odznaczenie kroku w ogarniętym zadaniu przywraca je (ustalone 2026-10-18).
 
 ### Zakładki i kosz
 
 - Zakładki pod nagłówkiem: „Do zrobienia N · Ogarnięte N” (przełącznik segmentowy jak w Kalendarzu).
 - Ogarnięte pogrupowane: Dziś, Wczoraj, W tym tygodniu, Wcześniej; przy zadaniu kto ogarnął („OGARNĘŁA HANIA / OGARNĄŁ KRZYŚ”) i kiedy (godzina, „wczoraj”, data).
-- W zakładce Ogarnięte: przycisk „Wyczyść” (arkusz: starsze niż 7 dni / 30 dni / wszystkie, z licznikiem) i link „KOSZ · N”.
-- Kosz: usunięte czekają 30 dni („zniknie za N dni”, czerwone gdy ≤ 5), „Przywróć” przy każdym, „Opróżnij kosz” z potwierdzeniem „Usunąć na zawsze?”.
-- Ustawienia → Zadania: „Sprzątanie ogarniętych: po 7 dniach / po 30 dniach / nigdy” (domyślnie 30) i wejście do Kosza.
+- W zakładce Ogarnięte: „Najnowsze na górze” i przycisk „Wyczyść” (arkusz: starsze niż 7 dni / 30 dni / wszystkie, z licznikiem). Bez linku do kosza.
+- **Kosz jest jeden, wspólny dla zadań i wydarzeń.** Stałe wejście: Ustawienia → Porządki → Kosz („5 ELEMENTÓW · ZADANIA I WYDARZENIA”). Na ekranach Zadania i Kalendarz nie ma ikony ani linku do kosza – pomyłki naprawia pasek „Cofnij”.
+- Ekran Kosza: powrót „‹ USTAWIENIA”; chipy Wszystko · Zadania · Wydarzenia z licznikami; przy elemencie ikonka rodzaju (kwadracik w kolorze kategorii albo kalendarz w kolorze rodzaju wydarzenia); zadanie: kategoria · kto usunął · kiedy; wydarzenie: rodzaj · data i godzina · kto usunął.
+- Usunięte czekają 30 dni („zniknie za N dni”, czerwone gdy ≤ 5); „Przywróć” odkłada element na miejsce (lista zadań / kalendarz); „Opróżnij kosz” z potwierdzeniem „Usunąć na zawsze?”.
+- Ustawienia → Porządki: „Sprzątanie ogarniętych: po 7 dniach / po 30 dniach / nigdy” (domyślnie 30) i wejście do Kosza.
+
+### Kalendarz – edycja i usuwanie
+
+- Klik w wydarzenie (agenda dnia i „Później”) = arkusz wydarzenia z edycją w miejscu (nazwa, rodzaj, dzień, cały dzień / od–do, przypomnienie), na dole „Usuń” (obrys terakota) i „Gotowe”.
+- Przeciągnięcie wydarzenia w lewo (> ~90 px) = do kosza (tło `#A4492F`, „Usuń”), po pytaniu „Usunąć wydarzenie?”. W prawo nic nie robi (przy terminie zadania – ogarnij).
+- Po usunięciu pasek „Przeniesiono do kosza: … · COFNIJ”.
 
 ### Pozostałe
 
@@ -149,7 +158,8 @@ houses/{houseId}/tasks/{id}         title, categoryId, priority(high|mid|low), d
                                     subtasks[{id,title,done}], createdBy, doneAt, doneBy,
                                     deleted(bool), deletedAt, deletedBy, updatedAt, updatedBy
 houses/{houseId}/eventTypes/{id}    name, dot, bg, fg, icon, system
-houses/{houseId}/events/{id}        title, date, allDay, from, to, typeId, remind, note, updatedAt, updatedBy, deleted
+houses/{houseId}/events/{id}        title, date, allDay, from, to, typeId, remind, note, createdBy,
+                                    deleted(bool), deletedAt, deletedBy, updatedAt, updatedBy
 invites/{code}              houseId, createdBy, expiresAt, usedBy|null, scope
 ```
 

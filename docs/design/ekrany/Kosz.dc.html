@@ -35,9 +35,9 @@ input{font-family:inherit}
       </svg>
       <div style="position: relative; height: 100%; box-sizing: border-box; padding: 6px 14px 16px 8px; display: flex; flex-direction: column; justify-content: space-between">
         <div style="display: flex; align-items: center; justify-content: space-between">
-          <a href="ZadaniaOgarniete.dc.html" style="display: inline-flex; align-items: center; gap: 2px; min-height: 44px; padding: 0 10px 0 4px; color: #E8C98E; font-size: 11px; font-weight: 800; letter-spacing: 1.6px; text-decoration: none">
+          <a href="Ustawienia.dc.html" style="display: inline-flex; align-items: center; gap: 2px; min-height: 44px; padding: 0 10px 0 4px; color: #E8C98E; font-size: 11px; font-weight: 800; letter-spacing: 1.6px; text-decoration: none">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
-            OGARNIĘTE
+            USTAWIENIA
           </a>
           <span style="font-size: 11px; font-weight: 800; letter-spacing: 1.2px; color: #A9C2B2">30 DNI NA ODZYSKANIE</span>
         </div>
@@ -48,19 +48,35 @@ input{font-family:inherit}
       </div>
     </div>
 
-    <span style="padding: 0 4px; font-size: 14px; line-height: 1.45; color: #4F5B53">Usunięte zadania czekają tu 30 dni. Możesz je przywrócić – potem znikną same, u wszystkich domowników.</span>
+    <span style="padding: 0 4px; font-size: 14px; line-height: 1.45; color: #4F5B53">Usunięte zadania i wydarzenia czekają tu 30 dni. Możesz je przywrócić – potem znikną same, u wszystkich domowników.</span>
+
+    <sc-if value="{{hasAny}}" hint-placeholder-val="{{ true }}">
+      <div role="group" aria-label="Pokaż" style="display: flex; flex-wrap: wrap; gap: 8px">
+        <sc-for list="{{kinds}}" as="k" hint-placeholder-count="3">
+          <button type="button" onClick="{{k.pick}}" aria-pressed="{{k.on}}" style="{{k.style}}">{{k.name}} <span style="opacity: 0.65; font-weight: 600">{{k.count}}</span></button>
+        </sc-for>
+      </div>
+    </sc-if>
 
     <sc-if value="{{isEmpty}}" hint-placeholder-val="{{ false }}">
       <div style="display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 36px 20px; border-radius: 22px; background: #FFFFFF; box-shadow: 0 6px 20px rgba(31,61,46,0.07); text-align: center; color: #5E6D63">
         <span style="width: 56px; height: 56px; border-radius: 28px; background: #EDE6D8; color: #7A5C2C; display: flex; align-items: center; justify-content: center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"></path><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path><path d="M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12"></path><path d="M10 11v6M14 11v6"></path></svg></span>
-        <span style="font-family: 'Fraunces', serif; font-style: italic; font-size: 18px; color: #1F3D2E">Kosz jest pusty</span>
+        <span style="font-family: 'Fraunces', serif; font-style: italic; font-size: 18px; color: #1F3D2E">{{emptyLabel}}</span>
       </div>
     </sc-if>
 
     <sc-if value="{{hasItems}}" hint-placeholder-val="{{ true }}">
       <div style="display: flex; flex-direction: column; background: #FFFFFF; border-radius: 22px; box-shadow: 0 6px 20px rgba(31,61,46,0.07); overflow: hidden">
         <sc-for list="{{items}}" as="it" hint-placeholder-count="3">
-          <div style="display: flex; align-items: center; gap: 12px; padding: 12px 12px 12px 18px; min-height: 72px; border-bottom: 1px solid #EFE8DA; box-sizing: border-box">
+          <div style="display: flex; align-items: center; gap: 12px; padding: 12px 12px 12px 14px; min-height: 72px; border-bottom: 1px solid #EFE8DA; box-sizing: border-box">
+            <span aria-hidden="true" style="{{it.iconBox}}">
+              <sc-if value="{{it.isTask}}" hint-placeholder-val="{{ true }}">
+                <span style="{{it.taskBox}}"></span>
+              </sc-if>
+              <sc-if value="{{it.isEvent}}" hint-placeholder-val="{{ false }}">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="15" rx="4"></rect><path d="M4 10h16M9 3v4M15 3v4"></path></svg>
+              </sc-if>
+            </span>
             <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px">
               <span style="font-size: 16px; font-weight: 700; color: #5E6D63">{{it.title}}</span>
               <span style="display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 800; letter-spacing: 0.8px; color: #5E6D63"><span style="{{it.dot}}"></span>{{it.meta}}</span>
@@ -111,7 +127,7 @@ input{font-family:inherit}
       <div role="alertdialog" aria-label="Opróżnij kosz" style="position: absolute; left: 0; right: 0; bottom: 0; box-sizing: border-box; background: #FFFCF6; border-radius: 30px 30px 0 0; padding: 12px 22px 28px; display: flex; flex-direction: column; gap: 14px">
         <div style="width: 40px; height: 4px; border-radius: 4px; background: #D9D0BE; align-self: center"></div>
         <span style="font-family: 'Fraunces', serif; font-size: 26px; font-weight: 500">Usunąć <em style="font-style: italic; color: #A4492F">na zawsze?</em></span>
-        <span style="font-size: 15px; line-height: 1.45; color: #4F5B53">{{confirmText}} Tego nie da się cofnąć – zadania znikną też u Krzysia.</span>
+        <span style="font-size: 15px; line-height: 1.45; color: #4F5B53">{{confirmText}} Tego nie da się cofnąć – znikną też u Krzysia.</span>
         <div style="display: grid; grid-template-columns: 1fr 1.4fr; gap: 8px; margin-top: 4px">
           <button type="button" onClick="{{cancelEmpty}}" style="height: 54px; border: 1px solid #D9D0BE; border-radius: 27px; background: #FFFFFF; color: #1F3D2E; font-size: 16px; font-weight: 700">Anuluj</button>
           <button type="button" onClick="{{doEmpty}}" style="height: 54px; border: 0; border-radius: 27px; background: #A4492F; color: #FFFFFF; font-size: 16px; font-weight: 800">Usuń na zawsze</button>
@@ -123,18 +139,24 @@ input{font-family:inherit}
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"etap":{"editor":"enum","options":["lista","potwierdzenie","pusty"],"default":"lista","section":"Stan do pokazania"},"$preview":{"width":390,"height":844}}'>
 var CAT = { shop: { name: 'Zakupy', color: '#5E8C6A' }, home: { name: 'Dom', color: '#B8925A' }, health: { name: 'Zdrowie', color: '#A4492F' }, office: { name: 'Urzędy', color: '#6E5F8C' }, car: { name: 'Auto', color: '#4D7A93' }, family: { name: 'Rodzina', color: '#1F3D2E' } };
+var TYPES = { event: { name: 'Wydarzenie', bg: '#DCE6EC', fg: '#2F5670' }, party: { name: 'Impreza', bg: '#E4E0EC', fg: '#553A7C' }, bday: { name: 'Urodziny', bg: '#F5DDE6', fg: '#7D2953' }, doctor: { name: 'Lekarz', bg: '#DDE8DF', fg: '#2F5A43' } };
 var SEED = [
-  { id: 1, title: 'Kupić nowy czajnik', cat: 'shop', ago: 2, who: 'Hania' },
-  { id: 2, title: 'Umówić przegląd pieca', cat: 'home', ago: 9, who: 'Krzyś' },
-  { id: 3, title: 'Odnowić kartę biblioteczną', cat: 'family', ago: 27, who: 'Hania' }
+  { id: 1, kind: 'task', title: 'Kupić nowy czajnik', cat: 'shop', ago: 2, who: 'Hania' },
+  { id: 4, kind: 'event', title: 'Basen z dziećmi', type: 'event', when: 'ŚR 14 PAŹ · 17:00', ago: 1, who: 'Krzyś' },
+  { id: 2, kind: 'task', title: 'Umówić przegląd pieca', cat: 'home', ago: 9, who: 'Krzyś' },
+  { id: 5, kind: 'event', title: 'Kolacja u Nowaków', type: 'party', when: 'PT 23 PAŹ · 19:00', ago: 12, who: 'Hania' },
+  { id: 3, kind: 'task', title: 'Odnowić kartę biblioteczną', cat: 'family', ago: 27, who: 'Hania' }
 ];
-function plural(n) { return n === 1 ? 'zadanie' : ((n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20)) ? 'zadania' : 'zadań'); }
+function elems(n) { return n === 1 ? 'element' : ((n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20)) ? 'elementy' : 'elementów'); }
 function days(n) { return n === 1 ? '1 dzień' : n + ' dni'; }
+function chip(on) {
+  return 'display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px; border-radius: 18px; font-size: 14px; font-weight: 700; white-space: nowrap; border: 1px solid ' + (on ? '#1F3D2E' : '#D9D0BE') + '; background: ' + (on ? '#1F3D2E' : 'transparent') + '; color: ' + (on ? '#F6F1E7' : '#1F3D2E');
+}
 class Component extends DCLogic {
   constructor(props) {
     super(props);
     var etap = (props && props.etap) || 'lista';
-    this.state = { items: etap === 'pusty' ? [] : SEED, confirm: etap === 'potwierdzenie', toast: null, toastId: 0 };
+    this.state = { items: etap === 'pusty' ? [] : SEED, kind: 'all', confirm: etap === 'potwierdzenie', toast: null, toastId: 0 };
   }
   renderVals() {
     var self = this, s = this.state;
@@ -144,29 +166,44 @@ class Component extends DCLogic {
       setTimeout(function () { if (self.state.toastId === tid) self.setState({ toast: null }); }, 4500);
     }
     var n = s.items.length;
+    var nT = s.items.filter(function (x) { return x.kind === 'task'; }).length;
+    var shown = s.items.filter(function (x) { return s.kind === 'all' || x.kind === s.kind; });
     return {
-      countLabel: n ? n + ' ' + plural(n) : 'pusto',
-      isEmpty: n === 0,
-      hasItems: n > 0,
-      items: s.items.map(function (it) {
-        var c = CAT[it.cat], left = 30 - it.ago;
+      countLabel: n ? n + ' ' + elems(n) : 'pusto',
+      hasAny: n > 0,
+      isEmpty: shown.length === 0,
+      hasItems: shown.length > 0,
+      kinds: [{ id: 'all', name: 'Wszystko', count: n }, { id: 'task', name: 'Zadania', count: nT }, { id: 'event', name: 'Wydarzenia', count: n - nT }].map(function (k) {
+        var on = s.kind === k.id;
+        return { name: k.name, count: k.count, on: on, style: chip(on), pick: function () { self.setState({ kind: k.id }); } };
+      }),
+      items: shown.map(function (it) {
+        var left = 30 - it.ago, isTask = it.kind === 'task';
+        var who = it.who === 'Krzyś' ? 'USUNĄŁ KRZYŚ' : 'USUNĘŁA HANIA';
+        var ago = it.ago === 1 ? 'WCZORAJ' : days(it.ago).toUpperCase() + ' TEMU';
+        var c = isTask ? CAT[it.cat] : null, T = isTask ? null : TYPES[it.type];
         return {
           title: it.title,
-          dot: 'width: 8px; height: 8px; border-radius: 4px; flex: none; background: ' + c.color,
-          meta: c.name.toUpperCase() + ' · ' + (it.who === 'Krzyś' ? 'USUNĄŁ KRZYŚ' : 'USUNĘŁA HANIA') + ' · ' + (it.ago === 1 ? 'WCZORAJ' : days(it.ago).toUpperCase() + ' TEMU'),
+          isTask: isTask,
+          isEvent: !isTask,
+          iconBox: 'width: 36px; height: 36px; border-radius: 12px; flex: none; display: flex; align-items: center; justify-content: center; background: ' + (isTask ? '#F6F1E7' : T.bg) + '; color: ' + (isTask ? '#1F3D2E' : T.fg),
+          taskBox: 'width: 18px; height: 18px; border-radius: 6px; box-sizing: border-box; border: 2px solid ' + (isTask ? c.color : '#B8925A'),
+          dot: 'width: 8px; height: 8px; border-radius: 4px; flex: none; display: ' + (isTask ? 'inline-block' : 'none') + '; background: ' + (isTask ? c.color : 'transparent'),
+          meta: isTask ? (c.name.toUpperCase() + ' · ' + who + ' · ' + ago) : (T.name.toUpperCase() + ' · ' + it.when + ' · ' + who),
           left: 'zniknie za ' + days(left),
           leftStyle: "font-family: 'Fraunces', serif; font-style: italic; font-size: 13px; color: " + (left <= 5 ? '#A4492F' : '#7A5C2C'),
           restore: function () {
             var prev = s.items;
             self.setState({ items: s.items.filter(function (x) { return x.id !== it.id; }) });
-            toast('Przywrócono do „Do zrobienia”: ' + it.title, prev);
+            toast((isTask ? 'Wróciło do zadań: ' : 'Wróciło do kalendarza: ') + it.title, prev);
           }
         };
       }),
+      emptyLabel: n === 0 ? 'Kosz jest pusty' : (s.kind === 'task' ? 'Brak usuniętych zadań' : 'Brak usuniętych wydarzeń'),
       askEmpty: function () { self.setState({ confirm: true }); },
       cancelEmpty: function () { self.setState({ confirm: false }); },
       confirmOpen: s.confirm && n > 0,
-      confirmText: 'W koszu ' + (n === 1 ? 'jest 1 zadanie.' : (plural(n) === 'zadania' ? 'są ' : 'jest ') + n + ' ' + plural(n) + '.'),
+      confirmText: 'W koszu ' + (n === 1 ? 'jest 1 element.' : (elems(n) === 'elementy' ? 'są ' : 'jest ') + n + ' ' + elems(n) + ' – zadania i wydarzenia.'),
       doEmpty: function () { self.setState({ items: [], confirm: false, toast: null }); },
       hasToast: !!s.toast,
       toastText: s.toast ? s.toast.text : '',
