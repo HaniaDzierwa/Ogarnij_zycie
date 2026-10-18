@@ -1,12 +1,11 @@
 import { useState } from 'react'
-import { Link, useSearchParams } from 'react-router'
-import { paths } from '../../app/screens.ts'
+import { useSearchParams } from 'react-router'
 import { Accent, Header } from '../../components/Header.tsx'
 import { TabBar } from '../../components/TabBar.tsx'
 import { UndoToast } from '../../components/UndoToast.tsx'
 import { useConfirmDelete } from '../../components/useConfirmDelete.tsx'
 import { Box, Dot, SyncBadge } from '../../components/ui.tsx'
-import { ChevronRightIcon, CloseIcon, SlidersIcon, TrashIcon } from '../../components/icons.tsx'
+import { CloseIcon, SlidersIcon, TrashIcon } from '../../components/icons.tsx'
 import { shortDayLabel, whenLabel } from '../../data/dates.ts'
 import { useStore } from '../../data/MockStore.tsx'
 import { plural } from '../../data/plural.ts'
@@ -68,8 +67,6 @@ export function TasksScreen() {
   const cats = categoriesWithNone(categories, tasks)
   const view = tasksView(tasks, categories, { show, category, groupBy })
   const done = doneGroups(tasks, today)
-  const trashCount =
-    tasks.filter((t) => t.deleted).length + store.events.filter((e) => e.deleted).length
   const categoryName = (t: Task) => cats.find((c) => c.id === categoryKey(t))?.name ?? ''
   const activeCount = (show !== 'all' ? 1 : 0) + (category !== 'all' ? 1 : 0)
   const allCollapsed = view.groups.length > 0 && view.groups.every((g) => collapsed[g.key])
@@ -349,10 +346,14 @@ export function TasksScreen() {
 
         {tab === 'done' && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ paddingLeft: 4, fontSize: 13, color: colors.muted }}>
+              Najnowsze na górze
+            </span>
             <button
               type="button"
               onClick={() => setClearOpen(true)}
               style={{
+                marginLeft: 'auto',
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: 6,
@@ -369,25 +370,6 @@ export function TasksScreen() {
               <TrashIcon />
               Wyczyść
             </button>
-            <Link
-              to={paths.kosz}
-              style={{
-                marginLeft: 'auto',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 4,
-                height: 36,
-                padding: '0 4px 0 8px',
-                color: colors.brass700,
-                fontSize: 12,
-                fontWeight: 800,
-                letterSpacing: '0.6px',
-                textDecoration: 'none',
-              }}
-            >
-              KOSZ · {trashCount}
-              <ChevronRightIcon size={16} />
-            </Link>
           </div>
         )}
       </div>

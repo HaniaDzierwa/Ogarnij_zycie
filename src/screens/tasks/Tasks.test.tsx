@@ -83,7 +83,9 @@ test('w lewo = do kosza (przycisk dla czytników), pasek i licznik KOSZ', () => 
   )
   expect(screen.getByText('11 otwartych')).toBeDefined()
   fireEvent.click(tab(/Ogarnięte/))
-  expect(screen.getByRole('link', { name: /KOSZ · 4/ })).toBeDefined()
+  // Kosz tylko z Ustawień – w Ogarniętych bez linku
+  expect(screen.getByText('Najnowsze na górze')).toBeDefined()
+  expect(screen.queryByRole('link', { name: /KOSZ/ })).toBeNull()
 })
 
 test('klik w treść otwiera arkusz zadania; edycja w miejscu, „Gotowe” zamyka', () => {
@@ -206,20 +208,42 @@ test('„+” → „Zadanie”: nowe zadanie trafia na listę', () => {
   expect(screen.getByText('13 otwartych')).toBeDefined()
 })
 
-test('Kosz: lista, „zniknie za N dni”, przywracanie z „Cofnij”, opróżnianie z potwierdzeniem', () => {
-  renderAt('/zadania/kosz')
-  expect(screen.getByText('3 zadania')).toBeDefined()
+test('Kosz (z Ustawień): zadania i wydarzenia, chipy, przywracanie z „Cofnij”, opróżnianie', () => {
+  renderAt('/ustawienia/kosz')
+  expect(screen.getByRole('link', { name: /USTAWIENIA/ }).getAttribute('href')).toBe('/ustawienia')
+  expect(screen.getByText('5 elementów')).toBeDefined()
   expect(screen.getByText(/ZAKUPY · USUNĘŁA HANIA · 2 DNI TEMU/)).toBeDefined()
-  expect(screen.getByText(/DOM · USUNĄŁ KRZYŚ · 9 DNI TEMU/)).toBeDefined()
+  expect(screen.getByText(/WYDARZENIE · ŚR 14 PAŹ · 17:00 · USUNĄŁ KRZYŚ/)).toBeDefined()
+  expect(screen.getByText(/IMPREZA · PT 23 PAŹ · 19:00 · USUNĘŁA HANIA/)).toBeDefined()
   expect(screen.getByText('zniknie za 3 dni')).toBeDefined()
+  // najnowsze najpierw
+  expect(
+    screen.getAllByRole('button', { name: /^Przywróć: / }).map((x) => x.getAttribute('aria-label')),
+  ).toEqual([
+    'Przywróć: Basen z dziećmi',
+    'Przywróć: Kupić nowy czajnik',
+    'Przywróć: Umówić przegląd pieca',
+    'Przywróć: Kolacja u Nowaków',
+    'Przywróć: Odnowić kartę biblioteczną',
+  ])
+
+  click(/^Zadania/)
+  expect(screen.queryByText('Basen z dziećmi')).toBeNull()
+  expect(screen.getAllByRole('button', { name: /^Przywróć: / })).toHaveLength(3)
+  click(/^Wydarzenia/)
+  expect(screen.getAllByRole('button', { name: /^Przywróć: / })).toHaveLength(2)
+  click(/^Wszystko/)
+
   click('Przywróć: Kupić nowy czajnik')
-  expect(screen.getByText('2 zadania')).toBeDefined()
+  expect(screen.getByRole('status').textContent).toContain('Wróciło do zadań: Kupić nowy czajnik')
+  expect(screen.getByText('4 elementy')).toBeDefined()
   click('COFNIJ')
-  expect(screen.getByText('3 zadania')).toBeDefined()
+  expect(screen.getByText('5 elementów')).toBeDefined()
+
   click('Opróżnij kosz')
   const sheet = screen.getByRole('dialog', { name: 'Opróżnij kosz' })
   expect(sheet.textContent).toContain(
-    'W koszu są 3 zadania. Tego nie da się cofnąć – zadania znikną też u Krzysia.',
+    'W koszu jest 5 elementów – zadania i wydarzenia. Tego nie da się cofnąć – znikną też u Krzysia.',
   )
   fireEvent.click(within(sheet).getByRole('button', { name: 'Usuń na zawsze' }))
   expect(screen.getByText('Kosz jest pusty')).toBeDefined()

@@ -47,7 +47,8 @@ export const paths = {
   zadaniaPilne: '/zadania?pokaz=pilne',
   /** Zakładka „Ogarnięte”. */
   zadaniaOgarniete: '/zadania?zakladka=ogarniete',
-  kosz: '/zadania/kosz',
+  /** Wspólny Kosz zadań i wydarzeń (Ustawienia → Porządki). */
+  kosz: '/ustawienia/kosz',
   /** Zadania z otwartym arkuszem „Nowe zadanie” (menu „+”). */
   zadaniaNowe: '/zadania?nowe=zadanie',
   kalendarz: '/kalendarz',
@@ -157,9 +158,9 @@ export const screens: Screen[] = [
     number: '3a',
     name: 'Kosz',
     source: 'Kosz.dc.html, KoszPotwierdzenie.dc.html',
-    tab: 'zadania',
-    back: { to: paths.zadaniaOgarniete, label: 'OGARNIĘTE' },
-    transitions: [{ label: 'Wróć do Ogarniętych', to: paths.zadaniaOgarniete }],
+    tab: 'ustawienia',
+    back: { to: paths.ustawienia, label: 'USTAWIENIA' },
+    transitions: [{ label: 'Wróć do Ustawień', to: paths.ustawienia }],
   },
   {
     id: 'kalendarz',
@@ -180,7 +181,7 @@ export const screens: Screen[] = [
     transitions: [
       ...tabs,
       { label: 'Wspólny dom → Domownicy', to: paths.domownicy },
-      { label: 'Zadania → Kosz', to: paths.kosz },
+      { label: 'Porządki → Kosz', to: paths.kosz },
     ],
   },
   {

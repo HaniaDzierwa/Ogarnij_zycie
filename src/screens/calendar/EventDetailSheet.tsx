@@ -15,6 +15,7 @@ export function EventDetailSheet({
   event,
   eventTypes,
   status,
+  meta,
   onChange,
   onDelete,
   onClose,
@@ -23,6 +24,8 @@ export function EventDetailSheet({
   eventTypes: EventType[]
   /** „URODZINY · PIĄTEK, 16 PAŹDZIERNIKA” */
   status: string
+  /** „Dodane przez: Hania” */
+  meta: string
   onChange: (update: (e: CalendarEvent) => CalendarEvent) => void
   onDelete: () => void
   onClose: () => void
@@ -256,7 +259,7 @@ export function EventDetailSheet({
         </button>
       </div>
       <span style={{ fontSize: 12, color: colors.muted, textAlign: 'center' }}>
-        Zmiany zapisują się od razu
+        {meta} · zmiany zapisują się od razu
       </span>
     </Sheet>
   )

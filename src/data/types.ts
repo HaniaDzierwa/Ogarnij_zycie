@@ -49,6 +49,8 @@ export type CalendarEvent = {
   to: string | null
   typeId: string
   remind: Remind
+  /** uid domownika, który dodał wydarzenie. */
+  createdBy: string
   /** Dopisek pod tytułem, np. „Co roku”, „Przynieść wino”. */
   note: string
   /** Usunięte (miękko, jak zadania w koszu). */

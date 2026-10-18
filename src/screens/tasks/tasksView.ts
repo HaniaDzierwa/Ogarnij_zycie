@@ -2,7 +2,6 @@
 
 import { noCategory, priorities, type Priority } from '../../theme'
 import { diffDays, stampDay, type DateKey } from '../../data/dates.ts'
-import { plural } from '../../data/plural.ts'
 import type { CalendarEvent, Category, Task } from '../../data/types.ts'
 
 export type Show = 'all' | Priority
@@ -179,16 +178,6 @@ export function trashItems(tasks: Task[], events: CalendarEvent[], today: DateKe
       })),
   ]
   return items.sort((a, b) => b.at.localeCompare(a.at))
-}
-
-const zadania = (n: number) => `${n} ${plural(n, ['zadanie', 'zadania', 'zadań'])}`
-const wydarzenia = (n: number) => `${n} ${plural(n, ['wydarzenie', 'wydarzenia', 'wydarzeń'])}`
-
-/** „3 zadania i 1 wydarzenie”, „3 zadania”, „1 wydarzenie”; pusto, gdy nic. */
-export function trashCountLabel(items: TrashItem[], join = ' i '): string {
-  const t = items.filter((i) => i.kind === 'task').length
-  const e = items.length - t
-  return [t && zadania(t), e && wydarzenia(e)].filter(Boolean).join(join)
 }
 
 /** „zadania”, „wydarzenia”, „zadania i wydarzenia” – co jest w koszu. */

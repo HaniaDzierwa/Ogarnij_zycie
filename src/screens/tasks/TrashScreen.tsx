@@ -3,63 +3,102 @@ import { paths } from '../../app/screens.ts'
 import { Accent, Header } from '../../components/Header.tsx'
 import { TabBar } from '../../components/TabBar.tsx'
 import { UndoToast } from '../../components/UndoToast.tsx'
-import { Dot, Screen, Sheet } from '../../components/ui.tsx'
-import { TrashIcon, UndoIcon } from '../../components/icons.tsx'
+import { Chip, Dot, Screen, Sheet } from '../../components/ui.tsx'
+import { CalendarIcon, TrashIcon, UndoIcon } from '../../components/icons.tsx'
+import { DAYS_SHORT, MONTHS_SHORT, parseKey } from '../../data/dates.ts'
+import { restoreEvent } from '../../data/eventOps.ts'
 import { useStore } from '../../data/MockStore.tsx'
 import { plural } from '../../data/plural.ts'
-import { MONTHS_SHORT, parseKey } from '../../data/dates.ts'
-import { restoreEvent } from '../../data/eventOps.ts'
 import { restoreFromTrash } from '../../data/taskOps.ts'
 import { colors, fonts, noCategory, priorities, shadows } from '../../theme'
-import { trashCountLabel, trashItems, trashWhat, TRASH_DAYS, type TrashItem } from './tasksView.ts'
+import { trashItems, trashWhat, TRASH_DAYS, type TrashItem } from './tasksView.ts'
 
+const elementow = (n: number) => `${n} ${plural(n, ['element', 'elementy', 'elementów'])}`
 const dni = (n: number) => (n === 1 ? '1 dzień' : `${n} dni`)
 
-/** 3a Kosz (Kosz.dc.html): usunięte zadania i wydarzenia czekają 30 dni na przywrócenie. */
+type Kind = 'all' | 'task' | 'event'
+
+/**
+ * 3a Kosz (Kosz.dc.html): jeden wspólny na zadania i wydarzenia, wejście z Ustawienia → Porządki.
+ * Usunięte czekają 30 dni na przywrócenie.
+ */
 export function TrashScreen() {
   const store = useStore()
   const { tasks, events, eventTypes, today, categories, members, currentUid } = store
+  const [kind, setKind] = useState<Kind>('all')
   const [confirm, setConfirm] = useState(false)
   const items = trashItems(tasks, events, today)
   const n = items.length
+  const nTasks = items.filter((i) => i.kind === 'task').length
+  const shown = items.filter((i) => kind === 'all' || i.kind === kind)
 
   const others = members.filter((m) => m.uid !== currentUid)
   const alsoFor =
     others.length === 1
-      ? ` – ${trashWhat(items)} znikną też u ${others[0].nameGenitive}`
+      ? ` – znikną też u ${others[0].nameGenitive}`
       : others.length > 1
-        ? ` – ${trashWhat(items)} znikną też u pozostałych domowników`
+        ? ' – znikną też u pozostałych domowników'
         : ''
-  // „jest” / „są” wg pierwszej liczby w zdaniu (zadania stoją pierwsze): „są 3 zadania i 1 wydarzenie”
-  const tasksIn = items.filter((i) => i.kind === 'task').length
-  const first = tasksIn || n
 
-  /** Kropka i nazwa: kategoria zadania albo rodzaj wydarzenia z datą. */
-  const origin = (i: TrashItem) => {
+  /** Ikonka, kropka i opis: zadanie – kategoria · kto · kiedy; wydarzenie – rodzaj · data · kto. */
+  const describe = (i: TrashItem) => {
+    const by = members.find((m) => m.uid === i.deletedBy)
+    const who = `${by?.verbForm === 'm' ? 'USUNĄŁ' : 'USUNĘŁA'} ${by?.name.toUpperCase() ?? ''}`
     if (i.kind === 'task') {
       const cat = categories.find((c) => c.id === i.task.categoryId) ?? noCategory
-      return { color: cat.color, label: cat.name.toUpperCase() }
+      const when =
+        i.ago === 0 ? 'DZIŚ' : i.ago === 1 ? 'WCZORAJ' : `${dni(i.ago).toUpperCase()} TEMU`
+      return {
+        icon: (
+          <span
+            style={{
+              width: 18,
+              height: 18,
+              borderRadius: 6,
+              border: `2px solid ${cat.color}`,
+            }}
+          />
+        ),
+        iconBg: colors.cream,
+        iconFg: colors.green900,
+        dot: cat.color,
+        meta: `${cat.name.toUpperCase()} · ${who} · ${when}`,
+      }
     }
     const type = eventTypes.find((t) => t.id === i.event.typeId) ?? eventTypes[0]
     const d = parseKey(i.event.date)
+    const date = `${DAYS_SHORT[d.getDay()]} ${d.getDate()} ${MONTHS_SHORT[d.getMonth()]}`
+    const time = i.event.from ? ` · ${i.event.from}${i.event.to ? `–${i.event.to}` : ''}` : ''
     return {
-      color: type.fg,
-      label: `${type.name.toUpperCase()} · ${d.getDate()} ${MONTHS_SHORT[d.getMonth()]}`,
+      icon: <CalendarIcon size={18} />,
+      iconBg: type.bg,
+      iconFg: type.fg,
+      dot: null,
+      meta: `${type.name.toUpperCase()} · ${date}${time} · ${who}`,
     }
   }
+
+  /** „Przywróć” odkłada element na miejsce: na listę zadań albo do kalendarza. */
   const restore = (i: TrashItem) =>
     i.kind === 'task'
-      ? store.changeTasks(`Przywrócono do „Do zrobienia”: ${i.title}`, (list) =>
+      ? store.changeTasks(`Wróciło do zadań: ${i.title}`, (list) =>
           list.map((t) => (t.id === i.id ? restoreFromTrash(t) : t)),
         )
-      : store.changeEvents(`Przywrócono do kalendarza: ${i.title}`, (list) =>
+      : store.changeEvents(`Wróciło do kalendarza: ${i.title}`, (list) =>
           list.map((e) => (e.id === i.id ? restoreEvent(e) : e)),
         )
+
+  const emptyLabel =
+    n === 0
+      ? 'Kosz jest pusty'
+      : kind === 'task'
+        ? 'Brak usuniętych zadań'
+        : 'Brak usuniętych wydarzeń'
 
   return (
     <Screen gap={18}>
       <Header
-        back={{ to: paths.zadaniaOgarniete, label: 'OGARNIĘTE' }}
+        back={{ to: paths.ustawienia, label: 'USTAWIENIA' }}
         topRight={
           <span
             style={{
@@ -79,7 +118,7 @@ export function TrashScreen() {
         }
         aside={
           <span style={{ fontSize: 12, fontWeight: 700, color: colors.onDarkMuted3 }}>
-            {n ? trashCountLabel(items, ' · ') : 'pusto'}
+            {n ? elementow(n) : 'pusto'}
           </span>
         }
       />
@@ -88,7 +127,23 @@ export function TrashScreen() {
         znikną same, u wszystkich domowników.
       </span>
 
-      {n === 0 ? (
+      {n > 0 && (
+        <div role="group" aria-label="Pokaż" style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+          {(
+            [
+              { id: 'all', name: 'Wszystko', count: n },
+              { id: 'task', name: 'Zadania', count: nTasks },
+              { id: 'event', name: 'Wydarzenia', count: n - nTasks },
+            ] as const
+          ).map((k) => (
+            <Chip key={k.id} on={kind === k.id} onClick={() => setKind(k.id)}>
+              {k.name} <span style={{ opacity: 0.65, fontWeight: 600 }}>{k.count}</span>
+            </Chip>
+          ))}
+        </div>
+      )}
+
+      {shown.length === 0 ? (
         <div
           style={{
             display: 'flex',
@@ -125,7 +180,7 @@ export function TrashScreen() {
               color: colors.green900,
             }}
           >
-            Kosz jest pusty
+            {emptyLabel}
           </span>
         </div>
       ) : (
@@ -140,13 +195,8 @@ export function TrashScreen() {
               overflow: 'hidden',
             }}
           >
-            {items.map((item) => {
-              const { ago, left } = item
-              const from = origin(item)
-              const by = members.find((m) => m.uid === item.deletedBy)
-              const verb = by?.verbForm === 'm' ? 'USUNĄŁ' : 'USUNĘŁA'
-              const when =
-                ago === 0 ? 'DZIŚ' : ago === 1 ? 'WCZORAJ' : `${dni(ago).toUpperCase()} TEMU`
+            {shown.map((item) => {
+              const d = describe(item)
               return (
                 <div
                   key={item.id}
@@ -154,11 +204,27 @@ export function TrashScreen() {
                     display: 'flex',
                     alignItems: 'center',
                     gap: 12,
-                    padding: '12px 12px 12px 18px',
+                    padding: '12px 12px 12px 14px',
                     minHeight: 72,
                     borderBottom: `1px solid ${colors.line}`,
                   }}
                 >
+                  <span
+                    aria-hidden="true"
+                    style={{
+                      width: 36,
+                      height: 36,
+                      borderRadius: 12,
+                      flex: 'none',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      background: d.iconBg,
+                      color: d.iconFg,
+                    }}
+                  >
+                    {d.icon}
+                  </span>
                   <span
                     style={{
                       flex: 1,
@@ -182,18 +248,18 @@ export function TrashScreen() {
                         color: colors.muted,
                       }}
                     >
-                      <Dot color={from.color} />
-                      {from.label} · {verb} {by?.name.toUpperCase()} · {when}
+                      {d.dot && <Dot color={d.dot} />}
+                      {d.meta}
                     </span>
                     <span
                       style={{
                         fontFamily: fonts.serif,
                         fontStyle: 'italic',
                         fontSize: 13,
-                        color: left <= 5 ? priorities.high.line : colors.brass700,
+                        color: item.left <= 5 ? priorities.high.line : colors.brass700,
                       }}
                     >
-                      zniknie za {dni(left)}
+                      zniknie za {dni(item.left)}
                     </span>
                   </span>
                   <button
@@ -251,8 +317,11 @@ export function TrashScreen() {
             Usunąć <em style={{ color: priorities.high.line }}>na zawsze?</em>
           </span>
           <span style={{ fontSize: 15, lineHeight: 1.45, color: colors.muted2 }}>
-            W koszu {first === 1 ? 'jest' : plural(first, ['jest', 'są', 'jest'])}{' '}
-            {trashCountLabel(items)}. Tego nie da się cofnąć{alsoFor}.
+            W koszu{' '}
+            {n === 1
+              ? 'jest 1 element'
+              : `${plural(n, ['jest', 'są', 'jest'])} ${elementow(n)} – ${trashWhat(items)}`}
+            . Tego nie da się cofnąć{alsoFor}.
           </span>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: 8, marginTop: 4 }}>
             <button
@@ -294,7 +363,7 @@ export function TrashScreen() {
       )}
 
       <UndoToast />
-      <TabBar active="zadania" />
+      <TabBar active="ustawienia" />
     </Screen>
   )
 }

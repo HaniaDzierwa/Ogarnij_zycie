@@ -8,7 +8,7 @@ import { TYPE_SWATCHES } from './calendarView.ts'
 import { label, timeInput } from './formStyles.ts'
 
 /** Nowe wydarzenie z formularza (id nadaje ekran). */
-export type EventDraft = Omit<CalendarEvent, 'id'>
+export type EventDraft = Omit<CalendarEvent, 'id' | 'createdBy'>
 
 /**
  * Arkusz „Nowe wydarzenie” (Kalendarz.dc.html): nazwa, rodzaj (+ nowy rodzaj z kolorem),

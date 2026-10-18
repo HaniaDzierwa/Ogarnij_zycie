@@ -227,21 +227,18 @@ describe('edycja i usuwanie – jak w Zadaniach', () => {
         name: 'Usuń',
       }),
     )
-    await act(() => router.navigate('/zadania/kosz'))
-    expect(screen.getByText('3 zadania · 1 wydarzenie')).toBeDefined()
-    expect(screen.getByText(/WYDARZENIE · 10 PAŹ · USUNĘŁA HANIA · DZIŚ/)).toBeDefined()
-
-    fireEvent.click(screen.getByRole('button', { name: 'Opróżnij kosz' }))
-    expect(screen.getByRole('dialog', { name: 'Opróżnij kosz' }).textContent).toContain(
-      'W koszu są 3 zadania i 1 wydarzenie. Tego nie da się cofnąć – zadania i wydarzenia znikną też u Krzysia.',
-    )
-    fireEvent.click(screen.getByRole('button', { name: 'Anuluj' }))
+    await act(() => router.navigate('/ustawienia/kosz'))
+    expect(screen.getByText('6 elementów')).toBeDefined()
+    expect(screen.getByText(/WYDARZENIE · SO 10 PAŹ · 19:30 · USUNĘŁA HANIA/)).toBeDefined()
+    expect(
+      screen.getAllByRole('button', { name: /^Przywróć: / })[0].getAttribute('aria-label'),
+    ).toBe('Przywróć: Kino z Krzysiem')
 
     fireEvent.click(screen.getByRole('button', { name: 'Przywróć: Kino z Krzysiem' }))
     expect(screen.getByRole('status').textContent).toContain(
-      'Przywrócono do kalendarza: Kino z Krzysiem',
+      'Wróciło do kalendarza: Kino z Krzysiem',
     )
-    expect(screen.getByText('3 zadania')).toBeDefined()
+    expect(screen.getByText('5 elementów')).toBeDefined()
     await act(() => router.navigate('/kalendarz?dzien=2026-10-10'))
     expect(agenda().textContent).toContain('Kino z Krzysiem')
   })

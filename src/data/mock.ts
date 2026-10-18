@@ -139,6 +139,8 @@ type EventSeed = [
   from: string | null,
   to: string | null,
   note: string,
+  /** W koszu: [dni temu, kto]. */
+  deleted?: [number, string],
 ]
 
 // Terminy zadań („Termin zadania”) nie są tu wpisane – kalendarz bierze je z zadań.
@@ -151,10 +153,13 @@ const eventSeed: EventSeed[] = [
   ['Parapetówka u Kasi', 15, 'party', '19:00', null, 'Przynieść wino'],
   ['Urodziny taty', 19, 'birthday', null, null, 'Co roku'],
   ['Wesele Ani i Tomka', 29, 'party', '16:00', null, 'Rodzina'],
+  // Kosz (Kosz.dc.html)
+  ['Basen z dziećmi', 5, 'event', '17:00', null, '', [1, 'krzys']],
+  ['Kolacja u Nowaków', 14, 'party', '19:00', null, '', [12, 'hania']],
 ]
 
 export function mockEvents(today: DateKey): CalendarEvent[] {
-  return eventSeed.map(([title, dayIn, typeId, from, to, note], i) => ({
+  return eventSeed.map(([title, dayIn, typeId, from, to, note, deleted], i) => ({
     id: `e${i + 1}`,
     title,
     date: addDays(today, dayIn),
@@ -165,9 +170,10 @@ export function mockEvents(today: DateKey): CalendarEvent[] {
     remind: note.includes('dzień wcześniej') ? 'day' : note.includes('tydzień') ? 'week' : 'none',
     // Tekst przypomnienia dopisuje kalendarz z pola remind.
     note: note.startsWith('Przypomnienie') ? '' : note,
-    deleted: false,
-    deletedAt: null,
-    deletedBy: null,
+    createdBy: 'hania',
+    deleted: !!deleted,
+    deletedAt: deleted ? stamp(addDays(today, -deleted[0]), '12:00') : null,
+    deletedBy: deleted ? deleted[1] : null,
   }))
 }
 

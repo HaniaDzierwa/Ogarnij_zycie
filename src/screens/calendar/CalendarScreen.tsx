@@ -534,7 +534,10 @@ export function CalendarScreen() {
           onAddType={addType}
           onClose={() => setSheetOpen(false)}
           onSave={(draft) => {
-            store.setEvents((list) => [...list, { ...draft, id: `e${Date.now()}` }])
+            store.setEvents((list) => [
+              ...list,
+              { ...draft, id: `e${Date.now()}`, createdBy: store.currentUid },
+            ])
             setSheetOpen(false)
           }}
         />
@@ -549,6 +552,7 @@ export function CalendarScreen() {
           onChange={(fn) =>
             store.setEvents((list) => list.map((x) => (x.id === eventDetail.id ? fn(x) : x)))
           }
+          meta={`Dodane przez: ${members.find((m) => m.uid === eventDetail.createdBy)?.name ?? ''}`}
           onDelete={() => removeEvent(eventDetail)}
           onClose={() => {
             setEventId(null)
