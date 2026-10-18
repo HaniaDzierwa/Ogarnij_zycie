@@ -14,6 +14,8 @@ export type ScreenId =
 
 export type Transition = { label: string; to: string }
 
+export type Tab = 'start' | 'zadania' | 'kalendarz' | 'ustawienia'
+
 export type Screen = {
   id: ScreenId
   path: string
@@ -23,6 +25,10 @@ export type Screen = {
   name: string
   /** Pliki źródłowe w docs/design/ekrany/. */
   source: string
+  /** Aktywna zakładka dolnego paska; brak = ekran bez paska. */
+  tab?: Tab
+  /** Dokąd prowadzi „wstecz” w nagłówku. */
+  back?: { to: string; label: string }
   transitions: Transition[]
 }
 
@@ -33,8 +39,12 @@ export const paths = {
   zadania: '/zadania',
   zadaniaPilne: '/zadania?pokaz=pilne',
   zadaniaOgarniete: '/zadania?pokaz=ogarniete',
+  /** Zadania z otwartym arkuszem „Nowe zadanie” (menu „+”). */
+  zadaniaNowe: '/zadania?nowe=zadanie',
   kalendarz: '/kalendarz',
   kalendarzDzien: (dzien: string) => `/kalendarz?dzien=${dzien}`,
+  /** Kalendarz z otwartym arkuszem nowego wydarzenia (menu „+”). */
+  kalendarzNowe: '/kalendarz?nowe=wydarzenie',
   ustawienia: '/ustawienia',
   domownicy: '/ustawienia/domownicy',
   zmiany: '/ustawienia/domownicy/zmiany',
@@ -74,6 +84,7 @@ export const screens: Screen[] = [
   },
   {
     id: 'start',
+    tab: 'start',
     path: paths.start,
     number: '2',
     name: 'Start',
@@ -89,6 +100,7 @@ export const screens: Screen[] = [
   },
   {
     id: 'zadania',
+    tab: 'zadania',
     path: paths.zadania,
     number: '3',
     name: 'Zadania',
@@ -97,6 +109,7 @@ export const screens: Screen[] = [
   },
   {
     id: 'kalendarz',
+    tab: 'kalendarz',
     path: paths.kalendarz,
     number: '4',
     name: 'Kalendarz',
@@ -105,6 +118,7 @@ export const screens: Screen[] = [
   },
   {
     id: 'ustawienia',
+    tab: 'ustawienia',
     path: paths.ustawienia,
     number: '5',
     name: 'Ustawienia',
@@ -113,6 +127,8 @@ export const screens: Screen[] = [
   },
   {
     id: 'domownicy',
+    back: { to: paths.ustawienia, label: 'USTAWIENIA' },
+    tab: 'ustawienia',
     path: paths.domownicy,
     number: '5a',
     name: 'Synchronizacja / Domownicy',
@@ -126,6 +142,7 @@ export const screens: Screen[] = [
   },
   {
     id: 'zmiany',
+    back: { to: paths.domownicy, label: 'SYNCHRONIZACJA' },
     path: paths.zmiany,
     number: '5b',
     name: 'Zmiany od domownika',
@@ -137,6 +154,7 @@ export const screens: Screen[] = [
   },
   {
     id: 'zapros',
+    back: { to: paths.domownicy, label: 'SYNCHRONIZACJA' },
     path: paths.zapros,
     number: '5c–d',
     name: 'Zaproś domownika',
@@ -145,6 +163,7 @@ export const screens: Screen[] = [
   },
   {
     id: 'dolacz',
+    back: { to: paths.pierwsze, label: 'WITAJ' },
     path: paths.dolacz,
     number: '5e–f',
     name: 'Dołącz do domu',

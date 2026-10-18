@@ -1,79 +1,72 @@
 import { Link, useSearchParams } from 'react-router'
-import type { Screen } from '../app/screens.ts'
+import type { Screen as ScreenDef } from '../app/screens.ts'
+import { Header } from '../components/Header.tsx'
 import { Logo } from '../components/Logo.tsx'
-import { colors, fonts, radii, sectionLabel, shadows } from '../theme'
+import { TabBar } from '../components/TabBar.tsx'
+import { Card, Screen, SectionLabel, SyncBadge } from '../components/ui.tsx'
+import { ChevronRightIcon } from '../components/icons.tsx'
+import { colors } from '../theme'
 
-/** Pusty ekran z nazwą i przejściami z projektu (etap 0; w etapie 1 zastąpią go prawdziwe ekrany). */
-export function PlaceholderScreen({ screen }: { screen: Screen }) {
+/** Pusty ekran z nazwą i przejściami z projektu – do czasu, aż powstanie prawdziwy ekran (etap 1). */
+export function PlaceholderScreen({ screen }: { screen: ScreenDef }) {
   const [params] = useSearchParams()
   const variants = [...params.entries()]
 
   return (
-    <main style={{ maxWidth: 480, margin: '0 auto', padding: 16, paddingBottom: 48 }}>
-      <header
-        style={{
-          height: 120,
-          borderRadius: radii.header,
-          background: colors.green900,
-          color: colors.cream,
-          padding: '14px 18px 16px',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between',
-        }}
-      >
-        <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Logo color={colors.cream} />
-          <span style={{ ...sectionLabel, color: colors.brass300 }}>Ekran {screen.number}</span>
-        </span>
-        <h1 style={{ margin: 0, fontFamily: fonts.serif, fontSize: 24, fontWeight: 500 }}>
-          {screen.name}
-        </h1>
-      </header>
+    <Screen withTabBar={!!screen.tab}>
+      <Header
+        back={screen.back}
+        label={
+          <>
+            <Logo color={colors.cream} />
+            EKRAN {screen.number}
+          </>
+        }
+        topRight={screen.tab ? <SyncBadge /> : undefined}
+        title={screen.name}
+      />
 
       {variants.length > 0 && (
-        <p style={{ color: colors.muted, margin: '16px 4px 0' }}>
+        <p style={{ color: colors.muted, margin: '0 4px' }}>
           Wariant: {variants.map(([k, v]) => `${k} = ${v}`).join(', ')}
         </p>
       )}
 
-      <h2 style={{ ...sectionLabel, color: colors.brass700, margin: '24px 4px 10px' }}>
-        Przejścia
-      </h2>
-      <nav
-        style={{
-          background: colors.white,
-          borderRadius: radii.card,
-          boxShadow: shadows.card,
-          overflow: 'hidden',
-        }}
-      >
-        {screen.transitions.map((t, i) => (
-          <Link
-            key={t.to + t.label}
-            to={t.to}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              minHeight: 52,
-              padding: '0 16px',
-              borderTop: i === 0 ? 'none' : `1px solid ${colors.line}`,
-              color: colors.green900,
-              fontWeight: 700,
-              textDecoration: 'none',
-            }}
-          >
-            {t.label}
-            <span aria-hidden="true" style={{ marginLeft: 'auto', color: colors.brass500 }}>
-              ›
-            </span>
-          </Link>
-        ))}
-      </nav>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <SectionLabel>Przejścia</SectionLabel>
+        <Card>
+          <nav>
+            {screen.transitions.map((t, i) => (
+              <Link
+                key={t.to + t.label}
+                to={t.to}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  minHeight: 52,
+                  padding: '0 16px',
+                  borderTop: i === 0 ? 'none' : `1px solid ${colors.line}`,
+                  color: colors.green900,
+                  fontWeight: 700,
+                  textDecoration: 'none',
+                }}
+              >
+                {t.label}
+                <span style={{ marginLeft: 'auto', color: colors.brass500, display: 'flex' }}>
+                  <ChevronRightIcon />
+                </span>
+              </Link>
+            ))}
+          </nav>
+        </Card>
+      </div>
 
-      <p style={{ color: colors.muted, fontSize: 13, margin: '16px 4px 0' }}>
-        Projekt: {screen.source} · <Link to="/mapa">Mapa ekranów</Link>
+      <p style={{ color: colors.muted, fontSize: 13, margin: '0 4px' }}>
+        Projekt: {screen.source} · <Link to="/mapa">Mapa ekranów</Link> ·{' '}
+        <Link to="/elementy">Elementy</Link>
       </p>
-    </main>
+
+      {screen.tab && <TabBar active={screen.tab} />}
+    </Screen>
   )
 }
