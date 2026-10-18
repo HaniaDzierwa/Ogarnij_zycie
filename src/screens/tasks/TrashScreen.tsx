@@ -43,7 +43,7 @@ export function TrashScreen() {
   /** Ikonka, kropka i opis: zadanie – kategoria · kto · kiedy; wydarzenie – rodzaj · data · kto. */
   const describe = (i: TrashItem) => {
     const by = members.find((m) => m.uid === i.deletedBy)
-    const who = `${by?.verbForm === 'm' ? 'USUNĄŁ' : 'USUNĘŁA'} ${by?.name.toUpperCase() ?? ''}`
+    const who = by?.name.toUpperCase() ?? ''
     if (i.kind === 'task') {
       const cat = categories.find((c) => c.id === i.task.categoryId) ?? noCategory
       const when =

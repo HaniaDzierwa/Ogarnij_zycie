@@ -62,6 +62,9 @@ Cel: wszystkie ekrany z projektu w aplikacji, na przykładowych danych (w pamię
 3. Firestore z pamięcią offline; warstwa dostępu do danych (hooki) zamiast przykładowych danych.
 4. Reguły Firestore od pierwszego dnia + testy reguł w emulatorze.
 5. Instrukcja dla Hani: włączenie Authentication (e‑mail/hasło) i Firestore, wdrożenie reguł.
+6. „Załóż nowy dom”: pole **Nazwa domu** (wpisuje założyciel, np. „Dom na Leśnej”; zmiana w Ustawieniach) – pokazywana m.in. na „Dołącz do domu → Znaleziono dom” (decyzja Hani 2026-10-18).
+7. Stałe logowanie (do wylogowania); **„Wyloguj”** jako mały link w stopce Ustawień, z pytaniem „Wylogować?” (decyzja Hani 2026-10-18).
+8. Domownik to samo imię – bez formy czasownika (bez „ogarnęła/ogarnął”); wszędzie „HANIA · 9:10”, „Ogarnięte: Hania”, „Dodane: Hania” (decyzja Hani 2026-10-18, już w mockupie).
 
 **Odbiór:**
 - [ ] Dane przetrwają zamknięcie przeglądarki, działają bez internetu i wracają po zalogowaniu na innym urządzeniu
@@ -101,7 +104,7 @@ Cel: wszystkie ekrany z projektu w aplikacji, na przykładowych danych (w pamię
 
 ## Etap 6 – Start
 
-- Kafelki liczone z danych: do zrobienia, pilne, w tym tygodniu, ogarnięte dziś.
+- Kafelki liczone z danych: do zrobienia, pilne, w tym tygodniu, ogarnięte dziś. „Ogarnięte dziś X / Y”: Y = ogarnięte dziś + niezrobione z terminem na dziś lub po terminie (decyzja Hani 2026-10-18, już w mockupie).
 - Skróty: kafelek otwiera Zadania z filtrem (np. Pilne), zakładkę Ogarnięte albo Kalendarz z zaznaczonym dniem.
 - Powitanie z imieniem; wersja dzienna/nocna zależnie od godziny.
 
@@ -112,6 +115,9 @@ Cel: wszystkie ekrany z projektu w aplikacji, na przykładowych danych (w pamię
 - Profil (imię lub pseudonim), cztery przełączniki powiadomień zapisane w Firestore.
 - Porządki: „Sprzątanie ogarniętych” (7 / 30 dni / nigdy) i wejście do Kosza. Automatyczne sprzątanie i trwałe usuwanie z kosza po 30 dniach wykonuje Worker raz dziennie (zapasowo: aplikacja przy uruchomieniu).
 - Web Push: zgoda w przeglądarce, subskrypcja zapisana przy użytkowniku, instrukcja „Dodaj do ekranu głównego” na iPhonie.
+- Prośba o zgodę na powiadomienia: po Pierwszym uruchomieniu (karta „Włączyć przypomnienia?”) **i** przy włączaniu przełącznika w Ustawieniach (decyzja Hani 2026-10-18).
+- „Terminy zadań”: godzina przypomnienia dzień przed terminem do wyboru w Ustawieniach (pod przełącznikiem; domyślnie 18:00 – do potwierdzenia przy etapie 7).
+- Poranne podsumowanie o 8:00 tylko wtedy, gdy jest coś pilnego, termin na dziś albo wydarzenie dziś – inaczej nie wysyłamy (decyzja Hani 2026-10-18).
 - Cloudflare Worker (darmowy plan, cron co minutę): sprawdza, co jest do wysłania (terminy, wydarzenia, poranne podsumowanie o 8:00), wysyła push. Instrukcja dla Hani: konto Cloudflare, klucze VAPID, konto serwisowe Firebase jako sekret Workera.
 - Motyw: tylko jasny, wybór ukryty.
 
@@ -124,6 +130,7 @@ Cel: wszystkie ekrany z projektu w aplikacji, na przykładowych danych (w pamię
 
 1. **Zaproszenie:** jednorazowy link oraz kod QR i 6 cyfr (ważne 10 min); „Dołącz do domu” realizuje je, reguły Firestore sprawdzają ważność i jednorazowość.
 2. **Zakres:** domownik widzi wszystko albo wybrane kategorie i kalendarz; reguły to wymuszają.
+   - Ekran Domownicy: dotknięcie domownika → arkusz: zmiana zakresu (Wszystko / Wybrane) i „Usuń z domu” – tylko założyciel domu; każdy domownik może sam „Opuścić dom”; zapraszać może każdy (decyzja Hani 2026-10-18).
 3. **Zmiany od domowników:** push, gdy ktoś doda lub ogarnie zadanie (bez osobnego ekranu – zmiany widać od razu na listach).
 4. **Konflikty:** nowsza zmiana wygrywa; usunięte zawsze można przywrócić z Kosza.
 
@@ -137,7 +144,7 @@ Cel: wszystkie ekrany z projektu w aplikacji, na przykładowych danych (w pamię
 
 - Testy automatyczne (filtry, liczniki, reguły) i ręczne w Chrome na Androidzie i Safari na iPhonie.
 - Dwa tygodnie codziennego używania w domu, lista poprawek.
-- Ikona i ekran startowy po dodaniu do ekranu głównego; usuwanie konta z poziomu aplikacji.
+- Ikona i ekran startowy po dodaniu do ekranu głównego; usuwanie konta z poziomu aplikacji. Gdy usuwa je założyciel domu, a są inni domownicy – aplikacja pyta: usunąć dom (u wszystkich) czy przekazać go wybranemu domownikowi (decyzja Hani 2026-10-18).
 - Publikacja na Firebase Hosting pod docelowym adresem (własna domena opcjonalnie).
 
 **Odbiór:**

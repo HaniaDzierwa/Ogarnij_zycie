@@ -35,6 +35,17 @@ Wersja testowa: https://ogarnij-zycie--test-56tdtc0y.web.app (kanał `test`, odn
 
 | Data | Etap | Uwaga | Kiedy | Status |
 | --- | --- | --- | --- | --- |
+| 2026-10-18 | 1 | Kosz: w dolnym pasku podświetlone „Ustawienia” (nie „Zadania” jak w projekcie). | teraz | tak jest – zostaje |
+| 2026-10-18 | 1 | „Zebranie w szkole” 13 paź dwa razy w kalendarzu (termin zadania + wydarzenie) – zostawić. | teraz | zostaje |
+| 2026-10-18 | 1–2 | Bez rodzaju: zamiast „Ogarnęła Hania / Usunął Krzyś” samo imię („HANIA · 9:10”, „Ogarnięte: Hania”, „Dodane: Hania”, Kosz „ZAKUPY · HANIA · 2 DNI TEMU”, „Ola jest z Wami”). Zastępuje wcześniejszą uwagę o formie czasownika w profilu. | teraz | zrobione |
+| 2026-10-18 | 2 | „Wyloguj”: mały link w stopce Ustawień. | później (etap 2) | w PLAN.md |
+| 2026-10-18 | 2 | Nazwa domu: wpisuje założyciel przy „Załóż nowy dom”, zmiana w Ustawieniach. | później (etap 2) | w PLAN.md |
+| 2026-10-18 | 6 | Kafelek „Ogarnięte dziś X / Y”: Y = ogarnięte dziś + niezrobione z terminem na dziś lub po terminie. | teraz | zrobione (mockup); wcześniejsza sprawa „do decyzji” zamknięta |
+| 2026-10-18 | 7 | Zgoda na powiadomienia: po Pierwszym uruchomieniu i przy przełącznikach w Ustawieniach. | później (etap 7) | w PLAN.md |
+| 2026-10-18 | 7 | Godzina przypomnienia o terminach zadań do wyboru w Ustawieniach. | później (etap 7) | w PLAN.md |
+| 2026-10-18 | 7 | Poranne podsumowanie tylko, gdy jest coś pilnego / na dziś. | później (etap 7) | w PLAN.md |
+| 2026-10-18 | 8 | Arkusz domownika: zakres, „Usuń z domu” (założyciel), „Opuść dom”; zapraszać może każdy. | później (etap 8) | w PLAN.md |
+| 2026-10-18 | 9 | Usunięcie konta założyciela przy innych domownikach: pytanie – usunąć dom czy przekazać domownikowi. | później (etap 9) | w PLAN.md |
 | 2026-10-18 | 1 | Arkusz zadania: przycisku „W tym tygodniu” nie da się kliknąć. | teraz | zrobione – w niedzielę „W tym tygodniu” = ta sama data co „Dziś” (w sobotę = „Jutro”), arkusz podświetlał pierwszy pasujący; teraz wygrywa kliknięty |
 | 2026-10-18 | 1 | Panele, arkusze, filtry mają się zamykać po dotknięciu poza nimi (np. filtry, arkusz edycji zadania/wydarzenia). | teraz | zrobione – Hania: „działa” |
 | 2026-10-18 | 1 | Żółte kwadraciki (okienka) w panoramie dachów w nagłówkach psują czytelność – usunąć. | teraz | zrobione – nagłówki wszystkich ekranów, baner logowania/rejestracji i Pierwszego uruchomienia; zostają tylko na animowanym ekranie ładowania |
@@ -54,8 +65,6 @@ Wersja testowa: https://ogarnij-zycie--test-56tdtc0y.web.app (kanał `test`, odn
 | 2026-10-18 | 1 | Termin zadania: zasada DZIŚ / JUTRO / WT 13 PAŹ / DO 30 PAŹ. | teraz | zrobione (krok 2) |
 | 2026-10-18 | 1 | „Najbliższe wydarzenia” na Starcie: dwa najbliższe dowolnego rodzaju (opcja a). | teraz | zrobione (krok 2) |
 | 2026-10-18 | 1 | Ekran ładowania: projektuje Claude (Powitanie.dc.html nie istnieje). | teraz | zaakceptowane („super”) |
-| 2026-10-18 | 1 | „Ogarnęła Hania / Ogarnął Krzyś”: forma czasownika domownika – przy prawdziwych kontach zapytać o nią w profilu (Pierwsze uruchomienie / Ustawienia). | później (etap 2) | zapisane |
-| 2026-10-18 | 1 | Kafelek „Ogarnięte dziś 3 / 7” – projekt nie mówi, co jest w mianowniku; na razie „ogarnięte dziś / (ogarnięte dziś + otwarte pilne)”. Ustalić z Hanią. | później (etap 6) | do decyzji |
 | 2026-10-18 | 0 | Demo na telefonie działa. | – | ok |
 | 2026-10-18 | 0 | Teksty o danych z `docs/TEKSTY.md` zaakceptowane (A i B). | teraz | zrobione |
 | 2026-10-18 | 0 | Ekrany logowania, rejestracji i resetu hasła projektuje Claude w tym samym stylu – dopisane do etapu 1 w PLAN.md. | później (etap 1) | zapisane |
@@ -99,3 +108,4 @@ Wersja testowa: https://ogarnij-zycie--test-56tdtc0y.web.app (kanał `test`, odn
 - 2026-10-18 · Etap 1 · Poprawka Hani (zamykanie dotknięciem obok): panel filtrów – tło zamykające jest teraz przyciskiem (Safari na iPhonie nie przekazuje dotknięć zwykłym div-om) i przykrywa cały ekran razem z nagłówkiem i zakładkami; nad nim tylko wiersz „Filtry” i panel. Arkusze (zadanie, wydarzenie, Nowe zadanie/wydarzenie, Wyczyść, Opróżnij kosz) – zawsze zostaje pas przyciemnienia min. 88 px (+ pasek stanu iPhone’a) nad arkuszem; wcześniej na mniejszych telefonach arkusz zakrywał prawie cały ekran i nie było gdzie dotknąć. Sprawdzone dotknięciami w Chrome z emulacją telefonu (390×844 i 390×667). · Sprawdzenie: Zadania → Filtry → dotknij nagłówka / listy; otwórz zadanie → dotknij przyciemnienia nad arkuszem; `npm test` – 126 testów.
 - 2026-10-18 · Etap 1 · Hania sprawdziła zamykanie paneli i arkuszy dotknięciem obok na telefonie: „działa, super robota”. Wszystkie ekrany etapu 1 są w aplikacji – następny krok: odbiór etapu 1.
 - 2026-10-18 · Etap 1 · Poprawka Hani: arkusz zadania – „W tym tygodniu” (koniec tygodnia = niedziela) w niedzielę daje tę samą datę co „Dziś”, a w sobotę co „Jutro”; zaznaczenie liczone z samej daty zawsze wskazywało pierwszy przycisk, więc kliknięcie wyglądało na niedziałające. Teraz arkusz pamięta kliknięty przycisk. · Sprawdzenie: w niedzielę otwórz zadanie → „W tym tygodniu” → przycisk zaznaczony; `npm test` – 127 testów.
+- 2026-10-18 · Etap 1 · Odpowiedzi Hani na otwarte pytania (etapy 1–9) zapisane w PLAN.md, DESIGN.md i tabeli uwag. Naniesione od razu: samo imię zamiast formy czasownika (lista Ogarniętych, arkusze zadania i wydarzenia, Kosz, ekran zaproszenia „Ola jest z Wami”), model bez `verbForm`; kafelek „Ogarnięte dziś” – mianownik = plan na dziś (3 / 4 w danych z projektu). · Sprawdzenie: Zadania → Ogarnięte („KRZYŚ”, „HANIA”), Kosz, Start; `npm test` – 127 testów.

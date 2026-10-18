@@ -64,8 +64,6 @@ export type Member = {
   name: string
   role: 'owner' | 'member'
   scope: { all: boolean; categoryIds: string[]; calendar: boolean }
-  /** Forma czasownika: „ogarnęła” (f) / „ogarnął” (m). */
-  verbForm: 'f' | 'm'
   /** Dopełniacz imienia: „u Krzysia”. */
   nameGenitive: string
   /** Ostatnia zmiana, np. „DZIŚ 13:05”. */

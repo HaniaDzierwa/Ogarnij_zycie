@@ -135,12 +135,12 @@ export function CalendarScreen() {
       onDelete: () => (task ? trashTask(task) : event && removeEvent(event)),
     }
   }
-  /** „Dodane przez: Hania” / „Ogarnęła Hania” */
+  /** „Dodane: Hania” / „Ogarnięte: Hania” – bez rodzaju */
   const memberLabel = (t: Task) => {
     const m = members.find((x) => x.uid === (t.done ? t.doneBy : t.createdBy))
     if (!m) return ''
-    if (!t.done) return `Dodane przez: ${m.name}`
-    return `${m.verbForm === 'f' ? 'Ogarnęła' : 'Ogarnął'} ${m.name}`
+    if (!t.done) return `Dodane: ${m.name}`
+    return `Ogarnięte: ${m.name}`
   }
 
   const addType = (name: string, color: string) => {
@@ -552,7 +552,7 @@ export function CalendarScreen() {
           onChange={(fn) =>
             store.setEvents((list) => list.map((x) => (x.id === eventDetail.id ? fn(x) : x)))
           }
-          meta={`Dodane przez: ${members.find((m) => m.uid === eventDetail.createdBy)?.name ?? ''}`}
+          meta={`Dodane: ${members.find((m) => m.uid === eventDetail.createdBy)?.name ?? ''}`}
           onDelete={() => removeEvent(eventDetail)}
           onClose={() => {
             setEventId(null)

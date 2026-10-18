@@ -123,7 +123,7 @@ test('Zaproś: po 10 minutach kod wygasa, „Nowy kod” daje kolejne 10 minut',
   vi.useRealTimers()
 })
 
-test('Zaproś: stan „Ola dołączyła” (podgląd ?etap=dolaczyla), „Gotowe” → Domownicy', () => {
+test('Zaproś: stan „Ola jest z Wami” (podgląd ?etap=dolaczyla), „Gotowe” → Domownicy', () => {
   const router = renderAt('/ustawienia/domownicy/zapros?etap=dolaczyla')
   expect(screen.getByText(/Zmiany pojawią się u Was w kilka sekund/)).toBeDefined()
   expect(screen.getByText('WSZYSTKIE KATEGORIE I KALENDARZ')).toBeDefined()

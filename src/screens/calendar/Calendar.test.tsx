@@ -229,7 +229,7 @@ describe('edycja i usuwanie – jak w Zadaniach', () => {
     )
     await act(() => router.navigate('/ustawienia/kosz'))
     expect(screen.getByText('6 elementów')).toBeDefined()
-    expect(screen.getByText(/WYDARZENIE · SO 10 PAŹ · 19:30 · USUNĘŁA HANIA/)).toBeDefined()
+    expect(screen.getByText(/WYDARZENIE · SO 10 PAŹ · 19:30 · HANIA/)).toBeDefined()
     expect(
       screen.getAllByRole('button', { name: /^Przywróć: / })[0].getAttribute('aria-label'),
     ).toBe('Przywróć: Kino z Krzysiem')

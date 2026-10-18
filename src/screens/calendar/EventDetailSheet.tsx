@@ -24,7 +24,7 @@ export function EventDetailSheet({
   eventTypes: EventType[]
   /** „URODZINY · PIĄTEK, 16 PAŹDZIERNIKA” */
   status: string
-  /** „Dodane przez: Hania” */
+  /** „Dodane: Hania” */
   meta: string
   onChange: (update: (e: CalendarEvent) => CalendarEvent) => void
   onDelete: () => void

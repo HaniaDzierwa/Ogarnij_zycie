@@ -73,10 +73,10 @@ export function TasksScreen() {
   const detail = tasks.find((t) => t.id === detailId && !t.deleted)
 
   const member = (uid: string | null) => members.find((m) => m.uid === uid)
-  /** „Ogarnęła Hania” / „Ogarnął Krzyś” */
+  /** Kto ogarnął – samo imię, bez rodzaju („HANIA · 9:10”). */
   const doneBy = (t: Task) => {
     const m = member(t.doneBy)
-    return m ? `${m.verbForm === 'f' ? 'Ogarnęła' : 'Ogarnął'} ${m.name}` : ''
+    return m?.name ?? ''
   }
 
   // Akcje z paskiem „Cofnij”
@@ -556,7 +556,9 @@ export function TasksScreen() {
               : `DO ZROBIENIA · ${categoryName(detail).toUpperCase()}`
           }
           meta={
-            detail.done ? doneBy(detail) : `Dodane przez: ${member(detail.createdBy)?.name ?? ''}`
+            detail.done
+              ? `Ogarnięte: ${doneBy(detail)}`
+              : `Dodane: ${member(detail.createdBy)?.name ?? ''}`
           }
           onChange={(fn) => actions.edit(detail, fn)}
           onToggleDone={() => toggleDone(detail)}

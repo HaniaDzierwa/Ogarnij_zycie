@@ -22,7 +22,7 @@ type Props = {
   today: DateKey
   /** „DO ZROBIENIA · ZAKUPY” / „OGARNIĘTE · 9:10” */
   status: string
-  /** „Dodane przez: Hania” / „Ogarnęła Hania” */
+  /** „Dodane: Hania” / „Ogarnięte: Hania” */
   meta: string
   /** Zmiana w miejscu (zapisuje się od razu). */
   onChange: (update: (t: Task) => Task) => void

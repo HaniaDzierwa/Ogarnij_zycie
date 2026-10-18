@@ -41,12 +41,13 @@ export function StartScreen() {
   const open = openTasks(tasks)
   const urgent = urgentOpen(tasks)
   const urgentToday = urgent.filter((t) => t.due && diffDays(today, t.due) <= 0)
-  // „Ogarnięte dziś” = ogarnięte dzisiaj (wg doneAt) / (te + otwarte pilne) – wrócimy do tego w etapie 6
+  // „Ogarnięte dziś” = ogarnięte dzisiaj (wg doneAt) / (te + niezrobione z terminem na dziś lub po terminie)
   const done = doneOn(tasks, today)
   const items = calendarItems(tasks, events, categoryName, (t) => priorities[t.priority].label)
   const week = weekDays(today)
   const weekLeft = items.filter((i) => i.date >= today && i.date <= week[6])
-  const doneShare = done.length + urgent.length
+  const dueNow = open.filter((t) => t.due && t.due <= today)
+  const doneShare = done.length + dueNow.length
   const nearestUrgent = [...urgent]
     .sort((a, b) => (a.due ?? '9999').localeCompare(b.due ?? '9999'))
     .slice(0, 2)

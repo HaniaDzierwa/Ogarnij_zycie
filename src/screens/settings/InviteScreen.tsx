@@ -29,7 +29,7 @@ const CALENDAR = { id: 'cal', name: 'Kalendarz', color: colors.brass300 }
 
 /**
  * 5c–d Zaproś domownika (Zaproszenie.dc.html, ZaproszenieGotowe.dc.html) z tekstami z TEKSTY.md
- * (#10–15) i jednorazowym linkiem. Podgląd stanu „dołączyła”: `?etap=dolaczyla`.
+ * (#10–15) i jednorazowym linkiem. Podgląd stanu „jest z Wami”: `?etap=dolaczyla`.
  */
 export function InviteScreen() {
   const { categories, members } = useStore()
@@ -393,11 +393,11 @@ export function InviteScreen() {
             <span
               style={{ fontFamily: fonts.serif, fontSize: 28, fontWeight: 500, lineHeight: 1.1 }}
             >
-              Ola <em style={{ color: colors.brass700 }}>dołączyła</em>
+              Ola <em style={{ color: colors.brass700 }}>jest z Wami</em>
             </span>
             <span style={{ fontSize: 15, lineHeight: 1.45, color: colors.muted2 }}>
-              Jej telefon jest teraz w Waszym domu. Zmiany pojawią się u Was w kilka sekund – także
-              te zrobione bez internetu.
+              Nowy domownik jest teraz w Waszym domu. Zmiany pojawią się u Was w kilka sekund –
+              także te zrobione bez internetu.
             </span>
           </Card>
           <Card radius={22}>

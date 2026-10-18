@@ -93,7 +93,7 @@ test('klik w treść otwiera arkusz zadania; edycja w miejscu, „Gotowe” zamy
   click('Otwórz zadanie Baterie AA do pilota')
   const sheet = screen.getByRole('dialog', { name: 'Zadanie' })
   expect(within(sheet).getByText('DO ZROBIENIA · ZAKUPY')).toBeDefined()
-  expect(within(sheet).getByText(/Dodane przez: Hania · zmiany zapisują się od razu/)).toBeDefined()
+  expect(within(sheet).getByText(/Dodane: Hania · zmiany zapisują się od razu/)).toBeDefined()
   fireEvent.change(within(sheet).getByLabelText('Nazwa zadania'), {
     target: { value: 'Baterie AAA do pilota' },
   })
@@ -165,7 +165,7 @@ test('zakładka Ogarnięte: grupy po dacie, kto i kiedy; kwadracik przywraca', (
   ])
   expect(
     screen.getByRole('button', { name: 'Otwórz zadanie Założyć opony zimowe' }).textContent,
-  ).toContain('OGARNĄŁ KRZYŚ')
+  ).toContain('WAŻNEKRZYŚ')
   expect(screen.getByText('11:40')).toBeDefined()
   expect(screen.getByText('wczoraj')).toBeDefined()
   click('Przywróć do „Do zrobienia”: Mleko i chleb')
@@ -212,9 +212,9 @@ test('Kosz (z Ustawień): zadania i wydarzenia, chipy, przywracanie z „Cofnij�
   renderAt('/ustawienia/kosz')
   expect(screen.getByRole('link', { name: /USTAWIENIA/ }).getAttribute('href')).toBe('/ustawienia')
   expect(screen.getByText('5 elementów')).toBeDefined()
-  expect(screen.getByText(/ZAKUPY · USUNĘŁA HANIA · 2 DNI TEMU/)).toBeDefined()
-  expect(screen.getByText(/WYDARZENIE · ŚR 14 PAŹ · 17:00 · USUNĄŁ KRZYŚ/)).toBeDefined()
-  expect(screen.getByText(/IMPREZA · PT 23 PAŹ · 19:00 · USUNĘŁA HANIA/)).toBeDefined()
+  expect(screen.getByText(/ZAKUPY · HANIA · 2 DNI TEMU/)).toBeDefined()
+  expect(screen.getByText(/WYDARZENIE · ŚR 14 PAŹ · 17:00 · KRZYŚ/)).toBeDefined()
+  expect(screen.getByText(/IMPREZA · PT 23 PAŹ · 19:00 · HANIA/)).toBeDefined()
   expect(screen.getByText('zniknie za 3 dni')).toBeDefined()
   // najnowsze najpierw
   expect(
