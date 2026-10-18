@@ -42,7 +42,8 @@ W katalogu repozytorium:
 ### Authentication
 1. Konsola → **Build → Authentication → Get started**.
 2. Zakładka **Sign-in method** → **Email/Password** → włącz pierwszy przełącznik (Email/Password) → **Zapisz**. „Email link” zostaw wyłączony.
-3. Zakładka **Settings → Authorized domains**: powinny być `localhost` i domeny `…web.app` / `…firebaseapp.com`. Jeśli będzie własna domena – dodasz ją tu później.
+3. Zakładka **Settings → Authorized domains**: powinny być `localhost` i domeny `…web.app` / `…firebaseapp.com`. Adres wersji testowej (`ogarnij-zycie--test-….web.app`) dopisze sam Claude przy następnej publikacji – wcześniej się nie dało, bo Authentication było wyłączone. Jeśli będzie własna domena – dodasz ją tu później.
+4. Zakładka **Templates** (Szablony): kliknij ikonę ołówka przy dowolnym szablonie, na dole **Template language** (Język szablonu) → **Polish / polski** → **Save**. Dzięki temu e‑mail „Nie pamiętam hasła” przyjdzie po polsku.
 
 ### Firestore
 1. Konsola → **Build → Firestore Database → Create database**.
@@ -51,7 +52,7 @@ W katalogu repozytorium:
 4. Gdy Claude przygotuje reguły: `npx firebase deploy --only firestore:rules,firestore:indexes`
 
 ### Emulatory (do testów reguł, na Twoim komputerze)
-1. Zainstaluj Javę (JDK 17+), jeśli `npx firebase emulators:start` o nią poprosi.
+1. Zainstaluj Javę **w wersji 21** (na komputerze jest teraz 8 – za stara dla emulatorów): https://adoptium.net → **Temurin 21 (LTS)** → instalator `.msi` dla Windows x64. W instalatorze zaznacz **Set JAVA_HOME variable** i **Add to PATH**. Potem zamknij i otwórz VS Code, a w terminalu `java -version` powinno pokazać 21.
 2. `npx firebase emulators:start` – uruchamia lokalne Auth i Firestore; nic nie trafia do prawdziwej bazy.
 
 ---

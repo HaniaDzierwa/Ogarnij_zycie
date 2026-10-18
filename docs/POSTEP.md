@@ -1,12 +1,12 @@
 # Postęp prac
 
-Aktualny etap: **1 – Klikalny mockup** (w toku)
+Aktualny etap: **2 – Konta i dane w Firestore** (w toku)
 
 | Etap | Status | Akceptacja |
 | --- | --- | --- |
 | 0 Przygotowanie | zakończony | 2026-10-18 |
-| 1 Klikalny mockup | w toku | – |
-| 2 Konta i dane | – | – |
+| 1 Klikalny mockup | zakończony | 2026-10-18 |
+| 2 Konta i dane | w toku | – |
 | 3 Zadania | – | – |
 | 4 Kategorie i filtry | – | – |
 | 5 Kalendarz | – | – |
@@ -14,6 +14,20 @@ Aktualny etap: **1 – Klikalny mockup** (w toku)
 | 7 Ustawienia i push | – | – |
 | 8 Wspólny dom | – | – |
 | 9 Testy i publikacja | – | – |
+
+## Etap 2 – kroki
+
+| Krok | Status |
+| --- | --- |
+| 1 Firebase SDK w aplikacji: Auth (stałe logowanie), Firestore z pamięcią offline, emulatory w `firebase.json` | do zrobienia (następny) |
+| 2 Model danych w Firestore: ścieżki, typy dokumentów, zamiana na typy aplikacji; `updatedAt`, `updatedBy` | do zrobienia |
+| 3 Reguły Firestore + testy w emulatorze (obcy nie czyta i nie zapisuje cudzego domu) | do zrobienia – potrzebna Java 21 (Hania, FIREBASE.md) |
+| 4 Konta: Zaloguj się, Załóż konto, Nie pamiętam hasła z Firebase Auth; Ładowanie kieruje wg stanu konta; „Wyloguj” w stopce Ustawień | do zrobienia – potrzebne włączone Authentication (Hania) |
+| 5 Pierwsze uruchomienie → „Załóż nowy dom” z nazwą domu: dom, domownik, domyślne kategorie i rodzaje wydarzeń | do zrobienia |
+| 6 Dane z Firestore zamiast przykładowych (zadania, kosz, kategorie, wydarzenia, rodzaje, ustawienia), działanie bez internetu | do zrobienia – potrzebna baza Firestore (Hania) |
+| 7 Wdrożenie reguł (Hania), demo na dwóch urządzeniach, odbiór | do zrobienia |
+
+„Dołącz do domu” (zaproszenia) zostaje w wersji z mockupu do etapu 8.
 
 ## Etap 1 – kroki
 
@@ -24,12 +38,12 @@ Wersja testowa: https://ogarnij-zycie--test-56tdtc0y.web.app (kanał `test`, odn
 | 1 Elementy wspólne (nagłówek, dolny pasek, menu „Co dodajesz?”, karty, chipy, przełączniki, arkusze, przycisk) | zrobione |
 | 2 Ładowanie (nowy projekt) i Pierwsze uruchomienie | zrobione, ładowanie zaakceptowane |
 | 3 Start (dzień/noc, kafelki, Ten tydzień, Pilne, Najbliższe wydarzenia) | zrobione |
-| 4 Zadania (zakładki, filtry, grupy, gesty, arkusz zadania, Nowe zadanie, Cofnij, Wyczyść, Kosz) | zrobione – czeka na sprawdzenie przez Hanię |
+| 4 Zadania (zakładki, filtry, grupy, gesty, arkusz zadania, Nowe zadanie, Cofnij, Wyczyść, Kosz) | zrobione, zaakceptowane |
 | 5 Kalendarz (tydzień/miesiąc, Dziś, agenda, Później, arkusz wydarzenia z rodzajami) | zrobione – Hania: „działa” (z koszem i edycją wydarzeń) |
-| 6 Ustawienia (z sekcją Porządki: sprzątanie, Kosz), Domownicy, Zaproś, Dołącz (bez Synchronizacji i Zmian od domownika) | zrobione – czeka na sprawdzenie przez Hanię |
+| 6 Ustawienia (z sekcją Porządki: sprzątanie, Kosz), Domownicy, Zaproś, Dołącz (bez Synchronizacji i Zmian od domownika) | zrobione, zaakceptowane |
 | 7 Ekrany konta (Zaloguj się, Załóż konto, Nie pamiętam hasła) | zrobione, zaakceptowane |
 | Przykładowe dane i daty (pomocnicze, `src/data`) | zrobione |
-| Porównanie zrzutów z projektem i lista poprawek (odbiór) | na koniec etapu |
+| Porównanie zrzutów z projektem i lista poprawek (odbiór) | zrobione – Hania: „akceptuję” 2026-10-18 |
 
 ## Uwagi Hani
 
@@ -109,3 +123,5 @@ Wersja testowa: https://ogarnij-zycie--test-56tdtc0y.web.app (kanał `test`, odn
 - 2026-10-18 · Etap 1 · Hania sprawdziła zamykanie paneli i arkuszy dotknięciem obok na telefonie: „działa, super robota”. Wszystkie ekrany etapu 1 są w aplikacji – następny krok: odbiór etapu 1.
 - 2026-10-18 · Etap 1 · Poprawka Hani: arkusz zadania – „W tym tygodniu” (koniec tygodnia = niedziela) w niedzielę daje tę samą datę co „Dziś”, a w sobotę co „Jutro”; zaznaczenie liczone z samej daty zawsze wskazywało pierwszy przycisk, więc kliknięcie wyglądało na niedziałające. Teraz arkusz pamięta kliknięty przycisk. · Sprawdzenie: w niedzielę otwórz zadanie → „W tym tygodniu” → przycisk zaznaczony; `npm test` – 127 testów.
 - 2026-10-18 · Etap 1 · Odpowiedzi Hani na otwarte pytania (etapy 1–9) zapisane w PLAN.md, DESIGN.md i tabeli uwag. Naniesione od razu: samo imię zamiast formy czasownika (lista Ogarniętych, arkusze zadania i wydarzenia, Kosz, ekran zaproszenia „Ola jest z Wami”), model bez `verbForm`; kafelek „Ogarnięte dziś” – mianownik = plan na dziś (3 / 4 w danych z projektu). · Sprawdzenie: Zadania → Ogarnięte („KRZYŚ”, „HANIA”), Kosz, Start; `npm test` – 127 testów.
+- 2026-10-18 · Etap 1 · Odbiór: wszystkie ekrany z projektu w aplikacji, poprawki Hani naniesione, testy (127) i build przechodzą; Hania: „akceptuję”. Etap 1 zakończony.
+- 2026-10-18 · Etap 2 · Start: kroki rozpisane w tabeli „Etap 2 – kroki”; instrukcje dla Hani w FIREBASE.md uzupełnione (Java 21 dla emulatorów, polskie szablony e‑maili, domena kanału testowego w Authentication).

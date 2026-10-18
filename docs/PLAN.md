@@ -32,9 +32,9 @@ Cel: pusty projekt, który otwiera się pod adresem testowym w przeglądarce tel
 6. Poprawka tekstów projektu: „bez konta i bez chmury” → teksty zgodne z Firebase (Pierwsze uruchomienie, Ustawienia, Synchronizacja, Zaproszenie). Propozycje do akceptacji Hani.
 
 **Odbiór:**
-- [ ] Pusta strona z logo domku otwiera się pod adresem testowym w przeglądarce telefonu Hani
-- [ ] Wszystkie trasy z mapy ekranów istnieją i da się między nimi przejść
-- [ ] Hania potwierdza nowe teksty o danych w Firebase
+- [x] Pusta strona z logo domku otwiera się pod adresem testowym w przeglądarce telefonu Hani
+- [x] Wszystkie trasy z mapy ekranów istnieją i da się między nimi przejść
+- [x] Hania potwierdza nowe teksty o danych w Firebase
 
 ## Etap 1 – Klikalny mockup
 
@@ -49,10 +49,10 @@ Cel: wszystkie ekrany z projektu w aplikacji, na przykładowych danych (w pamię
 7. Ekrany konta (nowe – nie ma ich w `docs/design/ekrany/`): Zaloguj się, Załóż konto, Nie pamiętam hasła. Projektuje Claude w stylu pozostałych ekranów (nagłówek 120 px z panoramą, karty, pola 48 px, przycisk główny); Hania akceptuje wygląd przed etapem 2.
 
 **Odbiór:**
-- [ ] Każdy ekran z `docs/design/ekrany/` jest w aplikacji i wygląda tak samo (porównanie zrzutów obok projektu)
-- [ ] Wszystkie przyciski i linki prowadzą tam, gdzie w projekcie
-- [ ] Animacje dzień/noc działają płynnie na telefonie
-- [ ] Lista poprawek wyglądu zebrana i naniesiona
+- [x] Każdy ekran z `docs/design/ekrany/` jest w aplikacji i wygląda tak samo (porównanie zrzutów obok projektu)
+- [x] Wszystkie przyciski i linki prowadzą tam, gdzie w projekcie
+- [x] Animacje dzień/noc działają płynnie na telefonie
+- [x] Lista poprawek wyglądu zebrana i naniesiona
 - [x] Hania akceptuje wygląd ekranów konta (logowanie, rejestracja, reset hasła)
 
 ## Etap 2 – Konta i dane w Firestore
