@@ -27,13 +27,13 @@ Wszystko w konsoli Firebase robisz Ty; Claude pisze kod i dopisuje tu kolejne kr
 4. Kolejne kroki kreatora (instalacja SDK, CLI, deploy) możesz przeklikać „Dalej” – zrobi to Claude w repozytorium.
 
 ### 4. Połączenie repozytorium z projektem
-W katalogu repozytorium, w terminalu:
-1. `npx firebase use --add` → wybierz projekt `ogarnij-zycie`, alias: `default`.
-2. Podaj Claude identyfikator projektu, jeśli o niego poprosi.
+Zrobione w repozytorium: plik `.firebaserc` wskazuje projekt `ogarnij-zycie` (zamiast `npx firebase use --add`). Hosting jest włączony – strona `ogarnij-zycie`, adres docelowy `https://ogarnij-zycie.web.app` (na razie pusty; publikujemy tam dopiero w etapie 9).
 
-### 5. Pierwsza publikacja testowa (gdy Claude powie, że gotowe)
+### 5. Publikacja testowa (kanał podglądu)
+W katalogu repozytorium:
 1. `npm run build`
 2. `npx firebase hosting:channel:deploy test` – na końcu pojawi się adres podglądu (`https://ogarnij-zycie--test-….web.app`). Otwórz go na telefonie.
+3. Adres podglądu wygasa po 7 dniach; kolejne uruchomienie tej komendy odświeża go i przedłuża.
 
 ---
 
