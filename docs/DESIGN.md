@@ -105,7 +105,7 @@ Zakupy `#5E8C6A` · Dom `#B8925A` · Zdrowie `#A4492F` · Urzędy `#6E5F8C` · A
 - Tryb dzień/noc nagłówka Startu i ekranu ładowania wg godziny (6:00–18:00 dzień).
 - Termin zadania (jedna zasada, 2026-10-18): dziś → **DZIŚ** (czerwona plakietka), jutro → **JUTRO**, w ciągu 7 dni → dzień i data (**WT 13 PAŹ**), dalej → **DO 30 PAŹ**.
 - Zadanie z podzadaniami jest ogarnięte, gdy wszystkie podzadania są odhaczone; odznaczenie kroku przywraca zadanie (2026-10-18).
-- Edycja zadania (2026-10-18, nie ma jej w projekcie): dotknięcie zadania otwiera arkusz „Edytuj zadanie” – ten sam co „Nowe zadanie”, z wypełnionymi polami, „Zapisz zmiany” i „Usuń zadanie” (z potwierdzeniem). W terminie dodatkowy chip „Inna data” z kalendarzem telefonu.
+- Gesty na zadaniu (2026-10-18, nie ma ich w projekcie): **dotknięcie** = ogarnięte (zaznaczenie, po chwili do „Już ogarnięte”; tam dotknięcie przywraca); **przesunięcie w lewo** = edycja (arkusz „Edytuj zadanie” – ten sam co „Nowe zadanie”, pola wypełnione, „Zapisz zmiany”, w terminie chip „Inna data”); **przesunięcie w prawo** = usunięcie (okienko „Usunąć zadanie?” – Anuluj / Usuń). Pod wierszem podpowiedź z ikoną: jasne tło „Edytuj”/„Usuń”, za progiem mocny kolor i „Puść, aby …”.
 - „Najbliższe wydarzenia” na Starcie (2026-10-18): dwa najbliższe wydarzenia dowolnego rodzaju (bez terminów zadań).
 
 ## Model danych (propozycja do etapu 2)

@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, expect, test } from 'vitest'
 import { routes } from '../../app/router.tsx'
@@ -89,12 +89,13 @@ test('„Zwiń wszystko” ⇄ „Rozwiń wszystko”', () => {
   expect(screen.getAllByText('1 PILNE').length).toBeGreaterThan(0)
 })
 
-test('odhaczenie zadania przenosi je do „Już ogarnięte”', () => {
+test('dotknięcie zadania: najpierw zaznaczenie, po chwili „Już ogarnięte”', async () => {
   renderAt('/zadania')
   fireEvent.click(
     screen.getByRole('button', { name: 'Oznacz jako zrobione: Baterie AA do pilota' }),
   )
-  expect(screen.getByText('11 otwartych')).toBeDefined()
+  expect(screen.getByText('12 otwartych')).toBeDefined()
+  await waitFor(() => expect(screen.getByText('11 otwartych')).toBeDefined())
 })
 
 test('arkusz „Nowe zadanie” z ?nowe=zadanie dodaje zadanie', () => {
@@ -166,14 +167,29 @@ test('edycja: termin spoza chipów pokazuje „Inna data” z datą', () => {
   )
 })
 
-test('edycja: „Usuń zadanie” z potwierdzeniem', () => {
+test('usuwanie: pytanie „Usunąć zadanie?”, „Anuluj” zostawia, „Usuń” usuwa', () => {
   renderAt('/zadania')
-  fireEvent.click(screen.getByRole('button', { name: 'Edytuj zadanie: Baterie AA do pilota' }))
-  fireEvent.click(screen.getByRole('button', { name: 'Usuń zadanie' }))
-  fireEvent.click(screen.getByRole('button', { name: 'Zostaw' }))
-  expect(screen.getByRole('dialog', { name: 'Edytuj zadanie' })).toBeDefined()
-  fireEvent.click(screen.getByRole('button', { name: 'Usuń zadanie' }))
-  fireEvent.click(screen.getByRole('button', { name: 'Usuń' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Usuń zadanie: Baterie AA do pilota' }))
+  const dialog = screen.getByRole('alertdialog', { name: 'Usunąć zadanie?' })
+  expect(dialog.textContent).toContain('„Baterie AA do pilota” zniknie z listy.')
+  fireEvent.click(within(dialog).getAllByRole('button', { name: 'Anuluj' }).at(-1)!)
+  expect(screen.queryByRole('alertdialog')).toBeNull()
+  expect(screen.getByText('12 otwartych')).toBeDefined()
+  fireEvent.click(screen.getByRole('button', { name: 'Usuń zadanie: Baterie AA do pilota' }))
+  fireEvent.click(within(screen.getByRole('alertdialog')).getByRole('button', { name: 'Usuń' }))
   expect(screen.queryByText('Baterie AA do pilota')).toBeNull()
   expect(screen.getByText('11 otwartych')).toBeDefined()
+})
+
+test('arkusz edycji nie ma „Usuń zadanie” (usuwa się gestem w prawo)', () => {
+  renderAt('/zadania')
+  fireEvent.click(screen.getByRole('button', { name: 'Edytuj zadanie: Baterie AA do pilota' }))
+  const sheet = screen.getByRole('dialog', { name: 'Edytuj zadanie' })
+  expect(within(sheet).queryByRole('button', { name: /Usuń zadanie/ })).toBeNull()
+})
+
+test('„Już ogarnięte”: dotknięcie przywraca zadanie', () => {
+  renderAt('/zadania?pokaz=ogarniete')
+  fireEvent.click(screen.getByRole('button', { name: 'Przywróć zadanie: Mleko i chleb' }))
+  expect(screen.getByText('13 otwartych')).toBeDefined()
 })

@@ -506,3 +506,115 @@ export function Field({
     </div>
   )
 }
+
+/** Okienko z pytaniem (np. „Usunąć zadanie?”) – na środku ekranu, z przyciemnieniem. */
+export function ConfirmDialog({
+  title,
+  message,
+  confirmLabel,
+  onConfirm,
+  onCancel,
+  danger = false,
+}: {
+  title: string
+  message?: ReactNode
+  confirmLabel: string
+  onConfirm: () => void
+  onCancel: () => void
+  danger?: boolean
+}) {
+  return (
+    <div
+      role="alertdialog"
+      aria-modal="true"
+      aria-label={title}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 50,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 24,
+      }}
+    >
+      <button
+        type="button"
+        aria-label="Anuluj"
+        tabIndex={-1}
+        onClick={onCancel}
+        className="fade-in"
+        style={{
+          position: 'absolute',
+          inset: 0,
+          width: '100%',
+          height: '100%',
+          border: 0,
+          background: 'rgba(31,61,46,0.5)',
+        }}
+      />
+      <div
+        className="pop-center"
+        style={{
+          position: 'relative',
+          width: '100%',
+          maxWidth: 340,
+          background: colors.creamLight,
+          borderRadius: 24,
+          padding: '22px 20px 18px',
+          boxShadow: shadows.popover,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 10,
+        }}
+      >
+        <span style={{ fontFamily: "'Fraunces', serif", fontSize: 22, fontWeight: 500 }}>
+          {title}
+        </span>
+        {message && (
+          <span style={{ fontSize: 15, lineHeight: 1.45, color: colors.muted2 }}>{message}</span>
+        )}
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+            gap: 8,
+            marginTop: 8,
+          }}
+        >
+          <button
+            type="button"
+            autoFocus
+            onClick={onCancel}
+            style={{
+              height: 48,
+              border: `1px solid ${colors.border}`,
+              borderRadius: 24,
+              background: colors.white,
+              color: colors.green900,
+              fontSize: 15,
+              fontWeight: 700,
+            }}
+          >
+            Anuluj
+          </button>
+          <button
+            type="button"
+            onClick={onConfirm}
+            style={{
+              height: 48,
+              border: 0,
+              borderRadius: 24,
+              background: danger ? priorities.high.line : colors.green900,
+              color: danger ? colors.white : colors.cream,
+              fontSize: 15,
+              fontWeight: 800,
+            }}
+          >
+            {confirmLabel}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}

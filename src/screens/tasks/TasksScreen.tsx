@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { useSearchParams } from 'react-router'
 import { Accent, Header } from '../../components/Header.tsx'
 import { TabBar } from '../../components/TabBar.tsx'
-import { Box, Dot, SyncBadge } from '../../components/ui.tsx'
+import { SwipeRow } from '../../components/SwipeRow.tsx'
+import { Box, ConfirmDialog, Dot, SyncBadge } from '../../components/ui.tsx'
 import { CloseIcon, SlidersIcon } from '../../components/icons.tsx'
 import { shortDayLabel } from '../../data/dates.ts'
 import { useStore } from '../../data/MockStore.tsx'
@@ -40,6 +41,8 @@ export function TasksScreen() {
   const [showDoneToggle, setShowDoneToggle] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const editing = tasks.find((t) => t.id === editingId)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const deleting = tasks.find((t) => t.id === deletingId)
 
   const sheetOpen = params.get('nowe') === 'zadanie'
   const setSheetOpen = (open: boolean) =>
@@ -375,6 +378,7 @@ export function TasksScreen() {
                       expanded={expanded === t.id}
                       onExpand={() => setExpanded((e) => (e === t.id ? null : t.id))}
                       onEdit={() => setEditingId(t.id)}
+                      onDelete={() => setDeletingId(t.id)}
                       onToggleDone={() => updateTask(t.id, toggleTask)}
                       onToggleSub={(sid) => updateTask(t.id, (x) => toggleSubtask(x, sid))}
                       onRemoveSub={(sid) => updateTask(t.id, (x) => removeSubtask(x, sid))}
@@ -439,82 +443,77 @@ export function TasksScreen() {
             {showDone && (
               <div style={{ background: colors.sand, borderRadius: 22, overflow: 'hidden' }}>
                 {view.done.map((t) => (
-                  <div
+                  <SwipeRow
                     key={t.id}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 4,
-                      padding: '4px 16px 4px 4px',
-                      minHeight: 52,
-                      borderBottom: `1px solid ${colors.borderSoft}`,
-                      color: colors.muted,
-                    }}
+                    background={colors.sand}
+                    onSwipeLeft={() => setEditingId(t.id)}
+                    onSwipeRight={() => setDeletingId(t.id)}
+                    editLabel={`Edytuj zadanie: ${t.title}`}
+                    deleteLabel={`Usuń zadanie: ${t.title}`}
                   >
                     <button
                       type="button"
-                      onClick={() => updateTask(t.id, (x) => ({ ...x, done: false }))}
+                      onClick={() => updateTask(t.id, toggleTask)}
                       aria-label={`Przywróć zadanie: ${t.title}`}
                       style={{
-                        width: 44,
-                        height: 44,
-                        border: 0,
-                        background: 'transparent',
                         display: 'flex',
                         alignItems: 'center',
-                        justifyContent: 'center',
-                        flex: 'none',
+                        gap: 4,
+                        width: '100%',
+                        padding: '4px 16px 4px 4px',
+                        minHeight: 52,
+                        border: 0,
+                        borderBottom: `1px solid ${colors.borderSoft}`,
+                        background: 'transparent',
+                        color: colors.muted,
+                        textAlign: 'left',
                       }}
                     >
                       <span
                         style={{
-                          width: 24,
-                          height: 24,
-                          borderRadius: 8,
-                          background: colors.green900,
-                          color: colors.brass300,
+                          width: 44,
+                          height: 44,
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
+                          flex: 'none',
                         }}
                       >
-                        <svg
-                          width="14"
-                          height="14"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="3"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          aria-hidden="true"
+                        <span
+                          style={{
+                            width: 24,
+                            height: 24,
+                            borderRadius: 8,
+                            background: colors.green900,
+                            color: colors.brass300,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
                         >
-                          <path d="M5 12.5l4.5 4.5L19 7.5" />
-                        </svg>
+                          <svg
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="3"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            aria-hidden="true"
+                          >
+                            <path d="M5 12.5l4.5 4.5L19 7.5" />
+                          </svg>
+                        </span>
+                      </span>
+                      <span style={{ flex: 1, fontSize: 15, textDecoration: 'line-through' }}>
+                        {t.title}
+                      </span>
+                      <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '1px' }}>
+                        {categoryName(t).toUpperCase()}
                       </span>
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => setEditingId(t.id)}
-                      aria-label={`Edytuj zadanie: ${t.title}`}
-                      style={{
-                        flex: 1,
-                        minHeight: 44,
-                        padding: 0,
-                        border: 0,
-                        background: 'transparent',
-                        color: 'inherit',
-                        textAlign: 'left',
-                        fontSize: 15,
-                        textDecoration: 'line-through',
-                      }}
-                    >
-                      {t.title}
-                    </button>
-                    <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '1px' }}>
-                      {categoryName(t).toUpperCase()}
-                    </span>
-                  </div>
+                  </SwipeRow>
                 ))}
               </div>
             )}
@@ -548,9 +547,19 @@ export function TasksScreen() {
             updateTask(editing.id, () => ({ ...task, id: editing.id }))
             setEditingId(null)
           }}
-          onDelete={() => {
-            store.setTasks((list) => list.filter((x) => x.id !== editing.id))
-            setEditingId(null)
+        />
+      )}
+
+      {deleting && (
+        <ConfirmDialog
+          title="Usunąć zadanie?"
+          message={<>„{deleting.title}” zniknie z listy.</>}
+          confirmLabel="Usuń"
+          danger
+          onCancel={() => setDeletingId(null)}
+          onConfirm={() => {
+            store.setTasks((list) => list.filter((x) => x.id !== deleting.id))
+            setDeletingId(null)
           }}
         />
       )}

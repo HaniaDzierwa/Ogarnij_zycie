@@ -28,24 +28,16 @@ type Props = {
   today: DateKey
   /** Zwraca id nowej kategorii. */
   onAddCategory: (name: string, color: string) => string
-} & (
-  | { task?: undefined; onSave: (task: Omit<Task, 'id'>) => void; onDelete?: undefined }
-  | { task: Task; onSave: (task: Omit<Task, 'id'>) => void; onDelete: () => void }
-)
+  /** Zadanie do edycji; brak = nowe zadanie. */
+  task?: Task
+  onSave: (task: Omit<Task, 'id'>) => void
+}
 
 /**
  * Arkusz „Nowe zadanie” / „Edytuj zadanie”: tytuł, kategoria, priorytet, kroki, termin.
  * Otwierany warunkowo – stan formularza startuje od nowa przy każdym otwarciu.
  */
-export function TaskSheet({
-  onClose,
-  categories,
-  today,
-  onAddCategory,
-  task,
-  onSave,
-  onDelete,
-}: Props) {
+export function TaskSheet({ onClose, categories, today, onAddCategory, task, onSave }: Props) {
   const editing = task !== undefined
   const [title, setTitle] = useState(task?.title ?? '')
   const [categoryId, setCategoryId] = useState<string | null>(
@@ -59,7 +51,6 @@ export function TaskSheet({
   const [steps, setSteps] = useState<Subtask[]>(task?.subtasks ?? [])
   const [step, setStep] = useState('')
   const [addingCategory, setAddingCategory] = useState(false)
-  const [confirmDelete, setConfirmDelete] = useState(false)
 
   const due = choice === 'Inna data' ? customDate : presetDate(choice, today)
 
@@ -303,75 +294,6 @@ export function TaskSheet({
       </Group>
 
       <PrimaryButton onClick={submit}>{editing ? 'Zapisz zmiany' : 'Dodaj zadanie'}</PrimaryButton>
-
-      {editing &&
-        (confirmDelete ? (
-          <div
-            role="alertdialog"
-            aria-label="Usunąć zadanie?"
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 10,
-              padding: 14,
-              borderRadius: 16,
-              background: priorities.high.bg,
-            }}
-          >
-            <span style={{ fontSize: 15, fontWeight: 700, color: priorities.high.fg }}>
-              Usunąć „{task.title}”?
-            </span>
-            <div
-              style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8 }}
-            >
-              <button
-                type="button"
-                onClick={() => setConfirmDelete(false)}
-                style={{
-                  height: 42,
-                  border: `1px solid ${colors.border}`,
-                  borderRadius: 21,
-                  background: colors.white,
-                  color: colors.green900,
-                  fontSize: 14,
-                  fontWeight: 700,
-                }}
-              >
-                Zostaw
-              </button>
-              <button
-                type="button"
-                onClick={onDelete}
-                style={{
-                  height: 42,
-                  border: 0,
-                  borderRadius: 21,
-                  background: priorities.high.line,
-                  color: colors.white,
-                  fontSize: 14,
-                  fontWeight: 800,
-                }}
-              >
-                Usuń
-              </button>
-            </div>
-          </div>
-        ) : (
-          <button
-            type="button"
-            onClick={() => setConfirmDelete(true)}
-            style={{
-              minHeight: 44,
-              border: 0,
-              background: 'transparent',
-              color: priorities.high.fg,
-              fontSize: 14,
-              fontWeight: 800,
-            }}
-          >
-            Usuń zadanie
-          </button>
-        ))}
     </Sheet>
   )
 }
