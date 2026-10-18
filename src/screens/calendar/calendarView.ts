@@ -10,7 +10,7 @@ import {
 } from '../../data/dates.ts'
 import { plural } from '../../data/plural.ts'
 import type { CalendarItem } from '../../data/selectors.ts'
-import type { EventType, Remind } from '../../data/types.ts'
+import type { EventType } from '../../data/types.ts'
 
 /** Rodzaj „Termin zadania” – terminy niezrobionych zadań. */
 export const DEADLINE_TYPE = 'task'
@@ -66,16 +66,6 @@ export const weekCountLabel = (n: number) =>
 /** „2 WPISY” nad agendą; pusto, gdy dzień jest wolny. */
 export const dayCountLabel = (n: number) =>
   n === 0 ? '' : `${n} ${plural(n, ['wpis', 'wpisy', 'wpisów']).toUpperCase()}`
-
-export const REMINDS: { id: Remind; name: string }[] = [
-  { id: 'none', name: 'Brak' },
-  { id: 'day', name: 'Dzień wcześniej' },
-  { id: 'week', name: 'Tydzień wcześniej' },
-]
-
-/** Opis pod tytułem nowego wydarzenia: „Przypomnienie dzień wcześniej”. */
-export const remindNote = (r: Remind) =>
-  r === 'none' ? '' : `Przypomnienie ${REMINDS.find((x) => x.id === r)!.name.toLowerCase()}`
 
 /** Kolory do wyboru dla nowego rodzaju (jak w projekcie). */
 export const TYPE_SWATCHES = [

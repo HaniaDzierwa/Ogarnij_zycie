@@ -1,10 +1,14 @@
 // Wyliczenia z danych – wspólne dla Startu, Zadań i Kalendarza.
 
 import { addDays, diffDays, weekStart, type DateKey } from './dates.ts'
+import { remindNote } from './eventOps.ts'
 import type { CalendarEvent, Task } from './types.ts'
 
 /** Zadania poza koszem. */
 export const liveTasks = (tasks: Task[]) => tasks.filter((t) => !t.deleted)
+
+/** Wydarzenia, które nie zostały usunięte. */
+export const liveEvents = (events: CalendarEvent[]) => events.filter((e) => !e.deleted)
 
 export const openTasks = (tasks: Task[]) => liveTasks(tasks).filter((t) => !t.done)
 
@@ -50,14 +54,14 @@ export function calendarItems(
       note: `${categoryName(t.categoryId)} · ${priorityLabel(t)}`,
       taskId: t.id,
     }))
-  const evs: CalendarItem[] = events.map((e) => ({
+  const evs: CalendarItem[] = liveEvents(events).map((e) => ({
     id: e.id,
     title: e.title,
     date: e.date,
     typeId: e.typeId,
     from: e.from,
     to: e.to,
-    note: e.note,
+    note: [e.note, remindNote(e.remind)].filter(Boolean).join(' · '),
   }))
   return [...deadlines, ...evs].sort(
     (a, b) => a.date.localeCompare(b.date) || (a.from ?? '').localeCompare(b.from ?? ''),
@@ -66,7 +70,7 @@ export function calendarItems(
 
 /** Wydarzenia (bez terminów zadań) od dziś, najbliższe najpierw. */
 export function upcomingEvents(events: CalendarEvent[], today: DateKey, limit = 2) {
-  return events
+  return liveEvents(events)
     .filter((e) => diffDays(today, e.date) >= 0)
     .sort((a, b) => a.date.localeCompare(b.date))
     .slice(0, limit)

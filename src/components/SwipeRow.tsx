@@ -12,8 +12,8 @@ export type SwipeAction = {
 
 type Props = {
   children: ReactNode
-  /** Przeciągnięcie w prawo – tło odsłania się z lewej. */
-  right: SwipeAction
+  /** Przeciągnięcie w prawo – tło odsłania się z lewej (brak = wiersz nie jedzie w prawo). */
+  right?: SwipeAction
   /** Przeciągnięcie w lewo – tło odsłania się z prawej. */
   left: SwipeAction
   /** Tło wiersza (zasłania akcje pod spodem). */
@@ -44,7 +44,7 @@ export function SwipeRow({ children, right, left, background = '#FFFFFF' }: Prop
     setDx(0)
   }
 
-  const action = dx > 0 ? right : dx < 0 ? left : null
+  const action = dx > 0 ? right : dx < 0 ? left : undefined
   const passed = Math.abs(dx) >= THRESHOLD
 
   return (
@@ -111,7 +111,7 @@ export function SwipeRow({ children, right, left, background = '#FFFFFF' }: Prop
             e.currentTarget.setPointerCapture?.(e.pointerId)
           }
           if (mode.current !== 'swipe') return
-          const clamped = Math.max(-MAX, Math.min(MAX, mx))
+          const clamped = Math.max(-MAX, Math.min(right ? MAX : 0, mx))
           if (Math.abs(clamped) >= THRESHOLD && Math.abs(dxRef.current) < THRESHOLD) {
             navigator.vibrate?.(10)
           }
@@ -124,7 +124,7 @@ export function SwipeRow({ children, right, left, background = '#FFFFFF' }: Prop
           setTimeout(() => (suppressClick.current = false), 60)
           const final = dxRef.current
           reset()
-          if (final >= THRESHOLD) right.run()
+          if (final >= THRESHOLD) right?.run()
           else if (final <= -THRESHOLD) left.run()
         }}
         onPointerCancel={reset}
@@ -141,7 +141,7 @@ export function SwipeRow({ children, right, left, background = '#FFFFFF' }: Prop
         {children}
       </div>
       {[right, left]
-        .filter((a) => a.srLabel)
+        .filter((a): a is SwipeAction => !!a?.srLabel)
         .map((a) => (
           <button key={a.srLabel} type="button" className="sr-only" onClick={a.run}>
             {a.srLabel}

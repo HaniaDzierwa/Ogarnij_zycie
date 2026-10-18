@@ -28,8 +28,8 @@ import type {
   Task,
 } from './types.ts'
 
-/** Pasek „… · COFNIJ”: tekst + stan zadań sprzed akcji. */
-export type Toast = { id: number; text: string; before: Task[] }
+/** Pasek „… · COFNIJ”: tekst + przywrócenie stanu sprzed akcji (zadań albo wydarzeń). */
+export type Toast = { id: number; text: string; restore: () => void }
 
 const TOAST_MS = 4500
 
@@ -51,6 +51,8 @@ type Store = {
   setTasks: (update: (tasks: Task[]) => Task[]) => void
   /** Zmiana zadań z paskiem „Cofnij”. */
   changeTasks: (text: string, update: (tasks: Task[]) => Task[]) => void
+  /** Zmiana wydarzeń z paskiem „Cofnij”. */
+  changeEvents: (text: string, update: (events: CalendarEvent[]) => CalendarEvent[]) => void
   undo: () => void
   setCategories: (update: (categories: Category[]) => Category[]) => void
   setEvents: (update: (events: CalendarEvent[]) => CalendarEvent[]) => void
@@ -73,19 +75,33 @@ export function MockStoreProvider({ children, today }: { children: ReactNode; to
 
   const who = useCallback(() => ({ uid: mockCurrentUid, at: nowStamp(day) }), [day])
 
+  const showToast = useCallback((text: string, restore: () => void) => {
+    const id = ++toastId.current
+    setToast({ id, text, restore })
+    setTimeout(() => setToast((t) => (t?.id === id ? null : t)), TOAST_MS)
+  }, [])
+
   const changeTasks = useCallback(
     (text: string, update: (t: Task[]) => Task[]) => {
-      const id = ++toastId.current
-      setToast({ id, text, before: tasks })
+      const before = tasks
+      showToast(text, () => setTasks(before))
       setTasks(update(tasks))
-      setTimeout(() => setToast((t) => (t?.id === id ? null : t)), TOAST_MS)
     },
-    [tasks],
+    [tasks, showToast],
+  )
+
+  const changeEvents = useCallback(
+    (text: string, update: (e: CalendarEvent[]) => CalendarEvent[]) => {
+      const before = events
+      showToast(text, () => setEvents(before))
+      setEvents(update(events))
+    },
+    [events, showToast],
   )
 
   const undo = useCallback(() => {
     if (!toast) return
-    setTasks(toast.before)
+    toast.restore()
     setToast(null)
   }, [toast])
 
@@ -105,6 +121,7 @@ export function MockStoreProvider({ children, today }: { children: ReactNode; to
       setUserName,
       setTasks,
       changeTasks,
+      changeEvents,
       undo,
       setCategories,
       setEvents,
@@ -122,6 +139,7 @@ export function MockStoreProvider({ children, today }: { children: ReactNode; to
       toast,
       who,
       changeTasks,
+      changeEvents,
       undo,
     ],
   )

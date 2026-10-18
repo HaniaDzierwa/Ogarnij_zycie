@@ -129,3 +129,76 @@ describe('ekran Kalendarz', () => {
     expect(within(sheet).getByText('SOBOTA, 10 PAŹDZIERNIKA')).toBeDefined()
   })
 })
+
+describe('edycja i usuwanie – jak w Zadaniach', () => {
+  const row = (title: string) => screen.getByRole('button', { name: new RegExp(`^${title}`) })
+
+  test('dotknięcie wydarzenia: arkusz z edycją w miejscu', () => {
+    renderAt('/kalendarz?dzien=2026-10-10')
+    fireEvent.click(row('Kino z Krzysiem'))
+    const sheet = screen.getByRole('dialog', { name: 'Wydarzenie' })
+    expect(within(sheet).getByText('WYDARZENIE · SOBOTA, 10 PAŹDZIERNIKA')).toBeDefined()
+    fireEvent.change(within(sheet).getByLabelText('Nazwa wydarzenia'), {
+      target: { value: 'Kino z Krzysiem i Olą' },
+    })
+    fireEvent.click(within(sheet).getByRole('button', { name: 'Impreza' }))
+    fireEvent.click(within(sheet).getByRole('button', { name: 'Brak' }))
+    fireEvent.change(within(sheet).getByLabelText('OD'), { target: { value: '20:00' } })
+    fireEvent.click(within(sheet).getAllByRole('button', { name: 'Gotowe' })[1])
+
+    expect(screen.queryByRole('dialog')).toBeNull()
+    expect(row('Kino z Krzysiem i Olą').textContent).toBe('Kino z Krzysiem i OląIMPREZA20:00')
+  })
+
+  test('zmiana dnia w arkuszu: po zamknięciu kalendarz pokazuje nowy dzień', () => {
+    renderAt('/kalendarz?dzien=2026-10-10')
+    fireEvent.click(row('Kino z Krzysiem'))
+    const sheet = screen.getByRole('dialog', { name: 'Wydarzenie' })
+    fireEvent.change(within(sheet).getByLabelText('DZIEŃ'), { target: { value: '2026-10-12' } })
+    fireEvent.click(within(sheet).getAllByRole('button', { name: 'Gotowe' })[0])
+    expect(agenda().textContent).toContain('Poniedziałek, 12 października')
+    expect(agenda().textContent).toContain('Kino z Krzysiem')
+  })
+
+  test('„Usuń” w arkuszu i „COFNIJ” przywraca wydarzenie', () => {
+    renderAt('/kalendarz?dzien=2026-10-10')
+    fireEvent.click(row('Kino z Krzysiem'))
+    fireEvent.click(screen.getByRole('button', { name: 'Usuń' }))
+    expect(screen.queryByRole('dialog')).toBeNull()
+    expect(agenda().textContent).not.toContain('Kino z Krzysiem')
+    expect(screen.getByRole('status').textContent).toContain(
+      'Usunięto z kalendarza: Kino z Krzysiem',
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'COFNIJ' }))
+    expect(agenda().textContent).toContain('Kino z Krzysiem')
+  })
+
+  test('przeciągnięcie w lewo usuwa wydarzenie (też ze Startu)', () => {
+    renderAt('/kalendarz?dzien=2026-10-10')
+    fireEvent.click(screen.getByRole('button', { name: 'Usuń wydarzenie: Kino z Krzysiem' }))
+    expect(agenda().textContent).not.toContain('Kino z Krzysiem')
+    fireEvent.click(screen.getByRole('link', { name: 'Start' }))
+    const section = screen
+      .getByRole('heading', { name: 'Najbliższe wydarzenia' })
+      .closest('section')!
+    expect(section.textContent).not.toContain('Kino z Krzysiem')
+  })
+
+  test('termin zadania: arkusz zadania, w prawo = ogarnij, w lewo = do kosza', () => {
+    renderAt('/kalendarz?dzien=2026-10-10')
+    fireEvent.click(row('Wykupić receptę'))
+    const sheet = screen.getByRole('dialog', { name: 'Zadanie' })
+    expect(within(sheet).getByText('DO ZROBIENIA · ZDROWIE')).toBeDefined()
+    fireEvent.click(within(sheet).getAllByRole('button', { name: 'Gotowe' })[0])
+
+    fireEvent.click(screen.getByRole('button', { name: 'Ogarnij: Wykupić receptę' }))
+    expect(agenda().textContent).not.toContain('Wykupić receptę')
+    expect(screen.getByRole('status').textContent).toContain('Ogarnięte: Wykupić receptę')
+    fireEvent.click(screen.getByRole('button', { name: 'COFNIJ' }))
+
+    fireEvent.click(screen.getByRole('button', { name: 'Przenieś do kosza: Wykupić receptę' }))
+    expect(screen.getByRole('status').textContent).toContain(
+      'Przeniesiono do kosza: Wykupić receptę',
+    )
+  })
+})

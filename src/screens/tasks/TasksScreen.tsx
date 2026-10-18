@@ -9,14 +9,7 @@ import { ChevronRightIcon, CloseIcon, SlidersIcon, TrashIcon } from '../../compo
 import { shortDayLabel, whenLabel } from '../../data/dates.ts'
 import { useStore } from '../../data/MockStore.tsx'
 import { plural } from '../../data/plural.ts'
-import {
-  addSubtask,
-  markDone,
-  markOpen,
-  moveToTrash,
-  removeSubtask,
-  toggleSubtask,
-} from '../../data/taskOps.ts'
+import { moveToTrash } from '../../data/taskOps.ts'
 import type { Task } from '../../data/types.ts'
 import { colors, fonts, priorities, shadows, sizes } from '../../theme'
 import { ClearSheet } from './ClearSheet.tsx'
@@ -37,6 +30,7 @@ import {
   type Show,
   type Tab,
 } from './tasksView.ts'
+import { useTaskActions } from './useTaskActions.ts'
 
 /**
  * 3 Zadania (Zadania.dc.html). Adres: `?pokaz=pilne|wazne|przy-okazji`, `?zakladka=ogarniete`,
@@ -87,30 +81,11 @@ export function TasksScreen() {
   }
 
   // Akcje z paskiem „Cofnij”
-  const update = (id: string, fn: (t: Task) => Task) => (list: Task[]) =>
-    list.map((t) => (t.id === id ? fn(t) : t))
-  const complete = (t: Task) =>
-    store.changeTasks(
-      `Ogarnięte: ${t.title}`,
-      update(t.id, (x) => markDone(x, store.who())),
-    )
-  const restore = (t: Task) =>
-    store.changeTasks(`Wróciło do „Do zrobienia”: ${t.title}`, update(t.id, markOpen))
-  const toggleDone = (t: Task) => (t.done ? restore(t) : complete(t))
+  const actions = useTaskActions()
+  const toggleDone = actions.toggleDone
   const trash = (t: Task) => {
     if (detailId === t.id) setDetailId(null)
-    store.changeTasks(
-      `Przeniesiono do kosza: ${t.title}`,
-      update(t.id, (x) => moveToTrash(x, store.who())),
-    )
-  }
-  /** Zmiana kroków – gdy ogarnia albo przywraca zadanie, też z paskiem „Cofnij”. */
-  const changeSteps = (t: Task, fn: (t: Task) => Task) => {
-    const next = fn(t)
-    if (next.done && !t.done) store.changeTasks(`Ogarnięte: ${t.title}`, update(t.id, fn))
-    else if (!next.done && t.done)
-      store.changeTasks(`Wróciło do „Do zrobienia”: ${t.title}`, update(t.id, fn))
-    else store.setTasks(update(t.id, fn))
+    actions.trash(t)
   }
 
   const addCategory = (name: string, color: string) => {
@@ -132,7 +107,7 @@ export function TasksScreen() {
     onOpen: () => setDetailId(t.id),
     onToggleDone: () => toggleDone(t),
     onTrash: () => trash(t),
-    onToggleSub: (sid: string) => changeSteps(t, (x) => toggleSubtask(x, sid, store.who())),
+    onToggleSub: (sid: string) => actions.toggleSub(t, sid),
   })
 
   return (
@@ -578,15 +553,11 @@ export function TasksScreen() {
           meta={
             detail.done ? doneBy(detail) : `Dodane przez: ${member(detail.createdBy)?.name ?? ''}`
           }
-          onChange={(fn) => store.setTasks(update(detail.id, fn))}
+          onChange={(fn) => actions.edit(detail, fn)}
           onToggleDone={() => toggleDone(detail)}
-          onToggleSub={(sid) => changeSteps(detail, (x) => toggleSubtask(x, sid, store.who()))}
-          onRemoveSub={(sid) => changeSteps(detail, (x) => removeSubtask(x, sid, store.who()))}
-          onAddSub={(title) =>
-            changeSteps(detail, (x) =>
-              addSubtask(x, { id: `${x.id}s${Date.now()}`, title, done: false }, store.who()),
-            )
-          }
+          onToggleSub={(sid) => actions.toggleSub(detail, sid)}
+          onRemoveSub={(sid) => actions.removeSub(detail, sid)}
+          onAddSub={(title) => actions.addSub(detail, title)}
           onTrash={() => trash(detail)}
           onClose={() => setDetailId(null)}
         />

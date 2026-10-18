@@ -3,31 +3,12 @@ import { Chip, Dot, Field, PrimaryButton, Sheet } from '../../components/ui.tsx'
 import { DAYS, MONTHS_GEN, parseKey, type DateKey } from '../../data/dates.ts'
 import type { CalendarEvent, EventType, Remind } from '../../data/types.ts'
 import { colors, fonts } from '../../theme'
-import { REMINDS, TYPE_SWATCHES, remindNote } from './calendarView.ts'
+import { REMINDS } from '../../data/eventOps.ts'
+import { TYPE_SWATCHES } from './calendarView.ts'
+import { label, timeInput } from './formStyles.ts'
 
 /** Nowe wydarzenie z formularza (id nadaje ekran). */
 export type EventDraft = Omit<CalendarEvent, 'id'>
-
-const label = {
-  fontSize: 11,
-  fontWeight: 800,
-  letterSpacing: '1.4px',
-  color: colors.muted,
-} as const
-
-const timeInput = {
-  height: 50,
-  width: '100%',
-  border: `1px solid ${colors.border}`,
-  borderRadius: 16,
-  padding: '0 14px',
-  fontFamily: fonts.serif,
-  fontSize: 18,
-  fontWeight: 600,
-  color: colors.green900,
-  background: colors.white,
-  outlineColor: colors.green900,
-} as const
 
 /**
  * Arkusz „Nowe wydarzenie” (Kalendarz.dc.html): nazwa, rodzaj (+ nowy rodzaj z kolorem),
@@ -80,7 +61,10 @@ export function EventSheet({
       to: timed && to ? to : null,
       typeId,
       remind,
-      note: remindNote(remind),
+      note: '',
+      deleted: false,
+      deletedAt: null,
+      deletedBy: null,
     })
   }
 
@@ -307,7 +291,7 @@ export function EventSheet({
   )
 }
 
-function Group({ label: text, children }: { label: string; children: ReactNode }) {
+export function Group({ label: text, children }: { label: string; children: ReactNode }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
       <span style={label}>{text}</span>

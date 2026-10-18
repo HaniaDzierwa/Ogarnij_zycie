@@ -163,7 +163,11 @@ export function mockEvents(today: DateKey): CalendarEvent[] {
     to,
     typeId,
     remind: note.includes('dzień wcześniej') ? 'day' : note.includes('tydzień') ? 'week' : 'none',
-    note,
+    // Tekst przypomnienia dopisuje kalendarz z pola remind.
+    note: note.startsWith('Przypomnienie') ? '' : note,
+    deleted: false,
+    deletedAt: null,
+    deletedBy: null,
   }))
 }
 

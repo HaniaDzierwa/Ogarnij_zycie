@@ -49,8 +49,12 @@ export type CalendarEvent = {
   to: string | null
   typeId: string
   remind: Remind
-  /** Opis pod tytułem, np. „Przypomnienie dzień wcześniej”. */
+  /** Dopisek pod tytułem, np. „Co roku”, „Przynieść wino”. */
   note: string
+  /** Usunięte (miękko, jak zadania w koszu). */
+  deleted: boolean
+  deletedAt: string | null
+  deletedBy: string | null
 }
 
 export type Member = {

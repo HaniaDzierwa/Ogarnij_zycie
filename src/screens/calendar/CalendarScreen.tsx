@@ -1,7 +1,13 @@
 import { useState, type CSSProperties, type ReactNode } from 'react'
 import { useSearchParams } from 'react-router'
 import { Accent, Header } from '../../components/Header.tsx'
-import { ChevronLeftIcon, ChevronRightIcon, EventTypeIcon } from '../../components/icons.tsx'
+import {
+  CheckIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  EventTypeIcon,
+  TrashIcon,
+} from '../../components/icons.tsx'
 import { TabBar } from '../../components/TabBar.tsx'
 import { Dot, Screen, Segmented } from '../../components/ui.tsx'
 import {
@@ -15,6 +21,7 @@ import {
   inDays,
   parseKey,
   weekStart,
+  whenLabel,
   type DateKey,
 } from '../../data/dates.ts'
 import { useStore } from '../../data/MockStore.tsx'
@@ -31,6 +38,14 @@ import {
   weekCountLabel,
   weekRangeLabel,
 } from './calendarView.ts'
+import { SwipeRow } from '../../components/SwipeRow.tsx'
+import { UndoToast } from '../../components/UndoToast.tsx'
+import { deleteEvent } from '../../data/eventOps.ts'
+import type { CalendarItem } from '../../data/selectors.ts'
+import type { CalendarEvent, EventType, Task } from '../../data/types.ts'
+import { TaskDetailSheet } from '../tasks/TaskDetailSheet.tsx'
+import { useTaskActions } from '../tasks/useTaskActions.ts'
+import { EventDetailSheet } from './EventDetailSheet.tsx'
 import { EventSheet } from './EventSheet.tsx'
 
 type View = 'week' | 'month'
@@ -40,7 +55,7 @@ const DATE_PARAM = /^\d{4}-\d{2}-\d{2}$/
 /** 4 Kalendarz (Kalendarz.dc.html). Adres: `?dzien=RRRR-MM-DD`, `?nowe=wydarzenie`. */
 export function CalendarScreen() {
   const store = useStore()
-  const { today, tasks, events, categories, eventTypes } = store
+  const { today, tasks, events, categories, eventTypes, members } = store
   const [params, setParams] = useSearchParams()
 
   const [view, setView] = useState<View>('week')
@@ -88,6 +103,27 @@ export function CalendarScreen() {
   const later = laterItems(items, week[6])
   const selDate = parseKey(sel)
   const isWeek = view === 'week'
+
+  // Arkusz wydarzenia albo zadania (termin zadania) – jak na liście zadań
+  const [eventId, setEventId] = useState<string | null>(null)
+  const [taskId, setTaskId] = useState<string | null>(null)
+  const eventDetail = events.find((e) => e.id === eventId && !e.deleted)
+  const taskDetail = tasks.find((t) => t.id === taskId && !t.deleted)
+  const taskActions = useTaskActions()
+
+  const removeEvent = (e: CalendarEvent) => {
+    if (eventId === e.id) setEventId(null)
+    store.changeEvents(`Usunięto z kalendarza: ${e.title}`, (list) =>
+      list.map((x) => (x.id === e.id ? deleteEvent(x, store.who()) : x)),
+    )
+  }
+  /** „Dodane przez: Hania” / „Ogarnęła Hania” */
+  const memberLabel = (t: Task) => {
+    const m = members.find((x) => x.uid === (t.done ? t.doneBy : t.createdBy))
+    if (!m) return ''
+    if (!t.done) return `Dodane przez: ${m.name}`
+    return `${m.verbForm === 'f' ? 'Ogarnęła' : 'Ogarnął'} ${m.name}`
+  }
 
   const addType = (name: string, color: string) => {
     const id = `r${Date.now()}`
@@ -352,62 +388,18 @@ export function CalendarScreen() {
           </div>
         )}
         {agenda.map((e) => {
-          const t = typeOf(e.typeId)
+          const task = e.taskId ? tasks.find((t) => t.id === e.taskId) : undefined
+          const event = task ? undefined : events.find((x) => x.id === e.id)
           return (
-            <div
+            <AgendaRow
               key={e.id}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 14,
-                padding: '12px 16px 12px 12px',
-                borderRadius: 20,
-                background: colors.white,
-                boxShadow: shadows.card,
-              }}
-            >
-              <span
-                style={{
-                  width: 42,
-                  height: 42,
-                  borderRadius: 14,
-                  background: t.bg,
-                  color: t.fg,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flex: 'none',
-                }}
-              >
-                <EventTypeIcon icon={t.icon} />
-              </span>
-              <span
-                style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 3 }}
-              >
-                <span style={{ fontSize: 16, fontWeight: 700, lineHeight: 1.3 }}>{e.title}</span>
-                <span
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 800,
-                    letterSpacing: '1px',
-                    color: colors.muted,
-                  }}
-                >
-                  {(t.name + (e.note ? ` · ${e.note}` : '')).toUpperCase()}
-                </span>
-              </span>
-              <span
-                style={{
-                  fontFamily: fonts.serif,
-                  fontSize: 16,
-                  fontWeight: 600,
-                  color: colors.green900,
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                {timeLabel(e)}
-              </span>
-            </div>
+              item={e}
+              type={typeOf(e.typeId)}
+              onOpen={() => (task ? setTaskId(task.id) : setEventId(e.id))}
+              onDone={task && (() => taskActions.toggleDone(task))}
+              onDelete={() => (task ? taskActions.trash(task) : event && removeEvent(event))}
+              deleteLabel={task ? `Przenieś do kosza: ${e.title}` : `Usuń wydarzenie: ${e.title}`}
+            />
           )
         })}
       </section>
@@ -531,6 +523,50 @@ export function CalendarScreen() {
         />
       )}
 
+      {eventDetail && (
+        <EventDetailSheet
+          key={eventDetail.id}
+          event={eventDetail}
+          eventTypes={eventTypes}
+          status={`${typeOf(eventDetail.typeId).name} · ${dayLabel(eventDetail.date)}`.toUpperCase()}
+          onChange={(fn) =>
+            store.setEvents((list) => list.map((x) => (x.id === eventDetail.id ? fn(x) : x)))
+          }
+          onDelete={() => removeEvent(eventDetail)}
+          onClose={() => {
+            setEventId(null)
+            // po zmianie dnia kalendarz przechodzi do nowego dnia wydarzenia
+            pick(eventDetail.date)
+          }}
+        />
+      )}
+
+      {taskDetail && (
+        <TaskDetailSheet
+          key={taskDetail.id}
+          task={taskDetail}
+          categories={categories}
+          today={today}
+          status={
+            taskDetail.done && taskDetail.doneAt
+              ? `OGARNIĘTE · ${whenLabel(taskDetail.doneAt, today).toUpperCase()}`
+              : `DO ZROBIENIA · ${categoryName(taskDetail.categoryId).toUpperCase()}`
+          }
+          meta={memberLabel(taskDetail)}
+          onChange={(fn) => taskActions.edit(taskDetail, fn)}
+          onToggleDone={() => taskActions.toggleDone(taskDetail)}
+          onToggleSub={(sid) => taskActions.toggleSub(taskDetail, sid)}
+          onRemoveSub={(sid) => taskActions.removeSub(taskDetail, sid)}
+          onAddSub={(title) => taskActions.addSub(taskDetail, title)}
+          onTrash={() => {
+            setTaskId(null)
+            taskActions.trash(taskDetail)
+          }}
+          onClose={() => setTaskId(null)}
+        />
+      )}
+
+      <UndoToast />
       <TabBar active="kalendarz" onAddEvent={() => setSheetOpen(true)} />
     </Screen>
   )
@@ -540,6 +576,108 @@ export function CalendarScreen() {
 export function CalendarRoute() {
   const [params] = useSearchParams()
   return <CalendarScreen key={params.get('dzien') ?? ''} />
+}
+
+/** „Piątek, 16 października” */
+function dayLabel(k: DateKey): string {
+  const d = parseKey(k)
+  return `${DAYS[d.getDay()]}, ${d.getDate()} ${MONTHS_GEN[d.getMonth()]}`
+}
+
+/**
+ * Wpis w agendzie – jak wiersz zadania: dotknięcie otwiera arkusz, w lewo = usuń,
+ * w prawo = ogarnij (tylko termin zadania).
+ */
+function AgendaRow({
+  item,
+  type,
+  onOpen,
+  onDone,
+  onDelete,
+  deleteLabel,
+}: {
+  item: CalendarItem
+  type: EventType
+  onOpen: () => void
+  onDone?: () => void
+  onDelete: () => void
+  deleteLabel: string
+}) {
+  return (
+    <div style={{ borderRadius: 20, boxShadow: shadows.card, overflow: 'hidden' }}>
+      <SwipeRow
+        right={
+          onDone && {
+            label: 'Ogarnij',
+            icon: <CheckIcon />,
+            bg: colors.green900,
+            fg: colors.brass300,
+            srLabel: `Ogarnij: ${item.title}`,
+            run: onDone,
+          }
+        }
+        left={{
+          label: 'Usuń',
+          icon: <TrashIcon />,
+          bg: priorities.high.line,
+          fg: colors.white,
+          srLabel: deleteLabel,
+          run: onDelete,
+        }}
+      >
+        <button
+          type="button"
+          onClick={onOpen}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 14,
+            width: '100%',
+            padding: '12px 16px 12px 12px',
+            border: 0,
+            background: 'transparent',
+            textAlign: 'left',
+            color: colors.green900,
+          }}
+        >
+          <span
+            style={{
+              width: 42,
+              height: 42,
+              borderRadius: 14,
+              background: type.bg,
+              color: type.fg,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flex: 'none',
+            }}
+          >
+            <EventTypeIcon icon={type.icon} />
+          </span>
+          <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <span style={{ fontSize: 16, fontWeight: 700, lineHeight: 1.3 }}>{item.title}</span>
+            <span
+              style={{ fontSize: 11, fontWeight: 800, letterSpacing: '1px', color: colors.muted }}
+            >
+              {(type.name + (item.note ? ` · ${item.note}` : '')).toUpperCase()}
+            </span>
+          </span>
+          <span
+            style={{
+              fontFamily: fonts.serif,
+              fontSize: 16,
+              fontWeight: 600,
+              color: colors.green900,
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {timeLabel(item)}
+          </span>
+        </button>
+      </SwipeRow>
+    </div>
+  )
 }
 
 /** Dzień w siatce: wybrany = zielone tło, dziś = mosiężna obwódka. */
