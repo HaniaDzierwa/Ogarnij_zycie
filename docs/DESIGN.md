@@ -150,20 +150,12 @@ Zakupy `#5E8C6A` · Dom `#B8925A` · Zdrowie `#A4492F` · Urzędy `#6E5F8C` · A
 - Termin zadania (jedna zasada, 2026-10-18): dziś → **DZIŚ** (czerwona plakietka), jutro → **JUTRO**, w ciągu 7 dni → dzień i data (**WT 13 PAŹ**), dalej → **DO 30 PAŹ**.
 - „Najbliższe wydarzenia” na Starcie (2026-10-18): dwa najbliższe wydarzenia dowolnego rodzaju (bez terminów zadań).
 
-## Model danych (propozycja do etapu 2)
+## Model danych (etap 2 – )
 
-```
-users/{uid}                 name, houseId, notif{tasks,events,morning,house}, cleanupDays(7|30|null), pushSubscriptions[]
-houses/{houseId}            name, ownerUid, createdAt
-houses/{houseId}/members/{uid}      name, role(owner|member), scope{all:boolean, categoryIds[], calendar:boolean}, joinedAt
-houses/{houseId}/categories/{id}    name, color, order, updatedAt, updatedBy
-houses/{houseId}/tasks/{id}         title, categoryId, priority(high|mid|low), due(date|null), done, doneAt,
-                                    subtasks[{id,title,done}], createdBy, doneAt, doneBy,
-                                    deleted(bool), deletedAt, deletedBy, updatedAt, updatedBy
-houses/{houseId}/eventTypes/{id}    name, dot, bg, fg, icon, system
-houses/{houseId}/events/{id}        title, date, allDay, from, to, typeId, remind, note, createdBy,
-                                    deleted(bool), deletedAt, deletedBy, updatedAt, updatedBy
-invites/{code}              houseId, createdBy, expiresAt, usedBy|null, scope
-```
+\
+-  ustawia serwer (),  – zalogowany użytkownik (reguły sprawdzą, że to on).
+- Godziny w aplikacji („RRRR-MM-DDTHH:MM”, czas lokalny) zapisujemy w bazie jako Timestamp; dni (termin, data wydarzenia) – jako tekst „RRRR-MM-DD”.
+- Domownik to samo imię – bez formy czasownika i odmiany (decyzja Hani 2026-10-18).
+- Limity (te same w regułach): tytuł 200 znaków, imię/nazwa 40, dopisek 500, kroki 50.
 
 Usuwanie jako `deleted: true` + `deletedAt` (miękkie) = Kosz. Po 30 dniach od `deletedAt` dokument usuwamy naprawdę. Konflikt „usunął vs. zmieniła”: usunięte jest w Koszu i można je przywrócić (bez osobnego „Do decyzji”).

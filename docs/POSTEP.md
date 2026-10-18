@@ -20,8 +20,8 @@ Aktualny etap: **2 – Konta i dane w Firestore** (w toku)
 | Krok | Status |
 | --- | --- |
 | 1 Firebase SDK w aplikacji: Auth (stałe logowanie), Firestore z pamięcią offline, emulatory w `firebase.json` | zrobione |
-| 2 Model danych w Firestore: ścieżki, typy dokumentów, zamiana na typy aplikacji; `updatedAt`, `updatedBy` | do zrobienia (następny) |
-| 3 Reguły Firestore + testy w emulatorze (obcy nie czyta i nie zapisuje cudzego domu) | do zrobienia – potrzebna Java 21 (Hania, FIREBASE.md) |
+| 2 Model danych w Firestore: ścieżki, typy dokumentów, zamiana na typy aplikacji; `updatedAt`, `updatedBy` | zrobione |
+| 3 Reguły Firestore + testy w emulatorze (obcy nie czyta i nie zapisuje cudzego domu) | czeka na decyzję Hani: jak testować reguły bez aktualizacji Javy (przenośna Java 21 w projekcie / prawdziwa baza / ręcznie w konsoli) |
 | 4 Konta: Zaloguj się, Załóż konto, Nie pamiętam hasła z Firebase Auth; Ładowanie kieruje wg stanu konta; „Wyloguj” w stopce Ustawień | do zrobienia – potrzebne włączone Authentication (Hania) |
 | 5 Pierwsze uruchomienie → „Załóż nowy dom” z nazwą domu: dom, domownik, domyślne kategorie i rodzaje wydarzeń | do zrobienia |
 | 6 Dane z Firestore zamiast przykładowych (zadania, kosz, kategorie, wydarzenia, rodzaje, ustawienia), działanie bez internetu | do zrobienia – potrzebna baza Firestore (Hania) |
@@ -126,3 +126,5 @@ Wersja testowa: https://ogarnij-zycie--test-56tdtc0y.web.app (kanał `test`, odn
 - 2026-10-18 · Etap 1 · Odbiór: wszystkie ekrany z projektu w aplikacji, poprawki Hani naniesione, testy (127) i build przechodzą; Hania: „akceptuję”. Etap 1 zakończony.
 - 2026-10-18 · Etap 2 · Start: kroki rozpisane w tabeli „Etap 2 – kroki”; instrukcje dla Hani w FIREBASE.md uzupełnione (Java 21 dla emulatorów, polskie szablony e‑maili, domena kanału testowego w Authentication).
 - 2026-10-18 · Etap 2 · Krok 1: Firebase SDK (`firebase` 13) – `src/firebase/app.ts`: Auth ze stałą sesją (IndexedDB / localStorage, język pl), Firestore z pamięcią offline (persistentLocalCache, wiele kart). Emulatory: `firebase.json` (Auth 9099, Firestore 8080, UI 4000), `npm run emulators`, aplikacja na emulatorach: `npm run dev:emulatory` (`.env.emulatory`). `firestore.rules` na start zamknięte (wszystko zabronione), `firestore.indexes.json`, lokalizacja europe-central2. Ekrany jeszcze na przykładowych danych. · Sprawdzenie: `npm run build` przechodzi.
+- 2026-10-19 · Etap 2 · Hania: Javy nie aktualizujemy. Opcje testów reguł (ok. 25 przypadków w etapie 2, ~40 razem): przenośna Java 21 tylko w folderze projektu (bez instalacji, w .gitignore) / testy na prawdziwej bazie z kontami testowymi / ręcznie w Rules Playground – Hania decyduje.
+- 2026-10-19 · Etap 2 · Krok 2: model danych w Firestore – `src/firebase/model.ts`: ścieżki, kształt dokumentów (users, houses, members, categories, tasks, eventTypes, events), zamiana dokument ↔ typ aplikacji (godziny lokalne ↔ Timestamp, bezpieczne wartości domyślne dla uszkodzonych dokumentów), `updatedAt` z serwera + `updatedBy`, limity dla reguł, `newHouseDocs` – komplet dokumentów „Załóż nowy dom” (dom z nazwą, założyciel, profil, 6 kategorii, 5 rodzajów). DESIGN.md → Model danych zaktualizowany. · Sprawdzenie: `npm test` – 8 nowych testów (wszystkie przykładowe zadania i wydarzenia przechodzą do bazy i z powrotem bez zmian).
