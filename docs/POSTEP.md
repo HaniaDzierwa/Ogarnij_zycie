@@ -1,11 +1,11 @@
 # Postęp prac
 
-Aktualny etap: **0 – Przygotowanie** (w toku)
+Aktualny etap: **1 – Klikalny mockup** (w toku)
 
 | Etap | Status | Akceptacja |
 | --- | --- | --- |
-| 0 Przygotowanie | w toku | – |
-| 1 Klikalny mockup | – | – |
+| 0 Przygotowanie | zakończony | 2026-10-18 |
+| 1 Klikalny mockup | w toku | – |
 | 2 Konta i dane | – | – |
 | 3 Zadania | – | – |
 | 4 Kategorie i filtry | – | – |
@@ -35,3 +35,4 @@ Aktualny etap: **0 – Przygotowanie** (w toku)
 - 2026-10-18 · Etap 0 · Krok 5: połączenie z Firebase – `.firebaserc` (projekt `ogarnij-zycie`), `firebase.json` (Hosting z `dist`, wszystkie adresy → `index.html`, `no-cache` dla `index.html`/`sw.js`/manifestu, długie cache dla `/assets`), konfiguracja aplikacji web w `src/firebase/config.ts`. Hosting w projekcie sprawdzony (`hosting:sites:list`). · Sprawdzenie: `npm run build` + `npx firebase hosting:channel:deploy test` → adres podglądu na telefonie.
 - 2026-10-18 · Etap 0 · Publikacja testowa (Hania): https://ogarnij-zycie--test-56tdtc0y.web.app (ważna do 2026-10-25); sprawdzone: strona, podstrona `/zadania?pokaz=pilne`, manifest, service worker, ikona iPhone – 200. Poprawka: no-cache dla podstron (było 1 h).
 - 2026-10-18 · Etap 0 · Krok 6: propozycje tekstów o danych zgodnych z Firebase w `docs/TEKSTY.md` (16 zmian tekstu + 5 decyzji o elementach ekranu Synchronizacja). · Sprawdzenie: Hania czyta i akceptuje / poprawia.
+- 2026-10-18 · Etap 0 · Odbiór: wszystkie punkty spełnione, Hania: „akceptuję”. Etap 0 zakończony.
