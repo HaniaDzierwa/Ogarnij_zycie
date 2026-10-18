@@ -1,0 +1,223 @@
+{
+  "v": 3,
+  "createdOnFiles": {
+    "v": 1,
+    "at": "2026-10-09T13:55:00Z"
+  },
+  "title": "Ogarnij życie – ekrany aplikacji",
+  "launch": {
+    "view": "canvas"
+  },
+  "pages": [],
+  "boards": {
+    "Powitanie.dc.html": {
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "1 · Ładowanie (słońce / księżyc)"
+    },
+    "Kategorie.dc.html": {
+      "x": 940,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "2 · Start",
+      "is_interactive": true
+    },
+    "Zadania.dc.html": {
+      "x": 1410,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "3 · Zadania",
+      "is_interactive": true
+    },
+    "Kalendarz.dc.html": {
+      "x": 1880,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "4 · Kalendarz",
+      "is_interactive": true
+    },
+    "Ustawienia.dc.html": {
+      "x": 2350,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "5 · Ustawienia",
+      "is_interactive": true
+    },
+    "Synchronizacja.dc.html": {
+      "x": 2350,
+      "y": 1184,
+      "w": 390,
+      "h": 844,
+      "title": "5a · Synchronizacja",
+      "is_interactive": true
+    },
+    "Import.dc.html": {
+      "x": 2820,
+      "y": 1184,
+      "w": 390,
+      "h": 844,
+      "title": "5b · Zmiany od domownika"
+    },
+    "PowitanieDzien.dc.html": {
+      "x": 0,
+      "y": 1184,
+      "w": 390,
+      "h": 844,
+      "title": "1 · Ładowanie – dzień (6:00–18:00)"
+    },
+    "PowitanieNoc.dc.html": {
+      "x": 470,
+      "y": 1184,
+      "w": 390,
+      "h": 844,
+      "title": "1 · Ładowanie – noc (18:00–6:00)"
+    },
+    "StartDzien.dc.html": {
+      "x": 940,
+      "y": 1184,
+      "w": 390,
+      "h": 844,
+      "title": "2 · Start – dzień (6:00–18:00)",
+      "is_interactive": true
+    },
+    "StartNoc.dc.html": {
+      "x": 1410,
+      "y": 1184,
+      "w": 390,
+      "h": 844,
+      "title": "2 · Start – noc (18:00–6:00)",
+      "is_interactive": true
+    },
+    "ZadaniaPilne.dc.html": {
+      "x": 0,
+      "y": 2668,
+      "w": 390,
+      "h": 844,
+      "title": "2b · Start › kafelek „Pilne”",
+      "is_interactive": true
+    },
+    "ZadaniaOgarniete.dc.html": {
+      "x": 470,
+      "y": 2668,
+      "w": 390,
+      "h": 844,
+      "title": "2b · Start › kafelek „Ogarnięte dziś”",
+      "is_interactive": true
+    },
+    "KalendarzImieniny.dc.html": {
+      "x": 940,
+      "y": 2668,
+      "w": 390,
+      "h": 844,
+      "title": "2b · Start › Imieniny mamy (16 paź)",
+      "is_interactive": true
+    },
+    "KalendarzUrodziny.dc.html": {
+      "x": 1410,
+      "y": 2668,
+      "w": 390,
+      "h": 844,
+      "title": "2b · Start › Urodziny Zosi (17 paź)",
+      "is_interactive": true
+    },
+    "Zaproszenie.dc.html": {
+      "x": 3290,
+      "y": 1184,
+      "w": 390,
+      "h": 844,
+      "title": "5c · Zaproś domownika",
+      "is_interactive": true
+    },
+    "ZaproszenieGotowe.dc.html": {
+      "x": 3760,
+      "y": 1184,
+      "w": 390,
+      "h": 844,
+      "title": "5d · Zaproszenie – dołączyła",
+      "is_interactive": true
+    },
+    "Dolacz.dc.html": {
+      "x": 4230,
+      "y": 1184,
+      "w": 390,
+      "h": 844,
+      "title": "5e · Dołącz do domu (telefon domownika)",
+      "is_interactive": true
+    },
+    "DolaczZnaleziono.dc.html": {
+      "x": 4700,
+      "y": 1184,
+      "w": 390,
+      "h": 844,
+      "title": "5f · Dołącz – znaleziono dom",
+      "is_interactive": true
+    },
+    "Pierwsze.dc.html": {
+      "x": 470,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "1a · Pierwsze uruchomienie",
+      "is_interactive": true
+    }
+  },
+  "order": [
+    "Powitanie.dc.html",
+    "Pierwsze.dc.html",
+    "Kategorie.dc.html",
+    "Zadania.dc.html",
+    "Kalendarz.dc.html",
+    "Ustawienia.dc.html",
+    "Synchronizacja.dc.html",
+    "Import.dc.html",
+    "PowitanieDzien.dc.html",
+    "PowitanieNoc.dc.html",
+    "StartDzien.dc.html",
+    "StartNoc.dc.html",
+    "ZadaniaPilne.dc.html",
+    "ZadaniaOgarniete.dc.html",
+    "KalendarzImieniny.dc.html",
+    "KalendarzUrodziny.dc.html",
+    "Zaproszenie.dc.html",
+    "ZaproszenieGotowe.dc.html",
+    "Dolacz.dc.html",
+    "DolaczZnaleziono.dc.html"
+  ],
+  "notes": {
+    "glowne": {
+      "x": 0,
+      "y": -300,
+      "text": "Ogarnij życie – główne ekrany",
+      "kind": "title1",
+      "maxW": 2740
+    },
+    "pora": {
+      "x": 0,
+      "y": 884,
+      "text": "Pora dnia: dzień i noc",
+      "kind": "title1",
+      "maxW": 1800
+    },
+    "zustawien": {
+      "x": 2350,
+      "y": 884,
+      "text": "Ekrany z Ustawień",
+      "kind": "title1",
+      "maxW": 2740
+    },
+    "zestartu": {
+      "x": 0,
+      "y": 2368,
+      "text": "Skróty ze Startu: ekran otwiera się z gotowym filtrem",
+      "kind": "title1",
+      "maxW": 1800
+    }
+  },
+  "designSystems": []
+}

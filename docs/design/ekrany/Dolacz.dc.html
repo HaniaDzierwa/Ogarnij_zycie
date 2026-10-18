@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<title>Ogarnij życie – Dołącz do domu</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,400..700,50;1,9..144,400..700,50&amp;family=Nunito:wght@500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#7A5C2C}a:hover{color:#5C4420}
+button{font-family:inherit;cursor:pointer}
+*::-webkit-scrollbar{width:10px;height:10px}
+*::-webkit-scrollbar-track{background:transparent;margin:10px 0}
+*::-webkit-scrollbar-thumb{background:rgba(31,61,46,0.22);border-radius:10px;border:3px solid transparent;background-clip:padding-box;min-height:40px}
+*::-webkit-scrollbar-button{display:none}
+@supports (-moz-appearance:none){*{scrollbar-width:thin;scrollbar-color:rgba(31,61,46,0.25) transparent}}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(63,138,94,0.5)}70%{box-shadow:0 0 0 10px rgba(63,138,94,0)}100%{box-shadow:0 0 0 0 rgba(63,138,94,0)}}
+@keyframes pop{0%{transform:scale(0.6);opacity:0}100%{transform:scale(1);opacity:1}}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; display: flex; flex-direction: column; background: #F6F1E7; color: #1F3D2E; font-family: 'Nunito', sans-serif; overflow: hidden; box-sizing: border-box">
+
+  <div style="flex: 1; overflow-y: auto; padding: 16px 16px 24px; display: flex; flex-direction: column; gap: 18px">
+    <div style="position: relative; height: 120px; border-radius: 26px; background: #1F3D2E; color: #F6F1E7; overflow: hidden; flex: none">
+      <svg width="358" height="120" viewBox="0 0 358 120" fill="none" aria-hidden="true" style="position: absolute; left: 0; top: 0">
+        <g transform="translate(0,64)">
+          <path d="M0 56V34L26 18L52 34V28L84 8L116 28V34L142 20L168 34V26L204 4L240 26V32L268 16L296 32V26L326 10L358 28V56Z" fill="#2C5240"></path>
+          <path d="M0 56V46L36 30L72 46V42L108 26L144 42V48L180 36L216 48V42L256 24L296 42V46L330 34L358 44V56Z" fill="#3A6650"></path>
+          <rect x="104" y="36" width="7" height="8" rx="1.2" fill="#E8C98E"></rect>
+          <rect x="252" y="34" width="7" height="8" rx="1.2" fill="#E8C98E"></rect>
+        </g>
+      </svg>
+      <div style="position: relative; height: 100%; box-sizing: border-box; padding: 6px 14px 16px 8px; display: flex; flex-direction: column; justify-content: space-between">
+        <div style="display: flex; align-items: center; justify-content: space-between">
+          <a href="Pierwsze.dc.html" style="display: inline-flex; align-items: center; gap: 2px; min-height: 44px; padding: 0 10px 0 4px; color: #E8C98E; font-size: 11px; font-weight: 800; letter-spacing: 1.6px; text-decoration: none">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+            WITAJ
+          </a>
+          <span style="font-size: 11px; font-weight: 800; letter-spacing: 1.2px; color: #A9C2B2">NA TELEFONIE OLI</span>
+        </div>
+        <div style="padding-left: 10px">
+          <h1 style="margin: 0; font-family: 'Fraunces', serif; font-size: 24px; line-height: 1.1; font-weight: 500">Dołącz <em style="font-style: italic; color: #E8C98E">do domu</em></h1>
+        </div>
+      </div>
+    </div>
+
+    <sc-if value="{{noHouse}}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 20px 18px; border-radius: 26px; background: #1F3D2E; color: #F6F1E7">
+        <span style="position: relative; width: 200px; height: 200px; border-radius: 22px; background: #2C5240; display: flex; align-items: center; justify-content: center; overflow: hidden">
+          <svg width="200" height="200" viewBox="0 0 200 200" fill="none" stroke="#E8C98E" stroke-width="5" stroke-linecap="round" aria-hidden="true" style="position: absolute; left: 0; top: 0"><path d="M24 64V36a12 12 0 0 1 12-12h28"></path><path d="M136 24h28a12 12 0 0 1 12 12v28"></path><path d="M176 136v28a12 12 0 0 1-12 12h-28"></path><path d="M64 176H36a12 12 0 0 1-12-12v-28"></path></svg>
+          <span style="position: absolute; left: 30px; right: 30px; top: 98px; height: 2px; background: rgba(232,201,142,0.8); box-shadow: 0 0 12px rgba(232,201,142,0.9)"></span>
+          <span style="font-size: 13px; font-weight: 700; color: #C7D8CD; text-align: center; padding: 0 40px; margin-top: 70px">Skieruj aparat na kod z telefonu Hani</span>
+        </span>
+        <button type="button" onClick="{{scan}}" style="height: 48px; padding: 0 22px; border: 0; border-radius: 24px; background: #E8C98E; color: #1F3D2E; font-size: 15px; font-weight: 800; display: flex; align-items: center; gap: 8px">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"></path><path d="M4 12h16"></path></svg>
+          Skanuj kod
+        </button>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 10px; padding: 16px 18px; border-radius: 22px; background: #FFFFFF; box-shadow: 0 6px 20px rgba(31,61,46,0.07)">
+        <label for="kod" style="font-size: 11px; font-weight: 800; letter-spacing: 1.4px; color: #5E6D63">ALBO WPISZ 6 CYFR</label>
+        <input id="kod" type="text" inputmode="numeric" maxlength="7" placeholder="000 000" value="{{code}}" onChange="{{setCode}}" style="height: 56px; border: 1px solid #D9D0BE; border-radius: 16px; padding: 0 16px; font-family: 'Fraunces', serif; font-size: 28px; letter-spacing: 8px; text-align: center; color: #1F3D2E; background: #FFFFFF; outline-color: #1F3D2E">
+        <span style="font-size: 13px; line-height: 1.45; color: #5E6D63">Kod widać u osoby, która Cię zaprasza: Ustawienia › Domownicy › Zaproś. Oba telefony muszą być w tej samej sieci Wi‑Fi.</span>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{found}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 24px 20px; border-radius: 26px; background: #FFFFFF; box-shadow: 0 6px 20px rgba(31,61,46,0.07); text-align: center">
+        <span style="font-size: 11px; font-weight: 800; letter-spacing: 1.6px; color: #3F8A5E">ZNALEZIONO DOM</span>
+        <svg width="56" height="56" viewBox="0 0 120 120" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M24 60L60 28l36 32" stroke="#1F3D2E" stroke-width="11"></path><path d="M34 54v34a6 6 0 0 0 6 6h40a6 6 0 0 0 6-6V54" stroke="#1F3D2E" stroke-width="11"></path><path d="M46 72l10 10 20-22" stroke="#B8925A" stroke-width="11"></path></svg>
+        <span style="font-family: 'Fraunces', serif; font-size: 28px; font-weight: 500; line-height: 1.1">Dom <em style="font-style: italic; color: #7A5C2C">Hani</em></span>
+        <span style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #5E6D63">
+          <span style="display: flex"><span style="width: 26px; height: 26px; border-radius: 13px; background: #1F3D2E; color: #E8C98E; font-family: 'Fraunces', serif; font-style: italic; font-size: 12px; display: flex; align-items: center; justify-content: center; border: 2px solid #FFFFFF">H</span><span style="width: 26px; height: 26px; margin-left: -8px; border-radius: 13px; background: #1F3D2E; color: #E8C98E; font-family: 'Fraunces', serif; font-style: italic; font-size: 12px; display: flex; align-items: center; justify-content: center; border: 2px solid #FFFFFF">K</span></span>
+          Hania i Krzyś · wszystkie kategorie i kalendarz
+        </span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 8px; padding: 16px 18px; border-radius: 22px; background: #FFFFFF; box-shadow: 0 6px 20px rgba(31,61,46,0.07)">
+        <label for="imie" style="font-size: 11px; font-weight: 800; letter-spacing: 1.4px; color: #5E6D63">JAK MAJĄ CIĘ WIDZIEĆ DOMOWNICY?</label>
+        <input id="imie" type="text" maxlength="20" placeholder="np. Ola" value="{{name}}" onChange="{{setName}}" style="height: 48px; border: 1px solid #D9D0BE; border-radius: 14px; padding: 0 14px; font-size: 17px; font-weight: 700; color: #1F3D2E; background: #FFFFFF; outline-color: #1F3D2E">
+      </div>
+    </sc-if>
+  </div>
+
+  <div style="padding: 12px 16px 24px; display: flex; flex-direction: column; gap: 4px; background: #F6F1E7; box-shadow: 0 -1px 0 #E3DCCD">
+    <sc-if value="{{found}}" hint-placeholder-val="{{ false }}">
+      <a href="Kategorie.dc.html" style="height: 56px; border-radius: 28px; background: #1F3D2E; color: #F6F1E7; font-size: 17px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none">
+        Dołącz jako {{nameShow}}
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#E8C98E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+      </a>
+      <button type="button" onClick="{{back}}" style="height: 44px; border: 0; background: transparent; color: #7A5C2C; font-size: 12px; font-weight: 800; letter-spacing: 1.2px">TO NIE TEN DOM</button>
+    </sc-if>
+    <sc-if value="{{noHouse}}" hint-placeholder-val="{{ true }}">
+      <a href="Kategorie.dc.html" style="height: 44px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; letter-spacing: 1.2px; text-decoration: none">ZACZNIJ BEZ DOMOWNIKÓW</a>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"etap":{"editor":"enum","options":["skanowanie","znaleziono"],"default":"skanowanie","section":"Etap dołączania"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { found: null, code: '', name: 'Ola' };
+  }
+  renderVals() {
+    var self = this, s = this.state;
+    var found = s.found === null ? this.props.etap === 'znaleziono' : s.found;
+    var nm = (s.name || '').trim();
+    return {
+      noHouse: !found,
+      found: found,
+      scan: function () { self.setState({ found: true }); },
+      code: s.code,
+      setCode: function (e) {
+        var d = e.target.value.replace(/[^0-9]/g, '').slice(0, 6);
+        var v = d.length > 3 ? d.slice(0, 3) + ' ' + d.slice(3) : d;
+        self.setState({ code: v, found: d.length === 6 ? true : s.found });
+      },
+      back: function () { self.setState({ found: false, code: '' }); },
+      name: s.name,
+      setName: function (e) { self.setState({ name: e.target.value }); },
+      nameShow: nm || 'domownik'
+    };
+  }
+}
+</script>
+</body>
+</html>

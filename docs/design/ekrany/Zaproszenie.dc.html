@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<title>Ogarnij życie – Zaproś domownika</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,400..700,50;1,9..144,400..700,50&amp;family=Nunito:wght@500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#7A5C2C}a:hover{color:#5C4420}
+button{font-family:inherit;cursor:pointer}
+*::-webkit-scrollbar{width:10px;height:10px}
+*::-webkit-scrollbar-track{background:transparent;margin:10px 0}
+*::-webkit-scrollbar-thumb{background:rgba(31,61,46,0.22);border-radius:10px;border:3px solid transparent;background-clip:padding-box;min-height:40px}
+*::-webkit-scrollbar-button{display:none}
+@supports (-moz-appearance:none){*{scrollbar-width:thin;scrollbar-color:rgba(31,61,46,0.25) transparent}}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(63,138,94,0.5)}70%{box-shadow:0 0 0 10px rgba(63,138,94,0)}100%{box-shadow:0 0 0 0 rgba(63,138,94,0)}}
+@keyframes pop{0%{transform:scale(0.6);opacity:0}100%{transform:scale(1);opacity:1}}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; display: flex; flex-direction: column; background: #F6F1E7; color: #1F3D2E; font-family: 'Nunito', sans-serif; overflow: hidden; box-sizing: border-box">
+
+  <div style="flex: 1; overflow-y: auto; padding: 16px 16px 24px; display: flex; flex-direction: column; gap: 18px">
+    <div style="position: relative; height: 120px; border-radius: 26px; background: #1F3D2E; color: #F6F1E7; overflow: hidden; flex: none">
+      <svg width="358" height="120" viewBox="0 0 358 120" fill="none" aria-hidden="true" style="position: absolute; left: 0; top: 0">
+        <g transform="translate(0,64)">
+          <path d="M0 56V34L26 18L52 34V28L84 8L116 28V34L142 20L168 34V26L204 4L240 26V32L268 16L296 32V26L326 10L358 28V56Z" fill="#2C5240"></path>
+          <path d="M0 56V46L36 30L72 46V42L108 26L144 42V48L180 36L216 48V42L256 24L296 42V46L330 34L358 44V56Z" fill="#3A6650"></path>
+          <rect x="104" y="36" width="7" height="8" rx="1.2" fill="#E8C98E"></rect>
+          <rect x="252" y="34" width="7" height="8" rx="1.2" fill="#E8C98E"></rect>
+        </g>
+      </svg>
+      <div style="position: relative; height: 100%; box-sizing: border-box; padding: 6px 14px 16px 8px; display: flex; flex-direction: column; justify-content: space-between">
+        <div style="display: flex; align-items: center; justify-content: space-between">
+          <a href="Synchronizacja.dc.html" style="display: inline-flex; align-items: center; gap: 2px; min-height: 44px; padding: 0 10px 0 4px; color: #E8C98E; font-size: 11px; font-weight: 800; letter-spacing: 1.6px; text-decoration: none">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+            SYNCHRONIZACJA
+          </a>
+          <span style="font-size: 11px; font-weight: 800; letter-spacing: 1.2px; color: #A9C2B2">WI‑FI · BEZ CHMURY</span>
+        </div>
+        <div style="padding-left: 10px">
+          <h1 style="margin: 0; font-family: 'Fraunces', serif; font-size: 24px; line-height: 1.1; font-weight: 500">Zaproś <em style="font-style: italic; color: #E8C98E">domownika</em></h1>
+        </div>
+      </div>
+    </div>
+
+    <sc-if value="{{waiting}}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 20px 18px 18px; border-radius: 26px; background: #FFFFFF; box-shadow: 0 6px 20px rgba(31,61,46,0.07)">
+        <span style="font-size: 11px; font-weight: 800; letter-spacing: 1.6px; color: #7A5C2C">ZESKANUJ NA DRUGIM TELEFONIE</span>
+        <span style="position: relative; display: block; width: 200px; height: 200px; padding: 12px; border-radius: 22px; background: #FFFFFF; box-shadow: inset 0 0 0 1px #E3DCCD; box-sizing: content-box">
+            <svg width="200" height="200" viewBox="0 0 25 25" shape-rendering="crispEdges" aria-hidden="true"><path d="M0 0h1v1h-1zM1 0h1v1h-1zM2 0h1v1h-1zM3 0h1v1h-1zM4 0h1v1h-1zM5 0h1v1h-1zM6 0h1v1h-1zM8 0h1v1h-1zM9 0h1v1h-1zM11 0h1v1h-1zM13 0h1v1h-1zM14 0h1v1h-1zM16 0h1v1h-1zM18 0h1v1h-1zM19 0h1v1h-1zM20 0h1v1h-1zM21 0h1v1h-1zM22 0h1v1h-1zM23 0h1v1h-1zM24 0h1v1h-1zM0 1h1v1h-1zM6 1h1v1h-1zM8 1h1v1h-1zM9 1h1v1h-1zM10 1h1v1h-1zM11 1h1v1h-1zM13 1h1v1h-1zM14 1h1v1h-1zM18 1h1v1h-1zM24 1h1v1h-1zM0 2h1v1h-1zM2 2h1v1h-1zM3 2h1v1h-1zM4 2h1v1h-1zM6 2h1v1h-1zM9 2h1v1h-1zM11 2h1v1h-1zM13 2h1v1h-1zM14 2h1v1h-1zM15 2h1v1h-1zM16 2h1v1h-1zM18 2h1v1h-1zM20 2h1v1h-1zM21 2h1v1h-1zM22 2h1v1h-1zM24 2h1v1h-1zM0 3h1v1h-1zM2 3h1v1h-1zM3 3h1v1h-1zM4 3h1v1h-1zM6 3h1v1h-1zM9 3h1v1h-1zM12 3h1v1h-1zM14 3h1v1h-1zM15 3h1v1h-1zM16 3h1v1h-1zM18 3h1v1h-1zM20 3h1v1h-1zM21 3h1v1h-1zM22 3h1v1h-1zM24 3h1v1h-1zM0 4h1v1h-1zM2 4h1v1h-1zM3 4h1v1h-1zM4 4h1v1h-1zM6 4h1v1h-1zM9 4h1v1h-1zM10 4h1v1h-1zM12 4h1v1h-1zM13 4h1v1h-1zM16 4h1v1h-1zM18 4h1v1h-1zM20 4h1v1h-1zM21 4h1v1h-1zM22 4h1v1h-1zM24 4h1v1h-1zM0 5h1v1h-1zM6 5h1v1h-1zM12 5h1v1h-1zM14 5h1v1h-1zM15 5h1v1h-1zM18 5h1v1h-1zM24 5h1v1h-1zM0 6h1v1h-1zM1 6h1v1h-1zM2 6h1v1h-1zM3 6h1v1h-1zM4 6h1v1h-1zM5 6h1v1h-1zM6 6h1v1h-1zM8 6h1v1h-1zM9 6h1v1h-1zM10 6h1v1h-1zM15 6h1v1h-1zM18 6h1v1h-1zM19 6h1v1h-1zM20 6h1v1h-1zM21 6h1v1h-1zM22 6h1v1h-1zM23 6h1v1h-1zM24 6h1v1h-1zM10 7h1v1h-1zM13 7h1v1h-1zM15 7h1v1h-1zM3 8h1v1h-1zM4 8h1v1h-1zM6 8h1v1h-1zM7 8h1v1h-1zM8 8h1v1h-1zM9 8h1v1h-1zM10 8h1v1h-1zM12 8h1v1h-1zM13 8h1v1h-1zM14 8h1v1h-1zM16 8h1v1h-1zM17 8h1v1h-1zM22 8h1v1h-1zM23 8h1v1h-1zM24 8h1v1h-1zM2 9h1v1h-1zM3 9h1v1h-1zM4 9h1v1h-1zM5 9h1v1h-1zM6 9h1v1h-1zM8 9h1v1h-1zM16 9h1v1h-1zM17 9h1v1h-1zM18 9h1v1h-1zM0 10h1v1h-1zM5 10h1v1h-1zM6 10h1v1h-1zM7 10h1v1h-1zM16 10h1v1h-1zM17 10h1v1h-1zM18 10h1v1h-1zM19 10h1v1h-1zM20 10h1v1h-1zM21 10h1v1h-1zM22 10h1v1h-1zM23 10h1v1h-1zM24 10h1v1h-1zM0 11h1v1h-1zM1 11h1v1h-1zM4 11h1v1h-1zM5 11h1v1h-1zM6 11h1v1h-1zM7 11h1v1h-1zM8 11h1v1h-1zM18 11h1v1h-1zM19 11h1v1h-1zM20 11h1v1h-1zM21 11h1v1h-1zM22 11h1v1h-1zM23 11h1v1h-1zM0 12h1v1h-1zM1 12h1v1h-1zM4 12h1v1h-1zM6 12h1v1h-1zM18 12h1v1h-1zM19 12h1v1h-1zM20 12h1v1h-1zM24 12h1v1h-1zM0 13h1v1h-1zM7 13h1v1h-1zM16 13h1v1h-1zM17 13h1v1h-1zM18 13h1v1h-1zM19 13h1v1h-1zM20 13h1v1h-1zM23 13h1v1h-1zM2 14h1v1h-1zM3 14h1v1h-1zM4 14h1v1h-1zM5 14h1v1h-1zM6 14h1v1h-1zM17 14h1v1h-1zM20 14h1v1h-1zM0 15h1v1h-1zM1 15h1v1h-1zM3 15h1v1h-1zM6 15h1v1h-1zM7 15h1v1h-1zM17 15h1v1h-1zM18 15h1v1h-1zM19 15h1v1h-1zM22 15h1v1h-1zM1 16h1v1h-1zM3 16h1v1h-1zM4 16h1v1h-1zM9 16h1v1h-1zM12 16h1v1h-1zM13 16h1v1h-1zM14 16h1v1h-1zM15 16h1v1h-1zM17 16h1v1h-1zM18 16h1v1h-1zM19 16h1v1h-1zM21 16h1v1h-1zM22 16h1v1h-1zM8 17h1v1h-1zM13 17h1v1h-1zM14 17h1v1h-1zM15 17h1v1h-1zM16 17h1v1h-1zM18 17h1v1h-1zM19 17h1v1h-1zM22 17h1v1h-1zM0 18h1v1h-1zM1 18h1v1h-1zM2 18h1v1h-1zM3 18h1v1h-1zM4 18h1v1h-1zM5 18h1v1h-1zM6 18h1v1h-1zM9 18h1v1h-1zM11 18h1v1h-1zM12 18h1v1h-1zM18 18h1v1h-1zM23 18h1v1h-1zM0 19h1v1h-1zM6 19h1v1h-1zM8 19h1v1h-1zM13 19h1v1h-1zM17 19h1v1h-1zM18 19h1v1h-1zM19 19h1v1h-1zM20 19h1v1h-1zM21 19h1v1h-1zM22 19h1v1h-1zM0 20h1v1h-1zM2 20h1v1h-1zM3 20h1v1h-1zM4 20h1v1h-1zM6 20h1v1h-1zM9 20h1v1h-1zM12 20h1v1h-1zM15 20h1v1h-1zM17 20h1v1h-1zM18 20h1v1h-1zM21 20h1v1h-1zM22 20h1v1h-1zM24 20h1v1h-1zM0 21h1v1h-1zM2 21h1v1h-1zM3 21h1v1h-1zM4 21h1v1h-1zM6 21h1v1h-1zM8 21h1v1h-1zM9 21h1v1h-1zM11 21h1v1h-1zM13 21h1v1h-1zM14 21h1v1h-1zM15 21h1v1h-1zM18 21h1v1h-1zM22 21h1v1h-1zM23 21h1v1h-1zM24 21h1v1h-1zM0 22h1v1h-1zM2 22h1v1h-1zM3 22h1v1h-1zM4 22h1v1h-1zM6 22h1v1h-1zM9 22h1v1h-1zM10 22h1v1h-1zM11 22h1v1h-1zM14 22h1v1h-1zM15 22h1v1h-1zM19 22h1v1h-1zM20 22h1v1h-1zM22 22h1v1h-1zM23 22h1v1h-1zM0 23h1v1h-1zM6 23h1v1h-1zM10 23h1v1h-1zM12 23h1v1h-1zM14 23h1v1h-1zM15 23h1v1h-1zM18 23h1v1h-1zM19 23h1v1h-1zM21 23h1v1h-1zM22 23h1v1h-1zM23 23h1v1h-1zM24 23h1v1h-1zM0 24h1v1h-1zM1 24h1v1h-1zM2 24h1v1h-1zM3 24h1v1h-1zM4 24h1v1h-1zM5 24h1v1h-1zM6 24h1v1h-1zM8 24h1v1h-1zM9 24h1v1h-1zM10 24h1v1h-1zM12 24h1v1h-1zM14 24h1v1h-1zM15 24h1v1h-1zM16 24h1v1h-1zM17 24h1v1h-1zM18 24h1v1h-1zM21 24h1v1h-1zM22 24h1v1h-1zM24 24h1v1h-1z" fill="#1F3D2E"></path></svg>
+            <span style="position: absolute; left: 50%; top: 50%; width: 52px; height: 52px; margin: -26px 0 0 -26px; border-radius: 14px; background: #FFFFFF; display: flex; align-items: center; justify-content: center">
+              <svg width="38" height="38" viewBox="0 0 120 120" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M24 60L60 28l36 32" stroke="#1F3D2E" stroke-width="11"></path><path d="M34 54v34a6 6 0 0 0 6 6h40a6 6 0 0 0 6-6V54" stroke="#1F3D2E" stroke-width="11"></path><path d="M46 72l10 10 20-22" stroke="#B8925A" stroke-width="11"></path></svg>
+            </span>
+          </span>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 2px">
+          <span style="font-size: 12px; color: #5E6D63">albo wpisz kod</span>
+          <span style="font-family: 'Fraunces', serif; font-size: 34px; font-weight: 500; letter-spacing: 6px; line-height: 1.1">{{code}}</span>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; padding-top: 10px; border-top: 1px solid #EFE8DA">
+          <span style="font-size: 13px; color: #5E6D63">Ważny jeszcze <strong style="color: #1F3D2E">9:41</strong></span>
+          <button type="button" onClick="{{newCode}}" style="height: 36px; padding: 0 8px; border: 0; background: transparent; color: #7A5C2C; font-size: 12px; font-weight: 800; letter-spacing: 0.8px">NOWY KOD</button>
+        </div>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 12px; padding: 14px 18px; border-radius: 20px; background: #DDE8DF">
+        <span style="width: 10px; height: 10px; border-radius: 5px; background: #3F8A5E; flex: none; animation: pulse 1.6s ease-out infinite"></span>
+        <span style="flex: 1; font-size: 14px; line-height: 1.4; color: #1F3D2E"><strong>Czekam na drugi telefon…</strong> Oba muszą być w tej samej sieci Wi‑Fi.</span>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 10px">
+        <span style="padding: 0 4px; font-size: 11px; font-weight: 800; letter-spacing: 1.6px; color: #7A5C2C">CO ZOBACZY DOMOWNIK</span>
+        <div style="display: flex; flex-direction: column; gap: 12px; padding: 14px; border-radius: 22px; background: #FFFFFF; box-shadow: 0 6px 20px rgba(31,61,46,0.07)">
+          <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; padding: 3px; border-radius: 18px; background: #EDE6D8">
+            <button type="button" onClick="{{scopeAll}}" style="{{segAll}}">Wszystko</button>
+            <button type="button" onClick="{{scopeSome}}" style="{{segSome}}">Wybrane</button>
+          </div>
+          <sc-if value="{{someScope}}" hint-placeholder-val="{{ false }}">
+            <div style="display: flex; flex-wrap: wrap; gap: 8px">
+              <sc-for list="{{cats}}" as="c" hint-placeholder-count="7">
+                <button type="button" onClick="{{c.toggle}}" aria-pressed="{{c.on}}" style="{{c.style}}"><span style="{{c.dot}}"></span>{{c.name}}</button>
+              </sc-for>
+            </div>
+          </sc-if>
+          <span style="font-size: 13px; line-height: 1.45; color: #5E6D63">{{scopeHint}}</span>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 10px">
+        <span style="padding: 0 4px; font-size: 11px; font-weight: 800; letter-spacing: 1.6px; color: #7A5C2C">JAK DOŁĄCZYĆ</span>
+        <div style="display: flex; flex-direction: column; gap: 12px; padding: 16px 18px; border-radius: 22px; background: #FFFFFF; box-shadow: 0 6px 20px rgba(31,61,46,0.07)">
+          <sc-for list="{{steps}}" as="s" hint-placeholder-count="3">
+            <div style="display: flex; align-items: flex-start; gap: 12px">
+              <span style="width: 26px; height: 26px; border-radius: 13px; background: #EFE3CC; color: #6E5220; font-family: 'Fraunces', serif; font-size: 14px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex: none">{{s.n}}</span>
+              <span style="font-size: 15px; line-height: 1.45; padding-top: 2px">{{s.text}}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{joined}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 28px 22px 24px; border-radius: 26px; background: #FFFFFF; box-shadow: 0 6px 20px rgba(31,61,46,0.07); text-align: center">
+        <span style="position: relative; width: 84px; height: 84px; border-radius: 42px; background: #1F3D2E; color: #E8C98E; display: flex; align-items: center; justify-content: center; font-family: 'Fraunces', serif; font-style: italic; font-size: 38px; animation: pop 400ms ease-out">O
+          <span style="position: absolute; right: -2px; bottom: -2px; width: 30px; height: 30px; border-radius: 15px; background: #E8C98E; border: 3px solid #FFFFFF; box-sizing: border-box; display: flex; align-items: center; justify-content: center">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1F3D2E" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+          </span>
+        </span>
+        <span style="font-family: 'Fraunces', serif; font-size: 28px; font-weight: 500; line-height: 1.1">Ola <em style="font-style: italic; color: #7A5C2C">dołączyła</em></span>
+        <span style="font-size: 15px; line-height: 1.45; color: #4F5B53">Jej telefon jest teraz w Waszym domu. Zmiany będą się wymieniać przez Wi‑Fi – bez chmury.</span>
+      </div>
+      <div style="display: flex; flex-direction: column; background: #FFFFFF; border-radius: 22px; box-shadow: 0 6px 20px rgba(31,61,46,0.07); overflow: hidden">
+        <div style="display: flex; align-items: center; gap: 12px; padding: 12px 18px; min-height: 60px; border-bottom: 1px solid #EFE8DA; box-sizing: border-box">
+          <span style="flex: 1; font-size: 15px; font-weight: 700">Widzi</span>
+          <span style="font-size: 12px; font-weight: 800; letter-spacing: 0.8px; color: #5E6D63; text-align: right">{{scopeShort}}</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px; padding: 12px 18px; min-height: 60px; box-sizing: border-box">
+          <span style="flex: 1; font-size: 15px; font-weight: 700">Domownicy</span>
+          <span style="display: flex; gap: 4px">
+            <span style="width: 28px; height: 28px; border-radius: 14px; background: #1F3D2E; color: #E8C98E; font-family: 'Fraunces', serif; font-style: italic; font-size: 13px; display: flex; align-items: center; justify-content: center">H</span>
+            <span style="width: 28px; height: 28px; border-radius: 14px; background: #1F3D2E; color: #E8C98E; font-family: 'Fraunces', serif; font-style: italic; font-size: 13px; display: flex; align-items: center; justify-content: center">K</span>
+            <span style="width: 28px; height: 28px; border-radius: 14px; background: #E8C98E; color: #1F3D2E; font-family: 'Fraunces', serif; font-style: italic; font-size: 13px; display: flex; align-items: center; justify-content: center">O</span>
+          </span>
+        </div>
+      </div>
+    </sc-if>
+  </div>
+
+  <div style="padding: 12px 16px 24px; display: flex; flex-direction: column; gap: 4px; background: #F6F1E7; box-shadow: 0 -1px 0 #E3DCCD">
+    <sc-if value="{{waiting}}" hint-placeholder-val="{{ true }}">
+      <button type="button" style="height: 56px; border: 0; border-radius: 28px; background: #1F3D2E; color: #F6F1E7; font-size: 17px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 10px">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#E8C98E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4M8 8l4-4 4 4"></path><path d="M5 13v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"></path></svg>
+        Wyślij kod wiadomością
+      </button>
+      <a href="Synchronizacja.dc.html" style="height: 44px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; letter-spacing: 1.2px; text-decoration: none">ANULUJ ZAPROSZENIE</a>
+    </sc-if>
+    <sc-if value="{{joined}}" hint-placeholder-val="{{ false }}">
+      <a href="Synchronizacja.dc.html" style="height: 56px; border-radius: 28px; background: #1F3D2E; color: #F6F1E7; font-size: 17px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none">
+        Gotowe
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#E8C98E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+      </a>
+      <button type="button" onClick="{{again}}" style="height: 44px; border: 0; background: transparent; color: #7A5C2C; font-size: 12px; font-weight: 800; letter-spacing: 1.2px">ZAPROŚ KOLEJNĄ OSOBĘ</button>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"etap":{"editor":"enum","options":["czeka","dołączyła"],"default":"czeka","section":"Etap zaproszenia"},"$preview":{"width":390,"height":844}}'>
+var CATS = [
+  { id: 'shop', name: 'Zakupy', color: '#5E8C6A' },
+  { id: 'home', name: 'Dom', color: '#B8925A' },
+  { id: 'health', name: 'Zdrowie', color: '#A4492F' },
+  { id: 'office', name: 'Urzędy', color: '#6E5F8C' },
+  { id: 'car', name: 'Auto', color: '#4D7A93' },
+  { id: 'family', name: 'Rodzina', color: '#1F3D2E' },
+  { id: 'cal', name: 'Kalendarz', color: '#E8C98E' }
+];
+var CODES = ['482 913', '305 168', '771 240', '916 457'];
+function seg(on) {
+  return 'height: 38px; border: 0; border-radius: 15px; font-size: 14px; font-weight: 800; background: ' + (on ? '#FFFFFF' : 'transparent') + '; color: ' + (on ? '#1F3D2E' : '#5E6D63') + '; box-shadow: ' + (on ? '0 1px 3px rgba(31,61,46,0.15)' : 'none');
+}
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { step: null, scope: 'all', picked: { shop: true, home: true, cal: true }, codeIdx: 0 };
+  }
+  renderVals() {
+    var self = this, s = this.state;
+    var step = s.step || (this.props.etap === 'dołączyła' ? 'joined' : 'wait');
+    var picked = CATS.filter(function (c) { return s.picked[c.id]; });
+    var some = s.scope === 'some';
+    return {
+      waiting: step === 'wait',
+      joined: step === 'joined',
+      code: CODES[s.codeIdx % CODES.length],
+      newCode: function () { self.setState({ codeIdx: s.codeIdx + 1 }); },
+      again: function () { self.setState({ step: 'wait', codeIdx: s.codeIdx + 1 }); },
+      someScope: some,
+      segAll: seg(!some),
+      segSome: seg(some),
+      scopeAll: function () { self.setState({ scope: 'all' }); },
+      scopeSome: function () { self.setState({ scope: 'some' }); },
+      scopeHint: some ? (picked.length ? 'Domownik zobaczy tylko zaznaczone. Resztę zostawiasz dla siebie.' : 'Zaznacz przynajmniej jedną rzecz.') : 'Wszystkie kategorie zadań i cały kalendarz. Możesz to zmienić później.',
+      scopeShort: some ? picked.map(function (c) { return c.name.toUpperCase(); }).join(' · ') : 'WSZYSTKIE KATEGORIE I KALENDARZ',
+      cats: CATS.map(function (c) {
+        var on = !!s.picked[c.id];
+        return {
+          name: c.name, on: on,
+          toggle: function () { var p = Object.assign({}, s.picked); p[c.id] = !on; self.setState({ picked: p }); },
+          dot: 'width: 8px; height: 8px; border-radius: 4px; flex: none; background: ' + (on ? '#E8C98E' : c.color),
+          style: 'display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px; border-radius: 18px; font-size: 14px; font-weight: 700; border: 1px solid ' + (on ? '#1F3D2E' : '#D9D0BE') + '; background: ' + (on ? '#1F3D2E' : 'transparent') + '; color: ' + (on ? '#F6F1E7' : '#1F3D2E')
+        };
+      }),
+      steps: [
+        { n: '1', text: 'Domownik instaluje Ogarnij życie na swoim telefonie.' },
+        { n: '2', text: 'Przy pierwszym uruchomieniu wybiera „Dołącz do domu”.' },
+        { n: '3', text: 'Skanuje kod albo wpisuje 6 cyfr – i gotowe.' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

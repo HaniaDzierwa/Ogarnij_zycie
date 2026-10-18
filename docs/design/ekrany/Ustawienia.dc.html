@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<title>Ogarnij życie – Ustawienia</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,400..700,50;1,9..144,400..700,50&amp;family=Nunito:wght@500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#7A5C2C}a:hover{color:#5C4420}
+button{font-family:inherit;cursor:pointer}
+*::-webkit-scrollbar{width:10px;height:10px}
+*::-webkit-scrollbar-track{background:transparent;margin:10px 0}
+*::-webkit-scrollbar-thumb{background:rgba(31,61,46,0.22);border-radius:10px;border:3px solid transparent;background-clip:padding-box;min-height:40px}
+*::-webkit-scrollbar-button{display:none}
+@supports (-moz-appearance:none){*{scrollbar-width:thin;scrollbar-color:rgba(31,61,46,0.25) transparent}}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; display: flex; flex-direction: column; background: #F6F1E7; color: #1F3D2E; font-family: 'Nunito', sans-serif; overflow: hidden; box-sizing: border-box">
+
+  <div style="flex: 1; overflow-y: auto; padding: 16px 16px 112px; display: flex; flex-direction: column; gap: 22px">
+
+    <div style="position: relative; height: 120px; border-radius: 26px; background: #1F3D2E; color: #F6F1E7; overflow: hidden; flex: none">
+      <svg width="358" height="56" viewBox="0 0 358 56" fill="none" aria-hidden="true" style="position: absolute; left: 0; bottom: 0">
+        <path d="M0 56V34L26 18L52 34V28L84 8L116 28V34L142 20L168 34V26L204 4L240 26V32L268 16L296 32V26L326 10L358 28V56Z" fill="#2C5240"></path>
+        <path d="M0 56V46L36 30L72 46V42L108 26L144 42V48L180 36L216 48V42L256 24L296 42V46L330 34L358 44V56Z" fill="#3A6650"></path>
+        <rect x="104" y="36" width="7" height="8" rx="1.2" fill="#E8C98E"></rect>
+        <rect x="252" y="34" width="7" height="8" rx="1.2" fill="#E8C98E"></rect>
+      </svg>
+      <div style="position: relative; height: 100%; box-sizing: border-box; padding: 14px 14px 16px 18px; display: flex; flex-direction: column; justify-content: space-between">
+        <div style="display: flex; align-items: center; justify-content: space-between">
+          <span style="font-size: 11px; font-weight: 800; letter-spacing: 1.6px; color: #E8C98E">USTAWIENIA</span>
+          <a href="Synchronizacja.dc.html" aria-label="Synchronizacja – zsynchronizowano" style="display: flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border-radius: 14px; border: 1px solid rgba(246,241,231,0.35); color: #F6F1E7; font-size: 11px; font-weight: 800; letter-spacing: 0.6px; text-decoration: none">
+            <span style="width: 6px; height: 6px; border-radius: 3px; background: #7FD19B"></span>
+            ONLINE
+          </a>
+        </div>
+        <h1 style="margin: 0; font-family: 'Fraunces', serif; font-size: 24px; line-height: 1.1; font-weight: 500">Po <em style="font-style: italic; color: #E8C98E">swojemu</em></h1>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <span style="padding: 0 4px; font-size: 11px; font-weight: 800; letter-spacing: 1.6px; color: #7A5C2C">TY</span>
+      <div style="display: flex; flex-direction: column; gap: 10px; padding: 16px; background: #FFFFFF; border-radius: 22px; box-shadow: 0 6px 20px rgba(31,61,46,0.07)">
+        <div style="display: flex; align-items: center; gap: 12px">
+          <span aria-hidden="true" style="width: 46px; height: 46px; border-radius: 23px; background: #1F3D2E; color: #E8C98E; display: flex; align-items: center; justify-content: center; font-family: 'Fraunces', serif; font-style: italic; font-size: 22px; flex: none">{{initial}}</span>
+          <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px">
+            <label for="nick" style="font-size: 11px; font-weight: 800; letter-spacing: 1.4px; color: #5E6D63">IMIĘ LUB PSEUDONIM</label>
+            <input id="nick" type="text" maxlength="20" placeholder="np. Hania, Mama, Szefowa" value="{{nick}}" onChange="{{setNick}}" style="height: 44px; border: 1px solid #D9D0BE; border-radius: 14px; padding: 0 14px; font-size: 16px; font-weight: 700; color: #1F3D2E; background: #FFFFFF; outline-color: #1F3D2E; min-width: 0">
+          </div>
+        </div>
+        <span style="font-size: 13px; line-height: 1.45; color: #5E6D63">Start przywita Cię: <em style="font-family: 'Fraunces', serif; font-size: 15px; color: #7A5C2C">„Dzień dobry, {{greetName}}”</em>. Krzyś zobaczy to imię przy Twoich zmianach.</span>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <span style="padding: 0 4px; font-size: 11px; font-weight: 800; letter-spacing: 1.6px; color: #7A5C2C">WSPÓLNY DOM</span>
+      <a href="Synchronizacja.dc.html" style="display: flex; align-items: center; gap: 14px; padding: 12px 16px; min-height: 72px; background: #FFFFFF; border-radius: 22px; box-shadow: 0 6px 20px rgba(31,61,46,0.07); color: #1F3D2E; text-decoration: none; box-sizing: border-box">
+        <span style="width: 40px; height: 40px; border-radius: 14px; background: #DDE8DF; display: flex; align-items: center; justify-content: center; flex: none">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"></circle><path d="M3 20c.5-3.5 3-5.5 6-5.5s5.5 2 6 5.5"></path><path d="M16 4.5a3.5 3.5 0 0 1 0 7"></path><path d="M18 14.7c1.7.7 2.8 2.5 3 5.3"></path></svg>
+        </span>
+        <span style="flex: 1; display: flex; flex-direction: column; gap: 3px">
+          <span style="font-size: 16px; font-weight: 700">Domownicy i synchronizacja</span>
+          <span style="font-size: 11px; font-weight: 800; letter-spacing: 1px; color: #5E6D63">KRZYŚ · WI‑FI · DZIŚ 13:05</span>
+        </span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B8925A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg>
+      </a>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <span style="padding: 0 4px; font-size: 11px; font-weight: 800; letter-spacing: 1.6px; color: #7A5C2C">POWIADOMIENIA</span>
+      <div style="display: flex; flex-direction: column; background: #FFFFFF; border-radius: 22px; box-shadow: 0 6px 20px rgba(31,61,46,0.07); overflow: hidden">
+        <sc-for list="{{notifs}}" as="n" hint-placeholder-count="4">
+          <button type="button" role="switch" aria-checked="{{n.on}}" onClick="{{n.toggle}}" style="{{n.rowStyle}}">
+            <span style="flex: 1; display: flex; flex-direction: column; gap: 3px; text-align: left">
+              <span style="font-size: 16px; font-weight: 700; color: #1F3D2E">{{n.name}}</span>
+              <span style="font-size: 13px; color: #5E6D63">{{n.hint}}</span>
+            </span>
+            <span style="{{n.track}}"><span style="{{n.knob}}"></span></span>
+          </button>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <span style="padding: 0 4px; font-size: 11px; font-weight: 800; letter-spacing: 1.6px; color: #7A5C2C">WYGLĄD</span>
+      <div style="display: flex; flex-direction: column; gap: 12px; padding: 16px 18px; background: #FFFFFF; border-radius: 22px; box-shadow: 0 6px 20px rgba(31,61,46,0.07); box-sizing: border-box">
+        <div style="display: flex; align-items: baseline; justify-content: space-between">
+          <span style="font-size: 16px; font-weight: 700">Motyw</span>
+          <span style="font-family: 'Fraunces', serif; font-style: italic; font-size: 16px; color: #7A5C2C">{{themeLabel}}</span>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px" role="group" aria-label="Motyw">
+          <sc-for list="{{themeOpts}}" as="t" hint-placeholder-count="3">
+            <button type="button" onClick="{{t.pick}}" aria-pressed="{{t.on}}" style="{{t.style}}">
+              <span style="{{t.preview}}"></span>
+              <span style="font-size: 13px; font-weight: 800">{{t.name}}</span>
+            </button>
+          </sc-for>
+        </div>
+        <span style="font-size: 13px; line-height: 1.4; color: #5E6D63">{{themeHint}}</span>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 6px; padding-top: 4px">
+      <svg width="26" height="26" viewBox="0 0 120 120" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M24 60L60 28l36 32" stroke="#1F3D2E" stroke-width="10"></path><path d="M34 54v34a6 6 0 0 0 6 6h40a6 6 0 0 0 6-6V54" stroke="#1F3D2E" stroke-width="10"></path><path d="M46 72l10 10 20-22" stroke="#B8925A" stroke-width="10"></path></svg>
+      <span style="font-family: 'Fraunces', serif; font-style: italic; font-size: 15px; color: #5E6D63">ogarnij życie · wersja 1.0</span>
+      <span style="font-size: 12px; color: #5E6D63">Dane trzymane w domu – bez chmury</span>
+    </div>
+  </div>
+
+  <div aria-hidden="true" style="position: absolute; left: 0; right: 0; bottom: 0; height: 116px; background: linear-gradient(180deg, rgba(246,241,231,0) 0%, #F6F1E7 30%); pointer-events: none"></div>
+  <nav aria-label="Główna nawigacja" style="position: absolute; left: 16px; right: 16px; bottom: 20px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); align-items: center; padding: 8px; border-radius: 30px; background: #1F3D2E; box-shadow: 0 12px 30px rgba(31,61,46,0.35)">
+    <a href="Kategorie.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; min-height: 52px; font-size: 11px; font-weight: 700; letter-spacing: 0.4px; color: #C7D8CD; text-decoration: none">
+      <svg width="22" height="22" viewBox="0 0 120 120" fill="none" stroke="currentColor" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"><path d="M24 60L60 28l36 32"></path><path d="M34 54v34a6 6 0 0 0 6 6h40a6 6 0 0 0 6-6V54"></path></svg>
+      Start
+    </a>
+    <a href="Zadania.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; min-height: 52px; font-size: 11px; font-weight: 700; letter-spacing: 0.4px; color: #C7D8CD; text-decoration: none">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="4.5"></rect><path d="M8.5 12l2.5 2.5 4.5-5"></path></svg>
+      Zadania
+    </a>
+    <button type="button" onClick="{{openMenu}}" aria-label="Dodaj" style="justify-self: center; width: 52px; height: 52px; border: 0; border-radius: 26px; background: #E8C98E; color: #1F3D2E; display: flex; align-items: center; justify-content: center">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+    </button>
+    <a href="Kalendarz.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; min-height: 52px; font-size: 11px; font-weight: 700; letter-spacing: 0.4px; color: #C7D8CD; text-decoration: none">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="15" rx="4"></rect><path d="M4 10h16M9 3v4M15 3v4"></path></svg>
+      Kalendarz
+    </a>
+    <a href="Ustawienia.dc.html" aria-current="page" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; min-height: 52px; font-size: 11px; font-weight: 800; letter-spacing: 0.4px; color: #E8C98E; text-decoration: none">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"></path><circle cx="16" cy="7" r="2"></circle><circle cx="10" cy="17" r="2"></circle></svg>
+      Ustawienia
+      <span style="width: 4px; height: 4px; border-radius: 2px; background: #E8C98E"></span>
+    </a>
+  </nav>
+
+  <sc-if value="{{menuOpen}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; left: 0; top: 0; right: 0; bottom: 0">
+      <button type="button" onClick="{{closeMenu}}" aria-label="Zamknij" style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; border: 0; background: rgba(31,61,46,0.45)"></button>
+      <div style="position: absolute; left: 65px; bottom: 104px; width: 260px; background: #FFFCF6; border-radius: 24px; padding: 8px; box-shadow: 0 16px 40px rgba(31,61,46,0.3); display: flex; flex-direction: column; gap: 2px; box-sizing: border-box">
+        <span style="padding: 10px 12px 6px; font-size: 11px; font-weight: 800; letter-spacing: 1.6px; color: #7A5C2C">CO DODAJESZ?</span>
+        <a href="Zadania.dc.html" style="display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 0 12px; border-radius: 16px; color: #1F3D2E; font-size: 16px; font-weight: 700; text-decoration: none">
+          <span style="width: 38px; height: 38px; border-radius: 12px; background: #DDE8DF; display: flex; align-items: center; justify-content: center; flex: none"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="4.5"></rect><path d="M8.5 12l2.5 2.5 4.5-5"></path></svg></span>
+          Zadanie
+        </a>
+        <a href="Kalendarz.dc.html" style="display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 0 12px; border-radius: 16px; color: #1F3D2E; font-size: 16px; font-weight: 700; text-decoration: none">
+          <span style="width: 38px; height: 38px; border-radius: 12px; background: #EFE3CC; display: flex; align-items: center; justify-content: center; flex: none"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="15" rx="4"></rect><path d="M4 10h16M9 3v4M15 3v4"></path></svg></span>
+          Wydarzenie w kalendarzu
+        </a>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { menu: false, nick: 'Hania', theme: 'system', nt: { tasks: true, events: true, morning: true, house: false } };
+  }
+  renderVals() {
+    var self = this;
+    var name = (this.state.nick || '').trim();
+    return {
+      themeLabel: { system: 'Systemowy', light: 'Jasny', dark: 'Ciemny' }[this.state.theme],
+      themeHint: { system: 'Dopasowuje się do ustawień telefonu: jasny w dzień, ciemny wieczorem.', light: 'Kremowe tło przez cały dzień.', dark: 'Butelkowa zieleń – łagodna dla oczu, zwłaszcza wieczorem.' }[this.state.theme],
+      themeOpts: [
+        { id: 'system', name: 'Systemowy', bg: 'linear-gradient(90deg, #F6F1E7 0 50%, #1F3D2E 50% 100%)' },
+        { id: 'light', name: 'Jasny', bg: '#F6F1E7' },
+        { id: 'dark', name: 'Ciemny', bg: '#1F3D2E' }
+      ].map(function (t) {
+        var on = self.state.theme === t.id;
+        return {
+          name: t.name,
+          on: on,
+          pick: function () { self.setState({ theme: t.id }); },
+          preview: 'display: block; width: 100%; height: 44px; border-radius: 12px; background: ' + t.bg + '; box-shadow: inset 0 0 0 1px rgba(31,61,46,0.15)',
+          style: 'display: flex; flex-direction: column; align-items: stretch; gap: 8px; padding: 8px 8px 10px; border-radius: 16px; background: ' + (on ? '#F6F1E7' : '#FFFFFF') + '; color: #1F3D2E; border: ' + (on ? '2px solid #1F3D2E' : '1px solid #D9D0BE') + '; text-align: center'
+        };
+      }),
+      notifs: [
+        { id: 'tasks', name: 'Terminy zadań', hint: 'Dzień przed terminem' },
+        { id: 'events', name: 'Wydarzenia z kalendarza', hint: 'Zgodnie z przypomnieniem przy wydarzeniu' },
+        { id: 'morning', name: 'Poranne podsumowanie', hint: 'Codziennie o 8:00 – co pilne i co dziś' },
+        { id: 'house', name: 'Zmiany od domowników', hint: 'Gdy Krzyś coś doda lub ogarnie' }
+      ].map(function (n, i, arr) {
+        var on = !!self.state.nt[n.id];
+        return {
+          name: n.name, hint: n.hint, on: on,
+          toggle: function () { var nt = Object.assign({}, self.state.nt); nt[n.id] = !on; self.setState({ nt: nt }); },
+          rowStyle: 'display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 18px; min-height: 64px; border: 0; background: transparent; box-sizing: border-box; ' + (i < arr.length - 1 ? 'border-bottom: 1px solid #EFE8DA' : ''),
+          track: 'position: relative; width: 46px; height: 28px; border-radius: 14px; flex: none; transition: background 150ms ease; background: ' + (on ? '#1F3D2E' : '#D9D0BE'),
+          knob: 'position: absolute; top: 3px; left: ' + (on ? 21 : 3) + 'px; width: 22px; height: 22px; border-radius: 11px; background: ' + (on ? '#E8C98E' : '#FFFFFF') + '; box-shadow: 0 1px 3px rgba(31,61,46,0.25); transition: left 150ms ease'
+        };
+      }),
+      nick: this.state.nick,
+      setNick: function (e) { self.setState({ nick: e.target.value }); },
+      greetName: name || 'Ty',
+      initial: name ? name.charAt(0).toUpperCase() : '?',
+      menuOpen: this.state.menu,
+      openMenu: function () { self.setState({ menu: true }); },
+      closeMenu: function () { self.setState({ menu: false }); }
+    };
+  }
+}
+</script>
+</body>
+</html>

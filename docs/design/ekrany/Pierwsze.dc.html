@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<title>Ogarnij życie – Witaj</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,400..700,50;1,9..144,400..700,50&amp;family=Nunito:wght@500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#7A5C2C}a:hover{color:#5C4420}
+button{font-family:inherit;cursor:pointer}
+*::-webkit-scrollbar{width:10px;height:10px}
+*::-webkit-scrollbar-track{background:transparent;margin:10px 0}
+*::-webkit-scrollbar-thumb{background:rgba(31,61,46,0.22);border-radius:10px;border:3px solid transparent;background-clip:padding-box;min-height:40px}
+*::-webkit-scrollbar-button{display:none}
+@supports (-moz-appearance:none){*{scrollbar-width:thin;scrollbar-color:rgba(31,61,46,0.25) transparent}}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(63,138,94,0.5)}70%{box-shadow:0 0 0 10px rgba(63,138,94,0)}100%{box-shadow:0 0 0 0 rgba(63,138,94,0)}}
+@keyframes pop{0%{transform:scale(0.6);opacity:0}100%{transform:scale(1);opacity:1}}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; display: flex; flex-direction: column; background: #F6F1E7; color: #1F3D2E; font-family: 'Nunito', sans-serif; overflow: hidden; box-sizing: border-box">
+
+  <div style="flex: 1; overflow-y: auto; padding: 16px 16px 24px; display: flex; flex-direction: column; gap: 18px">
+    <div style="position: relative; height: 300px; border-radius: 30px; background: #1F3D2E; color: #F6F1E7; overflow: hidden; flex: none">
+      <svg width="358" height="300" viewBox="0 0 358 300" fill="none" aria-hidden="true" style="position: absolute; left: 0; top: 0">
+        <circle cx="300" cy="62" r="18" fill="#E8C98E" opacity="0.9"></circle>
+        <circle cx="308" cy="56" r="16" fill="#1F3D2E"></circle>
+        <circle cx="60" cy="48" r="1.6" fill="#E8C98E"></circle><circle cx="118" cy="30" r="1.2" fill="#E8C98E"></circle><circle cx="232" cy="40" r="1.4" fill="#E8C98E"></circle><circle cx="180" cy="70" r="1" fill="#E8C98E"></circle>
+        <g transform="translate(0,244)">
+          <path d="M0 56V34L26 18L52 34V28L84 8L116 28V34L142 20L168 34V26L204 4L240 26V32L268 16L296 32V26L326 10L358 28V56Z" fill="#2C5240"></path>
+          <path d="M0 56V46L36 30L72 46V42L108 26L144 42V48L180 36L216 48V42L256 24L296 42V46L330 34L358 44V56Z" fill="#3A6650"></path>
+          <rect x="104" y="36" width="7" height="8" rx="1.2" fill="#E8C98E"></rect>
+          <rect x="252" y="34" width="7" height="8" rx="1.2" fill="#E8C98E"></rect>
+        </g>
+      </svg>
+      <div style="position: relative; height: 100%; box-sizing: border-box; padding: 54px 24px 70px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; text-align: center">
+        <svg width="72" height="72" viewBox="0 0 120 120" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M24 60L60 28l36 32" stroke="#F6F1E7" stroke-width="10"></path><path d="M34 54v34a6 6 0 0 0 6 6h40a6 6 0 0 0 6-6V54" stroke="#F6F1E7" stroke-width="10"></path><path d="M46 72l10 10 20-22" stroke="#E8C98E" stroke-width="10"></path></svg>
+        <h1 style="margin: 0; font-family: 'Fraunces', serif; font-size: 36px; line-height: 1.05; font-weight: 500">Ogarnij <em style="font-style: italic; color: #E8C98E">życie</em></h1>
+        <span style="font-size: 15px; line-height: 1.4; color: #C7D8CD">Zadania, zakupy i kalendarz całego domu<br>w jednym miejscu.</span>
+      </div>
+    </div>
+
+    <span style="padding: 0 4px; font-family: 'Fraunces', serif; font-size: 22px; font-weight: 500">Od czego <em style="font-style: italic">zaczynamy?</em></span>
+
+    <button type="button" onClick="{{pickNew}}" aria-pressed="{{isNew}}" style="{{newStyle}}">
+      <span style="width: 48px; height: 48px; border-radius: 24px 24px 12px 12px; background: #DDE8DF; display: flex; align-items: center; justify-content: center; flex: none">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1F3D2E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-7 8 7"></path><path d="M6 10v9a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-9"></path><path d="M12 12v5M9.5 14.5h5"></path></svg>
+      </span>
+      <span style="flex: 1; display: flex; flex-direction: column; gap: 3px; text-align: left">
+        <span style="font-size: 17px; font-weight: 800; color: #1F3D2E">Załóż nowy dom</span>
+        <span style="font-size: 13px; line-height: 1.4; color: #5E6D63">Zaczynasz od zera. Domowników zaprosisz później.</span>
+      </span>
+      <span style="{{newRadio}}"></span>
+    </button>
+
+    <sc-if value="{{isNew}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; gap: 8px; padding: 16px 18px; margin-top: -8px; border-radius: 22px; background: #FFFFFF; box-shadow: 0 6px 20px rgba(31,61,46,0.07)">
+        <label for="imie" style="font-size: 11px; font-weight: 800; letter-spacing: 1.4px; color: #5E6D63">JAK MASZ NA IMIĘ?</label>
+        <input id="imie" type="text" maxlength="20" placeholder="np. Hania, Mama, Szefowa" value="{{name}}" onChange="{{setName}}" style="height: 48px; border: 1px solid #D9D0BE; border-radius: 14px; padding: 0 14px; font-size: 17px; font-weight: 700; color: #1F3D2E; background: #FFFFFF; outline-color: #1F3D2E">
+        <span style="font-size: 13px; color: #5E6D63">Start przywita Cię: <em style="font-family: 'Fraunces', serif; font-size: 15px; color: #7A5C2C">„Dzień dobry, {{nameShow}}”</em></span>
+      </div>
+    </sc-if>
+
+    <a href="Dolacz.dc.html" style="display: flex; align-items: center; gap: 14px; padding: 16px; border-radius: 22px; background: #FFFFFF; border: 1px solid #E3DCCD; color: #1F3D2E; text-decoration: none; box-sizing: border-box">
+      <span style="width: 48px; height: 48px; border-radius: 24px 24px 12px 12px; background: #EFE3CC; display: flex; align-items: center; justify-content: center; flex: none">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#6E5220" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"></circle><path d="M3 20c.5-3.5 3-5.5 6-5.5s5.5 2 6 5.5"></path><path d="M18 8v6M15 11h6"></path></svg>
+      </span>
+      <span style="flex: 1; display: flex; flex-direction: column; gap: 3px">
+        <span style="font-size: 17px; font-weight: 800">Dołącz do domu</span>
+        <span style="font-size: 13px; line-height: 1.4; color: #5E6D63">Ktoś Cię zaprosił – zeskanujesz jego kod.</span>
+      </span>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B8925A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg>
+    </a>
+
+    <span style="display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 12px; color: #5E6D63; text-align: center">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg>
+      Bez konta i bez chmury – dane zostają w domu.
+    </span>
+  </div>
+
+  <sc-if value="{{isNew}}" hint-placeholder-val="{{ false }}">
+    <div style="padding: 12px 16px 24px; background: #F6F1E7; box-shadow: 0 -1px 0 #E3DCCD">
+      <a href="Kategorie.dc.html" style="height: 56px; border-radius: 28px; background: #1F3D2E; color: #F6F1E7; font-size: 17px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none">
+        Zaczynamy
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#E8C98E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+      </a>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"wybor":{"editor":"enum","options":["nic","nowy dom"],"default":"nowy dom","section":"Zaznaczona opcja"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { pick: null, name: 'Hania' };
+  }
+  renderVals() {
+    var self = this, s = this.state;
+    var isNew = s.pick === null ? (this.props.wybor || 'nowy dom') === 'nowy dom' : s.pick === 'new';
+    var nm = (s.name || '').trim();
+    return {
+      isNew: isNew,
+      pickNew: function () { self.setState({ pick: isNew ? 'none' : 'new' }); },
+      newStyle: 'display: flex; align-items: center; gap: 14px; width: 100%; padding: 16px; border-radius: 22px; box-sizing: border-box; text-align: left; background: #FFFFFF; border: ' + (isNew ? '2px solid #1F3D2E' : '1px solid #E3DCCD') + '; box-shadow: ' + (isNew ? '0 6px 20px rgba(31,61,46,0.10)' : 'none'),
+      newRadio: 'width: 22px; height: 22px; border-radius: 11px; box-sizing: border-box; flex: none; ' + (isNew ? 'border: 7px solid #1F3D2E; background: #E8C98E' : 'border: 2px solid #B8925A'),
+      name: s.name,
+      setName: function (e) { self.setState({ name: e.target.value }); },
+      nameShow: nm || 'Ty'
+    };
+  }
+}
+</script>
+</body>
+</html>

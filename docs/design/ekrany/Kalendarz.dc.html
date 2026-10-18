@@ -1,0 +1,532 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<title>Ogarnij życie – Kalendarz</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,400..700,50;1,9..144,400..700,50&amp;family=Nunito:wght@500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#7A5C2C}a:hover{color:#5C4420}
+button{font-family:inherit;cursor:pointer}
+input{font-family:inherit}
+*::-webkit-scrollbar{width:10px;height:10px}
+*::-webkit-scrollbar-track{background:transparent;margin:10px 0}
+*::-webkit-scrollbar-thumb{background:rgba(31,61,46,0.22);border-radius:10px;border:3px solid transparent;background-clip:padding-box;min-height:40px}
+*::-webkit-scrollbar-button{display:none}
+@supports (-moz-appearance:none){*{scrollbar-width:thin;scrollbar-color:rgba(31,61,46,0.25) transparent}}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; display: flex; flex-direction: column; background: #F6F1E7; color: #1F3D2E; font-family: 'Nunito', sans-serif; overflow: hidden; box-sizing: border-box">
+
+  <div style="flex: 1; overflow-y: auto; padding: 16px 16px 120px; display: flex; flex-direction: column; gap: 16px">
+
+    <div style="position: relative; height: 120px; border-radius: 26px; background: #1F3D2E; color: #F6F1E7; overflow: hidden; flex: none">
+      <svg width="358" height="120" viewBox="0 0 358 120" fill="none" aria-hidden="true" style="position: absolute; left: 0; top: 0">
+        <g transform="translate(0,64)">
+          <path d="M0 56V34L26 18L52 34V28L84 8L116 28V34L142 20L168 34V26L204 4L240 26V32L268 16L296 32V26L326 10L358 28V56Z" fill="#2C5240"></path>
+          <path d="M0 56V46L36 30L72 46V42L108 26L144 42V48L180 36L216 48V42L256 24L296 42V46L330 34L358 44V56Z" fill="#3A6650"></path>
+          <rect x="104" y="36" width="7" height="8" rx="1.2" fill="#E8C98E"></rect>
+          <rect x="252" y="34" width="7" height="8" rx="1.2" fill="#E8C98E"></rect>
+        </g>
+      </svg>
+      <div style="position: relative; height: 100%; box-sizing: border-box; padding: 14px 14px 16px 18px; display: flex; flex-direction: column; justify-content: space-between">
+        <div style="display: flex; align-items: center; justify-content: space-between">
+          <span style="font-size: 11px; font-weight: 800; letter-spacing: 1.6px; color: #E8C98E">KALENDARZ</span>
+          <button type="button" onClick="{{goToday}}" style="height: 30px; padding: 0 12px; border: 1px solid rgba(232,201,142,0.5); border-radius: 15px; background: transparent; color: #E8C98E; font-size: 11px; font-weight: 800; letter-spacing: 0.8px">DZIŚ</button>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
+          <h1 style="margin: 0; font-family: 'Fraunces', serif; font-size: 24px; line-height: 1.1; font-weight: 500">{{monthName}} <em style="font-style: italic; color: #E8C98E">{{year}}</em></h1>
+          <span style="font-size: 12px; font-weight: 700; color: #D6E4DA">{{weekCountLabel}}</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); background: #EDE6D8; border-radius: 20px; padding: 3px" role="group" aria-label="Widok kalendarza">
+      <button type="button" onClick="{{showWeek}}" aria-pressed="{{isWeek}}" style="{{segWeek}}">Tydzień</button>
+      <button type="button" onClick="{{showMonth}}" aria-pressed="{{isMonth}}" style="{{segMonth}}">Miesiąc</button>
+    </div>
+
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
+      <button type="button" onClick="{{prev}}" aria-label="{{prevLabel}}" style="width: 44px; height: 44px; border: 1px solid #D9D0BE; border-radius: 22px; background: #FFFFFF; color: #1F3D2E; display: flex; align-items: center; justify-content: center; flex: none">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+      </button>
+      <span style="font-family: 'Fraunces', serif; font-size: 18px; font-weight: 600; text-align: center">{{rangeLabel}}</span>
+      <button type="button" onClick="{{next}}" aria-label="{{nextLabel}}" style="width: 44px; height: 44px; border: 1px solid #D9D0BE; border-radius: 22px; background: #FFFFFF; color: #1F3D2E; display: flex; align-items: center; justify-content: center; flex: none">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg>
+      </button>
+    </div>
+
+    <sc-if value="{{isWeek}}" hint-placeholder-val="{{ true }}">
+      <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; padding: 8px; border-radius: 22px; background: #FFFFFF; box-shadow: 0 6px 20px rgba(31,61,46,0.07)">
+        <sc-for list="{{weekCells}}" as="c" hint-placeholder-count="7">
+          <button type="button" onClick="{{c.pick}}" aria-label="{{c.aria}}" style="{{c.style}}">
+            <span style="{{c.labelStyle}}">{{c.short}}</span>
+            <span style="font-family: 'Fraunces', serif; font-size: 19px; font-weight: 600; line-height: 1">{{c.num}}</span>
+            <span style="display: flex; gap: 3px; height: 5px">
+              <sc-for list="{{c.dots}}" as="d" hint-placeholder-count="1">
+                <span style="{{d.style}}"></span>
+              </sc-for>
+            </span>
+          </button>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isMonth}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; gap: 6px; padding: 10px 8px 12px; border-radius: 22px; background: #FFFFFF; box-shadow: 0 6px 20px rgba(31,61,46,0.07)">
+        <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px">
+          <sc-for list="{{weekdays}}" as="w" hint-placeholder-count="7">
+            <span style="text-align: center; font-size: 10px; font-weight: 800; letter-spacing: 1px; color: #7A8A80">{{w}}</span>
+          </sc-for>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px">
+          <sc-for list="{{cells}}" as="c" hint-placeholder-count="35">
+            <sc-if value="{{c.isDay}}" hint-placeholder-val="{{ true }}">
+              <button type="button" onClick="{{c.pick}}" aria-label="{{c.aria}}" style="{{c.style}}">
+                <span>{{c.num}}</span>
+                <span style="display: flex; gap: 2px; height: 4px">
+                  <sc-for list="{{c.dots}}" as="d" hint-placeholder-count="1">
+                    <span style="{{d.style}}"></span>
+                  </sc-for>
+                </span>
+              </button>
+            </sc-if>
+            <sc-if value="{{c.isBlank}}" hint-placeholder-val="{{ false }}">
+              <span style="height: 42px"></span>
+            </sc-if>
+          </sc-for>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 4px 12px; padding: 8px 6px 0; border-top: 1px solid #EFE8DA">
+          <sc-for list="{{legend}}" as="l" hint-placeholder-count="5">
+            <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: #4F5B53"><span style="{{l.dot}}"></span>{{l.name}}</span>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <div style="display: flex; flex-direction: column; gap: 10px; padding: 0 4px">
+      <div style="display: flex; align-items: baseline; justify-content: space-between">
+        <span style="font-family: 'Fraunces', serif; font-size: 21px; font-weight: 500">{{selDay}} <em style="font-style: italic">{{selDate}}</em></span>
+        <span style="font-size: 11px; font-weight: 800; letter-spacing: 1.2px; color: #7A5C2C">{{selCount}}</span>
+      </div>
+      <sc-if value="{{isEmpty}}" hint-placeholder-val="{{ false }}">
+        <div style="padding: 18px; border-radius: 20px; border: 1px dashed #D9D0BE; font-family: 'Fraunces', serif; font-style: italic; font-size: 16px; color: #5E6D63; text-align: center">Spokojny dzień – nic zaplanowanego</div>
+      </sc-if>
+      <sc-for list="{{agenda}}" as="e" hint-placeholder-count="2">
+        <div style="display: flex; align-items: center; gap: 14px; padding: 12px 16px 12px 12px; border-radius: 20px; background: #FFFFFF; box-shadow: 0 6px 20px rgba(31,61,46,0.07)">
+          <span style="{{e.iconBox}}">
+            <sc-if value="{{e.isDeadline}}" hint-placeholder-val="{{ false }}">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4"></path><path d="M5 4h11l-2 4 2 4H5"></path></svg>
+            </sc-if>
+            <sc-if value="{{e.isBday}}" hint-placeholder-val="{{ false }}">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16"></path><path d="M5 20v-7h14v7"></path><path d="M5 16c2.3 1.3 4.7 1.3 7 0s4.7-1.3 7 0"></path><path d="M12 13V9"></path><path d="M12 6.5c-.8-.7-.8-1.8 0-2.5.8.7.8 1.8 0 2.5z"></path></svg>
+            </sc-if>
+            <sc-if value="{{e.isParty}}" hint-placeholder-val="{{ false }}">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l5-14 9 9z"></path><path d="M14 4v2M19 9h2M17.5 5.5L16 7"></path></svg>
+            </sc-if>
+            <sc-if value="{{e.isEvent}}" hint-placeholder-val="{{ true }}">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="15" rx="4"></rect><path d="M4 10h16M9 3v4M15 3v4"></path></svg>
+            </sc-if>
+            <sc-if value="{{e.isCustom}}" hint-placeholder-val="{{ false }}">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 12.5V5a1.5 1.5 0 0 1 1.5-1.5h7.5L21 12l-9 9z"></path><circle cx="8.5" cy="8.5" r="1.5"></circle></svg>
+            </sc-if>
+          </span>
+          <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px">
+            <span style="font-size: 16px; font-weight: 700; line-height: 1.3">{{e.title}}</span>
+            <span style="font-size: 11px; font-weight: 800; letter-spacing: 1px; color: #5E6D63">{{e.meta}}</span>
+          </span>
+          <span style="font-family: 'Fraunces', serif; font-size: 16px; font-weight: 600; color: #1F3D2E; white-space: nowrap">{{e.time}}</span>
+        </div>
+      </sc-for>
+    </div>
+
+    <sc-if value="{{showLater}}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; flex-direction: column; gap: 10px; padding: 0 4px">
+        <span style="font-family: 'Fraunces', serif; font-size: 21px; font-weight: 500">Później</span>
+        <div style="display: flex; flex-direction: column; background: #FFFFFF; border-radius: 20px; box-shadow: 0 6px 20px rgba(31,61,46,0.07); overflow: hidden">
+          <sc-for list="{{later}}" as="u" hint-placeholder-count="3">
+            <button type="button" onClick="{{u.pick}}" style="display: flex; align-items: center; gap: 14px; width: 100%; padding: 10px 14px 10px 10px; border: 0; border-bottom: 1px solid #EFE8DA; background: transparent; text-align: left; color: #1F3D2E">
+              <span style="{{u.badge}}">
+                <span style="font-family: 'Fraunces', serif; font-size: 19px; font-weight: 600; line-height: 1">{{u.day}}</span>
+                <span style="font-size: 10px; font-weight: 800; letter-spacing: 1px">{{u.mon}}</span>
+              </span>
+              <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px">
+                <span style="font-size: 15px; font-weight: 700">{{u.title}}</span>
+                <span style="font-size: 11px; font-weight: 800; letter-spacing: 1px; color: #5E6D63">{{u.meta}}</span>
+              </span>
+              <span style="font-size: 12px; font-weight: 800; color: #6E5220; background: #EFE3CC; padding: 4px 10px; border-radius: 12px; white-space: nowrap">{{u.inDays}}</span>
+            </button>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+  </div>
+
+  <div aria-hidden="true" style="position: absolute; left: 0; right: 0; bottom: 0; height: 116px; background: linear-gradient(180deg, rgba(246,241,231,0) 0%, #F6F1E7 30%); pointer-events: none"></div>
+  <nav aria-label="Główna nawigacja" style="position: absolute; left: 16px; right: 16px; bottom: 20px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); align-items: center; padding: 8px; border-radius: 30px; background: #1F3D2E; box-shadow: 0 12px 30px rgba(31,61,46,0.35)">
+    <a href="Kategorie.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; min-height: 52px; font-size: 11px; font-weight: 700; letter-spacing: 0.4px; color: #C7D8CD; text-decoration: none">
+      <svg width="22" height="22" viewBox="0 0 120 120" fill="none" stroke="currentColor" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"><path d="M24 60L60 28l36 32"></path><path d="M34 54v34a6 6 0 0 0 6 6h40a6 6 0 0 0 6-6V54"></path></svg>
+      Start
+    </a>
+    <a href="Zadania.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; min-height: 52px; font-size: 11px; font-weight: 700; letter-spacing: 0.4px; color: #C7D8CD; text-decoration: none">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="4.5"></rect><path d="M8.5 12l2.5 2.5 4.5-5"></path></svg>
+      Zadania
+    </a>
+    <button type="button" onClick="{{openMenu}}" aria-label="Dodaj" style="justify-self: center; width: 52px; height: 52px; border: 0; border-radius: 26px; background: #E8C98E; color: #1F3D2E; display: flex; align-items: center; justify-content: center">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+    </button>
+    <a href="Kalendarz.dc.html" aria-current="page" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; min-height: 52px; font-size: 11px; font-weight: 800; letter-spacing: 0.4px; color: #E8C98E; text-decoration: none">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="15" rx="4"></rect><path d="M4 10h16M9 3v4M15 3v4"></path></svg>
+      Kalendarz
+      <span style="width: 4px; height: 4px; border-radius: 2px; background: #E8C98E"></span>
+    </a>
+    <a href="Ustawienia.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; min-height: 52px; font-size: 11px; font-weight: 700; letter-spacing: 0.4px; color: #C7D8CD; text-decoration: none">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"></path><circle cx="16" cy="7" r="2"></circle><circle cx="10" cy="17" r="2"></circle></svg>
+      Ustawienia
+    </a>
+  </nav>
+
+  <sc-if value="{{menuOpen}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; left: 0; top: 0; right: 0; bottom: 0">
+      <button type="button" onClick="{{closeMenu}}" aria-label="Zamknij" style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; border: 0; background: rgba(31,61,46,0.45)"></button>
+      <div style="position: absolute; left: 65px; bottom: 104px; width: 260px; background: #FFFCF6; border-radius: 24px; padding: 8px; box-shadow: 0 16px 40px rgba(31,61,46,0.3); display: flex; flex-direction: column; gap: 2px; box-sizing: border-box">
+        <span style="padding: 10px 12px 6px; font-size: 11px; font-weight: 800; letter-spacing: 1.6px; color: #7A5C2C">CO DODAJESZ?</span>
+        <a href="Zadania.dc.html" style="display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 0 12px; border-radius: 16px; color: #1F3D2E; font-size: 16px; font-weight: 700; text-decoration: none">
+          <span style="width: 38px; height: 38px; border-radius: 12px; background: #DDE8DF; display: flex; align-items: center; justify-content: center; flex: none"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="4.5"></rect><path d="M8.5 12l2.5 2.5 4.5-5"></path></svg></span>
+          Zadanie
+        </a>
+        <button type="button" onClick="{{newEvent}}" style="display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 0 12px; border: 0; border-radius: 16px; background: transparent; color: #1F3D2E; font-size: 16px; font-weight: 700; text-align: left">
+          <span style="width: 38px; height: 38px; border-radius: 12px; background: #EFE3CC; display: flex; align-items: center; justify-content: center; flex: none"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="15" rx="4"></rect><path d="M4 10h16M9 3v4M15 3v4"></path></svg></span>
+          Wydarzenie w kalendarzu
+        </button>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{sheetOpen}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; left: 0; top: 0; right: 0; bottom: 0">
+      <button type="button" onClick="{{closeSheet}}" aria-label="Zamknij" style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; border: 0; background: rgba(31,61,46,0.5)"></button>
+      <div style="position: absolute; left: 0; right: 0; bottom: 0; max-height: 800px; overflow-y: auto; box-sizing: border-box; background: #FFFCF6; border-radius: 30px 30px 0 0; padding: 12px 22px 28px; display: flex; flex-direction: column; gap: 16px">
+        <div style="width: 40px; height: 4px; border-radius: 4px; background: #D9D0BE; align-self: center"></div>
+        <div style="display: flex; flex-direction: column; gap: 2px">
+          <span style="font-family: 'Fraunces', serif; font-size: 28px; font-weight: 500">Nowe <em style="font-style: italic; color: #7A5C2C">wydarzenie</em></span>
+          <span style="font-size: 11px; font-weight: 800; letter-spacing: 1.4px; color: #5E6D63">{{selUpper}}</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <label for="nazwa" style="font-size: 11px; font-weight: 800; letter-spacing: 1.4px; color: #5E6D63">NAZWA</label>
+          <input id="nazwa" type="text" placeholder="np. Urodziny Oli" value="{{draft}}" onChange="{{setDraft}}" onKeyDown="{{onKey}}" style="height: 50px; border: 1px solid #D9D0BE; border-radius: 16px; padding: 0 16px; font-size: 16px; color: #1F3D2E; background: #FFFFFF; outline-color: #1F3D2E">
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <span style="font-size: 11px; font-weight: 800; letter-spacing: 1.4px; color: #5E6D63">RODZAJ</span>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px">
+            <sc-for list="{{typeChips}}" as="t" hint-placeholder-count="4">
+              <button type="button" onClick="{{t.pick}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
+            </sc-for>
+            <button type="button" onClick="{{toggleNewType}}" aria-expanded="{{newTypeOpen}}" style="display: inline-flex; align-items: center; height: 36px; padding: 0 14px; border-radius: 18px; border: 1px dashed #B8925A; background: transparent; color: #7A5C2C; font-size: 13px; font-weight: 800; letter-spacing: 0.4px; white-space: nowrap">+ Nowy rodzaj</button>
+          </div>
+          <sc-if value="{{newTypeOpen}}" hint-placeholder-val="{{ false }}">
+            <div style="display: flex; flex-direction: column; gap: 12px; padding: 16px; border-radius: 20px; background: #F6F1E7">
+              <div style="display: flex; flex-direction: column; gap: 6px">
+                <label for="rodzaj" style="font-size: 11px; font-weight: 800; letter-spacing: 1.4px; color: #5E6D63">NAZWA RODZAJU</label>
+                <input id="rodzaj" type="text" placeholder="np. Trening, Rocznica" value="{{ntName}}" onChange="{{setNtName}}" onKeyDown="{{ntKey}}" style="height: 46px; border: 1px solid #D9D0BE; border-radius: 14px; padding: 0 14px; font-size: 16px; color: #1F3D2E; background: #FFFFFF; outline-color: #1F3D2E">
+              </div>
+              <div style="display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 6px">
+                <sc-for list="{{ntSwatches}}" as="sw" hint-placeholder-count="8">
+                  <button type="button" onClick="{{sw.pick}}" aria-label="{{sw.label}}" style="{{sw.style}}"></button>
+                </sc-for>
+              </div>
+              <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+                <button type="button" onClick="{{toggleNewType}}" style="height: 44px; border: 1px solid #D9D0BE; border-radius: 22px; background: #FFFFFF; color: #1F3D2E; font-size: 15px; font-weight: 700">Anuluj</button>
+                <button type="button" onClick="{{addType}}" style="height: 44px; border: 0; border-radius: 22px; background: #1F3D2E; color: #F6F1E7; font-size: 15px; font-weight: 800">Dodaj rodzaj</button>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px">
+          <label style="display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px">
+            <span style="font-size: 11px; font-weight: 800; letter-spacing: 1.4px; color: #5E6D63">CAŁY DZIEŃ</span>
+            <input type="checkbox" checked="{{allDay}}" onChange="{{toggleAllDay}}" style="width: 22px; height: 22px; accent-color: #1F3D2E">
+          </label>
+          <sc-if value="{{hasTime}}" hint-placeholder-val="{{ true }}">
+            <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+              <div style="display: flex; flex-direction: column; gap: 6px">
+                <label for="od" style="font-size: 11px; font-weight: 800; letter-spacing: 1.4px; color: #5E6D63">OD</label>
+                <input id="od" type="time" step="300" value="{{tFrom}}" onChange="{{setFrom}}" style="height: 50px; border: 1px solid #D9D0BE; border-radius: 16px; padding: 0 14px; font-family: 'Fraunces', serif; font-size: 18px; font-weight: 600; color: #1F3D2E; background: #FFFFFF; outline-color: #1F3D2E; box-sizing: border-box; width: 100%">
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 6px">
+                <label for="do" style="font-size: 11px; font-weight: 800; letter-spacing: 1.4px; color: #5E6D63">DO <span style="font-weight: 600; letter-spacing: 0.4px">(opcjonalnie)</span></label>
+                <input id="do" type="time" step="300" value="{{tTo}}" onChange="{{setTo}}" style="height: 50px; border: 1px solid #D9D0BE; border-radius: 16px; padding: 0 14px; font-family: 'Fraunces', serif; font-size: 18px; font-weight: 600; color: #1F3D2E; background: #FFFFFF; outline-color: #1F3D2E; box-sizing: border-box; width: 100%">
+              </div>
+            </div>
+          </sc-if>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <span style="font-size: 11px; font-weight: 800; letter-spacing: 1.4px; color: #5E6D63">PRZYPOMNIJ</span>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px">
+            <sc-for list="{{remChips}}" as="t" hint-placeholder-count="3">
+              <button type="button" onClick="{{t.pick}}" style="{{t.style}}">{{t.name}}</button>
+            </sc-for>
+          </div>
+        </div>
+        <button type="button" onClick="{{add}}" style="height: 56px; border: 0; border-radius: 28px; background: #1F3D2E; color: #F6F1E7; font-size: 17px; font-weight: 800">Dodaj do kalendarza</button>
+      </div>
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"dzien":{"editor":"text","default":"","section":"Wybrany dzień (RRRR-MM-DD)"},"$preview":{"width":390,"height":844}}'>
+var TODAY = '2026-10-09';
+var MONTHS = ['Styczeń', 'Luty', 'Marzec', 'Kwiecień', 'Maj', 'Czerwiec', 'Lipiec', 'Sierpień', 'Wrzesień', 'Październik', 'Listopad', 'Grudzień'];
+var MONTHS_GEN = ['stycznia', 'lutego', 'marca', 'kwietnia', 'maja', 'czerwca', 'lipca', 'sierpnia', 'września', 'października', 'listopada', 'grudnia'];
+var MONTHS_SHORT = ['STY', 'LUT', 'MAR', 'KWI', 'MAJ', 'CZE', 'LIP', 'SIE', 'WRZ', 'PAŹ', 'LIS', 'GRU'];
+var DAYS = ['Niedziela', 'Poniedziałek', 'Wtorek', 'Środa', 'Czwartek', 'Piątek', 'Sobota'];
+var DAYS_SHORT = ['ND', 'PN', 'WT', 'ŚR', 'CZ', 'PT', 'SO'];
+var BASE_TYPES = [
+  { id: 'deadline', name: 'Termin zadania', dot: '#F3B9A4', bg: '#F3DCD3', fg: '#8C3D27', icon: 'deadline', system: true },
+  { id: 'bday', name: 'Urodziny', dot: '#F2B8CF', bg: '#F5DDE6', fg: '#7D2953', icon: 'bday' },
+  { id: 'party', name: 'Impreza', dot: '#CDB8F0', bg: '#E4E0EC', fg: '#553A7C', icon: 'party' },
+  { id: 'event', name: 'Wydarzenie', dot: '#A9CBE8', bg: '#DCE6EC', fg: '#2F5670', icon: 'event' },
+  { id: 'doctor', name: 'Lekarz', dot: '#9FD3B4', bg: '#DDE8DF', fg: '#2F5A43', icon: 'custom' }
+];
+var SWATCHES = [
+  { c: '#5E8C6A', n: 'szałwiowy' }, { c: '#4D7A93', n: 'niebieski' }, { c: '#6E5F8C', n: 'śliwkowy' }, { c: '#A4492F', n: 'terakota' },
+  { c: '#B4457A', n: 'malinowy' }, { c: '#B8925A', n: 'mosiężny' }, { c: '#3F7A7A', n: 'morski' }, { c: '#7A6A5C', n: 'orzechowy' }
+];
+function shade(hex, f) {
+  var n = parseInt(hex.slice(1), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255;
+  var mix = function (c) { return Math.round(f > 0 ? c + (255 - c) * f : c * (1 + f)); };
+  return 'rgb(' + mix(r) + ', ' + mix(g) + ', ' + mix(b) + ')';
+}
+var SEED = [
+  { id: 1, date: '2026-10-09', type: 'deadline', title: 'Zadzwonić do hydraulika', time: '', note: 'Dom · Pilne' },
+  { id: 2, date: '2026-10-10', type: 'deadline', title: 'Wykupić receptę', time: '', note: 'Zdrowie · Pilne' },
+  { id: 3, date: '2026-10-10', type: 'event', title: 'Kino z Krzysiem', time: '19:30', note: 'Przypomnienie dzień wcześniej' },
+  { id: 4, date: '2026-10-13', type: 'event', title: 'Zebranie w szkole', time: '17:00', note: 'Rodzina' },
+  { id: 5, date: '2026-10-15', type: 'deadline', title: 'Zapłacić rachunek za prąd', time: '', note: 'Urzędy · Pilne' },
+  { id: 6, date: '2026-10-16', type: 'bday', title: 'Imieniny mamy', time: '', note: 'Co roku' },
+  { id: 7, date: '2026-10-16', type: 'deadline', title: 'Prezent dla mamy na imieniny', time: '', note: 'Zakupy · Pilne' },
+  { id: 8, date: '2026-10-17', type: 'party', title: 'Urodziny Zosi – sala zabaw', time: '15:00', note: 'Przypomnienie tydzień wcześniej' },
+  { id: 13, date: '2026-10-21', type: 'doctor', title: 'Ortodonta – kontrola', time: '08:40–09:10', note: 'Przypomnienie dzień wcześniej' },
+  { id: 9, date: '2026-10-24', type: 'party', title: 'Parapetówka u Kasi', time: '19:00', note: 'Przynieść wino' },
+  { id: 10, date: '2026-10-28', type: 'bday', title: 'Urodziny taty', time: '', note: 'Co roku' },
+  { id: 11, date: '2026-10-30', type: 'deadline', title: 'Przegląd techniczny', time: '', note: 'Auto · Ważne' },
+  { id: 12, date: '2026-11-07', type: 'party', title: 'Wesele Ani i Tomka', time: '16:00', note: 'Rodzina' }
+];
+function pad(n) { return (n < 10 ? '0' : '') + n; }
+function key(y, m, d) { return y + '-' + pad(m + 1) + '-' + pad(d); }
+function parse(k) { var p = k.split('-'); return new Date(+p[0], +p[1] - 1, +p[2]); }
+function fmt(d) { return key(d.getFullYear(), d.getMonth(), d.getDate()); }
+function addDays(d, n) { var x = new Date(d.getTime()); x.setDate(x.getDate() + n); return x; }
+function diffDays(a, b) { return Math.round((parse(a) - parse(b)) / 86400000); }
+function dot(c, s) { s = s || 5; return 'width: ' + s + 'px; height: ' + s + 'px; border-radius: ' + (s / 2) + 'px; background: ' + c + '; display: inline-block; flex: none'; }
+function chip(on) {
+  return 'display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px; border-radius: 18px; font-size: 14px; font-weight: 700; white-space: nowrap; border: 1px solid ' + (on ? '#1F3D2E' : '#D9D0BE') + '; background: ' + (on ? '#1F3D2E' : 'transparent') + '; color: ' + (on ? '#F6F1E7' : '#1F3D2E');
+}
+function seg(on) {
+  return 'height: 36px; border: 0; border-radius: 17px; font-size: 14px; font-weight: 800; background: ' + (on ? '#FFFFFF' : 'transparent') + '; color: ' + (on ? '#1F3D2E' : '#5E6D63') + '; box-shadow: ' + (on ? '0 1px 3px rgba(31,61,46,0.15)' : 'none');
+}
+function inDays(n) { return n === 0 ? 'dziś' : (n === 1 ? 'jutro' : 'za ' + n + ' dni'); }
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { view: 'week', menu: false, sel: (props && props.dzien) || TODAY, events: SEED, types: BASE_TYPES, sheet: false, draft: '', dType: 'bday', allDay: false, tFrom: '18:00', tTo: '', dRem: 'Dzień wcześniej', nextId: 100, newType: false, ntName: '', ntColor: '#5E8C6A', typeId: 1, monthYear: 2026, monthIdx: 9 };
+  }
+  findType(id) {
+    var t = this.state.types.filter(function (x) { return x.id === id; })[0];
+    return t || this.state.types[0];
+  }
+  addType() {
+    var s = this.state;
+    var name = (s.ntName || '').trim();
+    if (!name) return;
+    var id = 'custom' + s.typeId;
+    var t = { id: id, name: name, dot: shade(s.ntColor, 0.45), bg: shade(s.ntColor, 0.82), fg: shade(s.ntColor, -0.35), icon: 'custom' };
+    this.setState({ types: s.types.concat([t]), dType: id, newType: false, ntName: '', typeId: s.typeId + 1 });
+  }
+  shift(n) {
+    var s = this.state;
+    if (s.view === 'week') {
+      var d = addDays(parse(s.sel), 7 * n);
+      this.setState({ sel: fmt(d), monthYear: d.getFullYear(), monthIdx: d.getMonth() });
+    } else {
+      var m = s.monthIdx + n, y = s.monthYear;
+      if (m < 0) { m = 11; y--; }
+      if (m > 11) { m = 0; y++; }
+      this.setState({ monthIdx: m, monthYear: y, sel: key(y, m, 1) });
+    }
+  }
+  addEvent() {
+    var t = (this.state.draft || '').trim();
+    if (!t) return;
+    var s = this.state;
+    var time = s.allDay || !s.tFrom ? '' : (s.tFrom + (s.tTo ? '–' + s.tTo : ''));
+    var ev = { id: s.nextId, date: s.sel, type: s.dType, title: t, time: time, note: s.dRem === 'Brak' ? '' : 'Przypomnienie: ' + s.dRem.toLowerCase() };
+    this.setState({ events: s.events.concat([ev]), draft: '', nextId: s.nextId + 1, sheet: false });
+  }
+  renderVals() {
+    var self = this;
+    var s = this.state;
+    var isWeek = s.view === 'week';
+    var typesOf = function (k) {
+      var types = [];
+      s.events.forEach(function (e) { if (e.date === k && types.indexOf(e.type) < 0) types.push(e.type); });
+      return types.slice(0, 3);
+    };
+    var cellStyle = function (isSel, isToday, h) {
+      return 'border: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; ' + h + ' background: ' + (isSel ? '#1F3D2E' : 'transparent') + '; color: ' + (isSel ? '#F6F1E7' : '#1F3D2E') + '; box-shadow: ' + (isToday && !isSel ? 'inset 0 0 0 1.5px #B8925A' : 'none');
+    };
+
+    var selDateObj = parse(s.sel);
+    var monday = addDays(selDateObj, -((selDateObj.getDay() + 6) % 7));
+    var weekCells = [];
+    for (var w = 0; w < 7; w++) {
+      (function (d) {
+        var k = fmt(d), isSel = k === s.sel, isToday = k === TODAY;
+        weekCells.push({
+          short: DAYS_SHORT[d.getDay()],
+          num: d.getDate(),
+          aria: DAYS[d.getDay()] + ', ' + d.getDate() + ' ' + MONTHS_GEN[d.getMonth()],
+          labelStyle: 'font-size: 10px; font-weight: 800; letter-spacing: 0.8px; color: ' + (isSel ? '#E8C98E' : '#7A8A80'),
+          dots: typesOf(k).map(function (t) { var T = self.findType(t); return { style: dot(isSel ? T.dot : T.fg) }; }),
+          pick: function () { self.setState({ sel: k, monthYear: d.getFullYear(), monthIdx: d.getMonth() }); },
+          style: cellStyle(isSel, isToday, 'padding: 8px 0 7px; border-radius: 16px; min-height: 64px;')
+        });
+      })(addDays(monday, w));
+    }
+    var weekEnd = fmt(addDays(monday, 6));
+    var sunday = addDays(monday, 6);
+    var weekStartKey = fmt(monday);
+    var weekCount = s.events.filter(function (e) { return e.date >= weekStartKey && e.date <= weekEnd; }).length;
+    var rangeLabel = monday.getMonth() === sunday.getMonth()
+      ? monday.getDate() + '–' + sunday.getDate() + ' ' + MONTHS_GEN[sunday.getMonth()]
+      : monday.getDate() + ' ' + MONTHS_SHORT[monday.getMonth()].toLowerCase() + ' – ' + sunday.getDate() + ' ' + MONTHS_SHORT[sunday.getMonth()].toLowerCase();
+
+    var y = s.monthYear, m = s.monthIdx;
+    var lead = (new Date(y, m, 1).getDay() + 6) % 7;
+    var days = new Date(y, m + 1, 0).getDate();
+    var cells = [];
+    var i;
+    for (i = 0; i < lead; i++) cells.push({ isDay: false, isBlank: true });
+    for (i = 1; i <= days; i++) {
+      (function (d) {
+        var k = key(y, m, d), isSel = k === s.sel, isToday = k === TODAY;
+        var types = typesOf(k);
+        cells.push({
+          isDay: true, isBlank: false, num: d,
+          aria: d + ' ' + MONTHS_GEN[m] + (types.length ? ', są wpisy' : ''),
+          dots: types.map(function (t) { var T = self.findType(t); return { style: dot(isSel ? T.dot : T.fg, 4) }; }),
+          pick: function () { self.setState({ sel: k }); },
+          style: cellStyle(isSel, isToday, 'height: 42px; border-radius: 21px; font-size: 14px; font-weight: ' + (isSel || isToday ? '800' : '600') + ';')
+        });
+      })(i);
+    }
+    while (cells.length % 7) cells.push({ isDay: false, isBlank: true });
+
+    var selDay = DAYS[selDateObj.getDay()] + ',';
+    var selDate = selDateObj.getDate() + ' ' + MONTHS_GEN[selDateObj.getMonth()];
+    var agenda = s.events.filter(function (e) { return e.date === s.sel; }).sort(function (a, b) {
+      var ra = a.type === 'deadline' ? 0 : (a.time ? 2 : 1), rb = b.type === 'deadline' ? 0 : (b.time ? 2 : 1);
+      return ra - rb || (a.time < b.time ? -1 : 1);
+    }).map(function (e) {
+      var T = self.findType(e.type);
+      return {
+        title: e.title,
+        time: e.time || (e.type === 'deadline' ? 'termin' : 'cały dzień'),
+        meta: (T.name + (e.note ? ' · ' + e.note : '')).toUpperCase(),
+        isDeadline: T.icon === 'deadline', isBday: T.icon === 'bday', isParty: T.icon === 'party', isEvent: T.icon === 'event', isCustom: T.icon === 'custom',
+        iconBox: 'width: 42px; height: 42px; border-radius: 14px; background: ' + T.bg + '; color: ' + T.fg + '; display: flex; align-items: center; justify-content: center; flex: none'
+      };
+    });
+    var n = agenda.length;
+
+    var later = s.events.filter(function (e) { return e.date > weekEnd; }).sort(function (a, b) { return a.date < b.date ? -1 : 1; }).slice(0, 4).map(function (e) {
+      var T = self.findType(e.type), d = parse(e.date);
+      return {
+        day: d.getDate(),
+        mon: MONTHS_SHORT[d.getMonth()],
+        title: e.title,
+        meta: (T.name + (e.time ? ' · ' + e.time : '')).toUpperCase(),
+        inDays: inDays(diffDays(e.date, TODAY)),
+        badge: 'width: 44px; height: 50px; border-radius: 22px 22px 10px 10px; background: ' + T.bg + '; color: ' + T.fg + '; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; flex: none',
+        pick: function () { self.setState({ sel: e.date, monthYear: d.getFullYear(), monthIdx: d.getMonth() }); }
+      };
+    });
+
+    return {
+      monthName: MONTHS[s.monthIdx],
+      year: s.monthYear,
+      isWeek: isWeek,
+      isMonth: !isWeek,
+      segWeek: seg(isWeek),
+      segMonth: seg(!isWeek),
+      showWeek: function () { self.setState({ view: 'week' }); },
+      showMonth: function () { var d = parse(s.sel); self.setState({ view: 'month', monthYear: d.getFullYear(), monthIdx: d.getMonth() }); },
+      rangeLabel: isWeek ? rangeLabel : MONTHS[s.monthIdx] + ' ' + s.monthYear,
+      weekCountLabel: weekCount === 1 ? '1 wpis w tym tygodniu' : (weekCount >= 2 && weekCount <= 4 ? weekCount + ' wpisy w tym tygodniu' : weekCount + ' wpisów w tym tygodniu'),
+      prevLabel: isWeek ? 'Poprzedni tydzień' : 'Poprzedni miesiąc',
+      nextLabel: isWeek ? 'Następny tydzień' : 'Następny miesiąc',
+      prev: function () { self.shift(-1); },
+      next: function () { self.shift(1); },
+      goToday: function () { self.setState({ sel: TODAY, monthYear: 2026, monthIdx: 9 }); },
+      weekCells: weekCells,
+      weekdays: ['PN', 'WT', 'ŚR', 'CZ', 'PT', 'SO', 'ND'],
+      cells: cells,
+      legend: s.types.map(function (t) { return { name: t.name, dot: dot(t.fg, 8) }; }),
+      selDay: selDay,
+      selDate: selDate + (s.sel === TODAY ? ' · dziś' : ''),
+      selUpper: (DAYS[selDateObj.getDay()] + ', ' + selDate).toUpperCase(),
+      selCount: n === 0 ? '' : (n === 1 ? '1 WPIS' : (n < 5 ? n + ' WPISY' : n + ' WPISÓW')),
+      agenda: agenda,
+      isEmpty: n === 0,
+      later: later,
+      showLater: isWeek && later.length > 0,
+      sheetOpen: s.sheet,
+      closeSheet: function () { self.setState({ sheet: false }); },
+      menuOpen: s.menu,
+      openMenu: function () { self.setState({ menu: true }); },
+      closeMenu: function () { self.setState({ menu: false }); },
+      newEvent: function () { self.setState({ menu: false, sheet: true }); },
+      draft: s.draft,
+      setDraft: function (e) { self.setState({ draft: e.target.value }); },
+      onKey: function (e) { if (e.key === 'Enter') self.addEvent(); },
+      add: function () { self.addEvent(); },
+      typeChips: s.types.filter(function (t) { return !t.system; }).map(function (t) {
+        var on = s.dType === t.id;
+        return { name: t.name, dot: dot(on ? '#E8C98E' : t.fg, 8), style: chip(on), pick: function () { self.setState({ dType: t.id }); } };
+      }),
+      newTypeOpen: s.newType,
+      toggleNewType: function () { self.setState({ newType: !s.newType }); },
+      ntName: s.ntName,
+      setNtName: function (e) { self.setState({ ntName: e.target.value }); },
+      ntKey: function (e) { if (e.key === 'Enter') self.addType(); },
+      ntSwatches: SWATCHES.map(function (sw) {
+        var on = sw.c === s.ntColor;
+        return {
+          label: 'Kolor ' + sw.n,
+          pick: function () { self.setState({ ntColor: sw.c }); },
+          style: 'width: 32px; height: 32px; border-radius: 16px; border: 0; padding: 0; background: ' + sw.c + '; box-shadow: ' + (on ? '0 0 0 3px #F6F1E7, 0 0 0 5px #1F3D2E' : 'none')
+        };
+      }),
+      addType: function () { self.addType(); },
+      allDay: s.allDay,
+      hasTime: !s.allDay,
+      toggleAllDay: function () { self.setState({ allDay: !s.allDay }); },
+      tFrom: s.tFrom,
+      tTo: s.tTo,
+      setFrom: function (e) { self.setState({ tFrom: e.target.value }); },
+      setTo: function (e) { self.setState({ tTo: e.target.value }); },
+      remChips: ['Brak', 'Dzień wcześniej', 'Tydzień wcześniej'].map(function (t) {
+        return { name: t, style: chip(s.dRem === t), pick: function () { self.setState({ dRem: t }); } };
+      })
+    };
+  }
+}
+</script>
+</body>
+</html>
