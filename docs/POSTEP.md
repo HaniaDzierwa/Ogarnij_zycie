@@ -19,6 +19,9 @@ Aktualny etap: **1 – Klikalny mockup** (w toku)
 
 | Data | Etap | Uwaga | Kiedy | Status |
 | --- | --- | --- | --- | --- |
+| 2026-10-18 | 1 | Termin zadania: zasada DZIŚ / JUTRO / WT 13 PAŹ / DO 30 PAŹ. | teraz | zrobione (krok 2) |
+| 2026-10-18 | 1 | „Najbliższe wydarzenia” na Starcie: dwa najbliższe dowolnego rodzaju (opcja a). | teraz | zrobione (krok 2) |
+| 2026-10-18 | 1 | Ekran ładowania: projektuje Claude (Powitanie.dc.html nie istnieje). | teraz | do akceptacji |
 | 2026-10-18 | 0 | Demo na telefonie działa. | – | ok |
 | 2026-10-18 | 0 | Teksty o danych z `docs/TEKSTY.md` zaakceptowane (A i B). | teraz | zrobione |
 | 2026-10-18 | 0 | Ekrany logowania, rejestracji i resetu hasła projektuje Claude w tym samym stylu – dopisane do etapu 1 w PLAN.md. | później (etap 1) | zapisane |
@@ -38,3 +41,4 @@ Aktualny etap: **1 – Klikalny mockup** (w toku)
 - 2026-10-18 · Etap 0 · Odbiór: wszystkie punkty spełnione, Hania: „akceptuję”. Etap 0 zakończony.
 - 2026-10-18 · Etap 1 · Krok 1: elementy wspólne w `src/components` – `Header` (120 px, dzień/noc/ciemny, panorama dachów, link „wstecz”), `SyncBadge` (ONLINE), `TabBar` (pływający pasek, mosiężny „+”, menu „Co dodajesz?” → `/zadania?nowe=zadanie` / `/kalendarz?nowe=wydarzenie`, kremowe wyciszenie), `Card`, `Chip`, `Dot`, `Box`, `Toggle`/`ToggleRow`, `Segmented` (mały i pełny), `PrimaryButton`, `Sheet` (arkusz od dołu), `Field`, ikony. Puste ekrany używają nowego nagłówka i paska (pasek tylko na Start, Zadania, Kalendarz, Ustawienia, Domownicy). Galeria `/elementy`. · Sprawdzenie: `/elementy` – porównać z projektem; „+” → menu → „Zadanie”; zakładki w pasku; `npm test` – 30 testów.
 - 2026-10-18 · Etap 1 · Krok 2: przykładowe dane – `src/data`: model (`types.ts`), daty po polsku (`dates.ts`: etykiety dni, termin DZIŚ/JUTRO/WT 13 PAŹ/DO 30 PAŹ, `?dzis=RRRR-MM-DD` do porównań z projektem), dane z projektu (`mock.ts`, daty względem dziś), wyliczenia (`selectors.ts`), magazyn w pamięci (`MockStore.tsx`). Teksty #17–18 (Wi‑Fi) dopisane do TEKSTY.md. · Sprawdzenie: `npm test` – 38 testów, m.in. liczby ze Startu w projekcie (12 do zrobienia, 6 kategorii, 4 pilne).
+- 2026-10-18 · Etap 1 · Krok 3: Ładowanie (`/ladowanie`, nowy projekt: słońce 6–18 z obracającymi się promieniami / księżyc z migoczącymi gwiazdkami, logo, panorama dachów; podgląd `?pora=dzien|noc`; dotknięcie → Pierwsze) i Pierwsze uruchomienie (`/witaj`, wg Pierwsze.dc.html + teksty #1–2; imię → powitanie, „Zaczynamy” → Start). · Sprawdzenie: `/ladowanie?pora=dzien`, `/ladowanie?pora=noc`, `/witaj`; `npm test` – 42 testy.

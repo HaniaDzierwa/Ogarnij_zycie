@@ -135,9 +135,9 @@ export function Accent({ children }: { children: ReactNode }) {
   return <em style={{ fontStyle: 'italic', color: 'var(--accent)' }}>{children}</em>
 }
 
-const RIDGE_FAR =
+export const RIDGE_FAR =
   'M0 56V34L26 18L52 34V28L84 8L116 28V34L142 20L168 34V26L204 4L240 26V32L268 16L296 32V26L326 10L358 28V56Z'
-const RIDGE_NEAR =
+export const RIDGE_NEAR =
   'M0 56V46L36 30L72 46V42L108 26L144 42V48L180 36L216 48V42L256 24L296 42V46L330 34L358 44V56Z'
 
 /** Panorama dachów (dwie warstwy + okienka), słońce lub księżyc. Szerokość dopasowana do ekranu. */

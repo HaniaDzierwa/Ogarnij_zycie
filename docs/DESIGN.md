@@ -16,7 +16,7 @@ Styl „domowy elegancki”: butelkowa zieleń, mosiądz i krem, szeryfowy Fraun
 
 | Ekran | Plik | Uwagi |
 | --- | --- | --- |
-| 1 Ładowanie | `Powitanie.dc.html` (+ `PowitanieDzien`, `PowitanieNoc`) | Słońce 6:00–18:00, księżyc w pozostałych godzinach |
+| 1 Ładowanie | brak – `Powitanie.dc.html` nie ma w eksporcie (`PowitanieDzien`/`PowitanieNoc` to tylko odwołania); zaprojektował Claude w etapie 1 na bazie banera z `Pierwsze.dc.html` i nagłówka Startu | Słońce 6:00–18:00, księżyc 18:00–6:00; do akceptacji Hani |
 | 1a Pierwsze uruchomienie | `Pierwsze.dc.html` | Załóż nowy dom / Dołącz do domu |
 | 1b Konto: Zaloguj się, Załóż konto, Nie pamiętam hasła | – (projektuje Claude w etapie 1) | W stylu pozostałych ekranów; po akceptacji Hani |
 | 2 Start | `Kategorie.dc.html` (+ `StartDzien`, `StartNoc`) | Kafelki, Ten tydzień, Pilne, Najbliższe wydarzenia |
@@ -103,6 +103,8 @@ Zakupy `#5E8C6A` · Dom `#B8925A` · Zdrowie `#A4492F` · Urzędy `#6E5F8C` · A
 - Na Starcie najpierw „Pilne”, potem „Najbliższe wydarzenia” (min. 2).
 - Strzałki tygodnia w kalendarzu pod nagłówkiem, nie w nim.
 - Tryb dzień/noc nagłówka Startu i ekranu ładowania wg godziny (6:00–18:00 dzień).
+- Termin zadania (jedna zasada, 2026-10-18): dziś → **DZIŚ** (czerwona plakietka), jutro → **JUTRO**, w ciągu 7 dni → dzień i data (**WT 13 PAŹ**), dalej → **DO 30 PAŹ**.
+- „Najbliższe wydarzenia” na Starcie (2026-10-18): dwa najbliższe wydarzenia dowolnego rodzaju (bez terminów zadań).
 
 ## Model danych (propozycja do etapu 2)
 

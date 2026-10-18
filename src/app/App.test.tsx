@@ -1,6 +1,7 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, describe, expect, test } from 'vitest'
+import { MockStoreProvider } from '../data/MockStore.tsx'
 import { routes } from './router.tsx'
 import { screens } from './screens.ts'
 
@@ -8,7 +9,11 @@ afterEach(cleanup)
 
 function renderAt(url: string) {
   const router = createMemoryRouter(routes, { initialEntries: [url] })
-  render(<RouterProvider router={router} />)
+  render(
+    <MockStoreProvider today="2026-10-09">
+      <RouterProvider router={router} />
+    </MockStoreProvider>,
+  )
   return router
 }
 
@@ -16,8 +21,10 @@ const knownPaths = new Set(screens.map((s) => s.path))
 
 describe('mapa ekranów', () => {
   test.each(screens)('$number $name ($path) ma swój ekran', (s) => {
-    renderAt(s.path)
-    expect(screen.getByRole('heading', { level: 1, name: s.name })).toBeDefined()
+    const router = renderAt(s.path)
+    expect(router.state.location.pathname).toBe(s.path)
+    // nie trafia na mapę ekranów (adres awaryjny)
+    expect(screen.queryByRole('heading', { name: 'Mapa ekranów' })).toBeNull()
   })
 
   test.each(screens)('przejścia z ekranu $number prowadzą do istniejących ekranów', (s) => {

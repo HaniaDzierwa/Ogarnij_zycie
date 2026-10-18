@@ -2,6 +2,7 @@ import { cleanup, fireEvent, render, screen, within } from '@testing-library/rea
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, expect, test } from 'vitest'
 import { routes } from '../app/router.tsx'
+import { MockStoreProvider } from '../data/MockStore.tsx'
 
 afterEach(cleanup)
 
@@ -9,7 +10,11 @@ const tabBar = () => within(screen.getByRole('navigation', { name: 'Główna naw
 
 function renderAt(url: string) {
   const router = createMemoryRouter(routes, { initialEntries: [url] })
-  render(<RouterProvider router={router} />)
+  render(
+    <MockStoreProvider today="2026-10-09">
+      <RouterProvider router={router} />
+    </MockStoreProvider>,
+  )
   return router
 }
 
