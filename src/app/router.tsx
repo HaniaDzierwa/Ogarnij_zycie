@@ -7,6 +7,7 @@ import { LoadingScreen } from '../screens/LoadingScreen.tsx'
 import { MapScreen } from '../screens/MapScreen.tsx'
 import { PlaceholderScreen } from '../screens/PlaceholderScreen.tsx'
 import { StartScreen } from '../screens/StartScreen.tsx'
+import { TasksRoute } from '../screens/tasks/TasksScreen.tsx'
 import { screens, type ScreenId } from './screens.ts'
 
 /** Gotowe ekrany; pozostałe pokazują PlaceholderScreen do czasu ich zbudowania. */
@@ -17,6 +18,7 @@ const built: Partial<Record<ScreenId, ReactNode>> = {
   rejestracja: <RegisterScreen />,
   haslo: <ResetPasswordScreen />,
   start: <StartScreen />,
+  zadania: <TasksRoute />,
 }
 
 export const routes: RouteObject[] = [
