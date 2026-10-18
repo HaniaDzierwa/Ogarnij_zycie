@@ -224,3 +224,18 @@ button {
     animation: none;
   }
 }
+
+@keyframes pop-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+.pop-in-up {
+  animation: pop-in-up 180ms ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .pop-in-up {
+    animation: none;
+  }
+}

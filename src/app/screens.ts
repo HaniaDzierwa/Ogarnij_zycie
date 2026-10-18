@@ -8,6 +8,7 @@ export type ScreenId =
   | 'haslo'
   | 'start'
   | 'zadania'
+  | 'kosz'
   | 'kalendarz'
   | 'ustawienia'
   | 'domownicy'
@@ -44,7 +45,9 @@ export const paths = {
   start: '/',
   zadania: '/zadania',
   zadaniaPilne: '/zadania?pokaz=pilne',
-  zadaniaOgarniete: '/zadania?pokaz=ogarniete',
+  /** Zakładka „Ogarnięte”. */
+  zadaniaOgarniete: '/zadania?zakladka=ogarniete',
+  kosz: '/zadania/kosz',
   /** Zadania z otwartym arkuszem „Nowe zadanie” (menu „+”). */
   zadaniaNowe: '/zadania?nowe=zadanie',
   kalendarz: '/kalendarz',
@@ -144,8 +147,19 @@ export const screens: Screen[] = [
     path: paths.zadania,
     number: '3',
     name: 'Zadania',
-    source: 'Zadania.dc.html, ZadaniaPilne.dc.html, ZadaniaOgarniete.dc.html',
+    source:
+      'Zadania.dc.html, ZadaniaPilne.dc.html, ZadaniaOgarniete.dc.html, ZadaniaPrawo/Lewo/Arkusz/Wyczysc.dc.html',
     transitions: [...tabs, { label: 'Plakietka synchronizacji', to: paths.domownicy }],
+  },
+  {
+    id: 'kosz',
+    path: paths.kosz,
+    number: '3a',
+    name: 'Kosz',
+    source: 'Kosz.dc.html, KoszPotwierdzenie.dc.html',
+    tab: 'zadania',
+    back: { to: paths.zadaniaOgarniete, label: 'OGARNIĘTE' },
+    transitions: [{ label: 'Wróć do Ogarniętych', to: paths.zadaniaOgarniete }],
   },
   {
     id: 'kalendarz',
@@ -163,7 +177,11 @@ export const screens: Screen[] = [
     number: '5',
     name: 'Ustawienia',
     source: 'Ustawienia.dc.html',
-    transitions: [...tabs, { label: 'Wspólny dom → Domownicy', to: paths.domownicy }],
+    transitions: [
+      ...tabs,
+      { label: 'Wspólny dom → Domownicy', to: paths.domownicy },
+      { label: 'Zadania → Kosz', to: paths.kosz },
+    ],
   },
   {
     id: 'domownicy',

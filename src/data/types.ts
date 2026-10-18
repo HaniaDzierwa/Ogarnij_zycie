@@ -15,6 +15,16 @@ export type Task = {
   due: DateKey | null
   done: boolean
   subtasks: Subtask[]
+  /** uid domownika, który dodał zadanie. */
+  createdBy: string
+  /** Kiedy ogarnięte: 'RRRR-MM-DDTHH:MM' (czas lokalny). */
+  doneAt: string | null
+  /** uid domownika, który ogarnął. */
+  doneBy: string | null
+  /** Kosz: miękkie usunięcie (po 30 dniach od deletedAt – usunięcie na zawsze). */
+  deleted: boolean
+  deletedAt: string | null
+  deletedBy: string | null
 }
 
 export type EventType = {
@@ -44,6 +54,10 @@ export type Member = {
   name: string
   role: 'owner' | 'member'
   scope: { all: boolean; categoryIds: string[]; calendar: boolean }
+  /** Forma czasownika: „ogarnęła” (f) / „ogarnął” (m). */
+  verbForm: 'f' | 'm'
+  /** Dopełniacz imienia: „u Krzysia”. */
+  nameGenitive: string
   /** Ostatnia zmiana, np. „DZIŚ 13:05”. */
   lastSeen: string
 }

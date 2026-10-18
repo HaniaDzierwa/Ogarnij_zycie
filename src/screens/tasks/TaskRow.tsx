@@ -1,7 +1,6 @@
-import { useState } from 'react'
 import { SwipeRow } from '../../components/SwipeRow.tsx'
 import { Box } from '../../components/ui.tsx'
-import { CloseIcon, PlusIcon } from '../../components/icons.tsx'
+import { CheckIcon, TrashIcon, UndoIcon } from '../../components/icons.tsx'
 import { dueLabel, type DateKey } from '../../data/dates.ts'
 import { subtaskProgress } from '../../data/selectors.ts'
 import type { Task } from '../../data/types.ts'
@@ -10,268 +9,114 @@ import type { GroupBy } from './tasksView.ts'
 
 type Props = {
   task: Task
+  /** Zakładka: „Do zrobienia” albo „Ogarnięte”. */
+  kind: 'todo' | 'done'
   groupBy: GroupBy
   categoryName: string
   today: DateKey
+  /** „OGARNĘŁA HANIA” – w zakładce Ogarnięte. */
+  doneByLabel?: string
+  /** „9:10”, „wczoraj”, „wt 6 paź” – w zakładce Ogarnięte. */
+  doneWhen?: string
   expanded: boolean
   onExpand: () => void
-  onEdit: () => void
-  onDelete: () => void
+  onOpen: () => void
   onToggleDone: () => void
+  onTrash: () => void
   onToggleSub: (subId: string) => void
-  onRemoveSub: (subId: string) => void
-  onAddSub: (title: string) => void
 }
 
 /**
- * Wiersz otwartego zadania. Dotknięcie → ogarnięte; w lewo → edycja; w prawo → usunięcie.
- * Pod spodem rozwijane podzadania.
+ * Wiersz zadania (Zadania.dc.html): kwadracik 56 px = ogarnij / przywróć, klik w treść = arkusz,
+ * „˅” tylko gdy są kroki; w prawo = ogarnij (przywróć), w lewo = do kosza.
  */
 export function TaskRow({
   task,
+  kind,
   groupBy,
   categoryName,
   today,
+  doneByLabel,
+  doneWhen,
   expanded,
   onExpand,
-  onEdit,
-  onDelete,
+  onOpen,
   onToggleDone,
+  onTrash,
   onToggleSub,
-  onRemoveSub,
-  onAddSub,
 }: Props) {
   const p = priorities[task.priority]
   const pct = subtaskProgress(task)
   const subDone = task.subtasks.filter((s) => s.done).length
   const due = task.due ? dueLabel(task.due, today) : null
-  const urgentDue = due === 'DZIŚ' || due === 'PO TERMINIE'
+  const urgentDue = !task.done && (due === 'DZIŚ' || due === 'PO TERMINIE')
   const byCat = groupBy === 'cat'
-  const [completing, setCompleting] = useState(false)
-
-  const complete = () => {
-    setCompleting(true)
-    // chwila na zobaczenie zaznaczenia, potem zadanie przechodzi do „Już ogarnięte”
-    setTimeout(onToggleDone, 350)
-  }
+  const hasSteps = !task.done && task.subtasks.length > 0
+  const done = kind === 'done'
 
   return (
     <div style={{ borderBottom: `1px solid ${colors.line}` }}>
       <SwipeRow
-        onSwipeLeft={onEdit}
-        onSwipeRight={onDelete}
-        editLabel={`Edytuj zadanie: ${task.title}`}
-        deleteLabel={`Usuń zadanie: ${task.title}`}
+        right={
+          done
+            ? {
+                label: 'Przywróć',
+                icon: <UndoIcon />,
+                bg: colors.brass300,
+                fg: colors.green900,
+                run: onToggleDone,
+              }
+            : {
+                label: 'Ogarnij',
+                icon: <CheckIcon />,
+                bg: colors.green900,
+                fg: colors.brass300,
+                run: onToggleDone,
+              }
+        }
+        left={{
+          label: 'Usuń',
+          icon: <TrashIcon />,
+          bg: priorities.high.line,
+          fg: colors.white,
+          srLabel: `Przenieś do kosza: ${task.title}`,
+          run: onTrash,
+        }}
       >
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 4,
-            padding: '6px 4px',
-            minHeight: 64,
-          }}
-        >
+        <div style={{ display: 'flex', alignItems: 'stretch', minHeight: 64 }}>
           <button
             type="button"
-            onClick={complete}
-            disabled={completing}
-            aria-label={`Oznacz jako zrobione: ${task.title}`}
+            onClick={onToggleDone}
+            aria-label={
+              task.done
+                ? `Przywróć do „Do zrobienia”: ${task.title}`
+                : `Oznacz jako ogarnięte: ${task.title}`
+            }
             style={{
-              flex: 1,
-              minWidth: 0,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 4,
+              width: 56,
+              flex: 'none',
               padding: 0,
               border: 0,
               background: 'transparent',
-              color: 'inherit',
-              textAlign: 'left',
-              cursor: 'pointer',
-            }}
-          >
-            <span
-              style={{
-                width: 44,
-                height: 44,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flex: 'none',
-              }}
-            >
-              {completing ? <CheckedBox /> : <Box color={p.line} />}
-            </span>
-            <span
-              style={{
-                flex: 1,
-                minWidth: 0,
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 5,
-                transition: 'opacity 250ms ease',
-                opacity: completing ? 0.5 : 1,
-              }}
-            >
-              <span style={{ fontSize: 16, fontWeight: 700, lineHeight: 1.3 }}>{task.title}</span>
-              <span style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                <span
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    height: 22,
-                    padding: '0 9px',
-                    borderRadius: 11,
-                    fontSize: 11,
-                    fontWeight: 800,
-                    letterSpacing: '0.8px',
-                    background: byCat ? p.bg : colors.sand,
-                    color: byCat ? p.fg : colors.green900,
-                  }}
-                >
-                  {(byCat ? p.label : categoryName).toUpperCase()}
-                </span>
-                {due &&
-                  (urgentDue ? (
-                    <span
-                      style={{
-                        fontSize: 11,
-                        fontWeight: 800,
-                        letterSpacing: '0.6px',
-                        color: todayBadge.fg,
-                        background: todayBadge.bg,
-                        padding: '3px 9px',
-                        borderRadius: 10,
-                      }}
-                    >
-                      {due}
-                    </span>
-                  ) : (
-                    <span
-                      style={{
-                        fontSize: 12,
-                        fontWeight: 800,
-                        letterSpacing: '0.6px',
-                        color: colors.brass700,
-                      }}
-                    >
-                      {due}
-                    </span>
-                  ))}
-              </span>
-              {pct !== null && (
-                <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span
-                    style={{
-                      display: 'block',
-                      width: 110,
-                      height: 3,
-                      borderRadius: 3,
-                      background: colors.borderSoft,
-                    }}
-                  >
-                    <span
-                      style={{
-                        display: 'block',
-                        height: '100%',
-                        borderRadius: 3,
-                        background: colors.green900,
-                        width: `${pct}%`,
-                        transition: 'width 200ms ease',
-                      }}
-                    />
-                  </span>
-                  <span style={{ fontFamily: fonts.serif, fontSize: 14, fontWeight: 600 }}>
-                    {pct}%
-                  </span>
-                  <span
-                    style={{
-                      fontSize: 12,
-                      fontWeight: 800,
-                      letterSpacing: '0.8px',
-                      color: colors.muted,
-                    }}
-                  >
-                    {subDone} / {task.subtasks.length} KROKI
-                  </span>
-                </span>
-              )}
-            </span>
-          </button>
-          <button
-            type="button"
-            onClick={onExpand}
-            aria-label={expanded ? 'Zwiń podzadania' : 'Pokaż podzadania'}
-            aria-expanded={expanded}
-            style={{
-              width: 44,
-              height: 44,
-              border: 0,
-              borderRadius: 14,
-              background: 'transparent',
-              color: colors.brass700,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              flex: 'none',
             }}
           >
-            <Chevron open={expanded} />
+            {task.done ? <DoneBox /> : <Box color={p.line} />}
           </button>
-        </div>
-      </SwipeRow>
-      {expanded && (
-        <Subtasks task={task} onToggle={onToggleSub} onRemove={onRemoveSub} onAdd={onAddSub} />
-      )}
-    </div>
-  )
-}
-
-function Subtasks({
-  task,
-  onToggle,
-  onRemove,
-  onAdd,
-}: {
-  task: Task
-  onToggle: (id: string) => void
-  onRemove: (id: string) => void
-  onAdd: (title: string) => void
-}) {
-  const [draft, setDraft] = useState('')
-  const inputId = `pod-${task.id}`
-  const add = () => {
-    const t = draft.trim()
-    if (!t) return
-    onAdd(t)
-    setDraft('')
-  }
-  return (
-    <div
-      style={{
-        margin: '0 14px 14px 48px',
-        padding: '8px 10px 10px',
-        borderLeft: `1px solid ${colors.borderSoft}`,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 2,
-      }}
-    >
-      {task.subtasks.map((s) => (
-        <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
           <button
             type="button"
-            onClick={() => onToggle(s.id)}
-            aria-pressed={s.done}
+            onClick={onOpen}
+            aria-label={`Otwórz zadanie ${task.title}`}
             style={{
               flex: 1,
               minWidth: 0,
               display: 'flex',
-              alignItems: 'center',
-              gap: 10,
-              minHeight: 44,
-              padding: 0,
+              flexDirection: 'column',
+              justifyContent: 'center',
+              gap: 5,
+              padding: '10px 4px 10px 0',
               border: 0,
               background: 'transparent',
               textAlign: 'left',
@@ -280,148 +125,250 @@ function Subtasks({
           >
             <span
               style={{
-                width: 20,
-                height: 20,
-                borderRadius: 7,
+                fontSize: 16,
+                fontWeight: 700,
+                lineHeight: 1.3,
+                ...(task.done ? { color: colors.muted, textDecoration: 'line-through' } : {}),
+              }}
+            >
+              {task.title}
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+              <span
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  height: 22,
+                  padding: '0 9px',
+                  borderRadius: 11,
+                  fontSize: 11,
+                  fontWeight: 800,
+                  letterSpacing: '0.8px',
+                  background: byCat ? p.bg : colors.sand,
+                  color: byCat ? p.fg : colors.green900,
+                }}
+              >
+                {(byCat ? p.label : categoryName).toUpperCase()}
+              </span>
+              {due &&
+                (urgentDue ? (
+                  <span
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 800,
+                      letterSpacing: '0.6px',
+                      color: todayBadge.fg,
+                      background: todayBadge.bg,
+                      padding: '3px 9px',
+                      borderRadius: 10,
+                    }}
+                  >
+                    {due}
+                  </span>
+                ) : (
+                  <span
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 800,
+                      letterSpacing: '0.6px',
+                      color: colors.brass700,
+                    }}
+                  >
+                    {due}
+                  </span>
+                ))}
+              {task.done && doneByLabel && (
+                <span
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 800,
+                    letterSpacing: '0.8px',
+                    color: colors.muted,
+                  }}
+                >
+                  {doneByLabel}
+                </span>
+              )}
+            </span>
+            {hasSteps && (
+              <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span
+                  style={{
+                    display: 'block',
+                    width: 110,
+                    height: 3,
+                    borderRadius: 3,
+                    background: colors.borderSoft,
+                  }}
+                >
+                  <span
+                    style={{
+                      display: 'block',
+                      height: '100%',
+                      borderRadius: 3,
+                      background: colors.green900,
+                      width: `${pct}%`,
+                      transition: 'width 200ms ease',
+                    }}
+                  />
+                </span>
+                <span style={{ fontFamily: fonts.serif, fontSize: 14, fontWeight: 600 }}>
+                  {pct}%
+                </span>
+                <span
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 800,
+                    letterSpacing: '0.8px',
+                    color: colors.muted,
+                  }}
+                >
+                  {subDone} / {task.subtasks.length} KROKI
+                </span>
+              </span>
+            )}
+          </button>
+          {hasSteps && (
+            <button
+              type="button"
+              onClick={onExpand}
+              aria-label={expanded ? 'Zwiń podzadania' : 'Pokaż podzadania'}
+              aria-expanded={expanded}
+              style={{
+                width: 44,
                 flex: 'none',
+                border: 0,
+                background: 'transparent',
+                color: colors.brass700,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                ...(s.done
-                  ? { background: colors.green900, border: 0 }
-                  : { background: colors.white, border: `2px solid ${colors.brass500}` }),
               }}
             >
-              {s.done && (
-                <svg
-                  width="12"
-                  height="12"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke={colors.cream}
-                  strokeWidth="3.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <path d="M5 12.5l4.5 4.5L19 7.5" />
-                </svg>
-              )}
-            </span>
+              <Chevron open={expanded} />
+            </button>
+          )}
+          {done && doneWhen && (
             <span
               style={{
-                fontSize: 15,
-                lineHeight: 1.3,
-                ...(s.done ? { color: '#8A968E', textDecoration: 'line-through' } : {}),
+                flex: 'none',
+                alignSelf: 'center',
+                padding: '0 16px 0 8px',
+                fontFamily: fonts.serif,
+                fontStyle: 'italic',
+                fontSize: 14,
+                color: colors.brass700,
               }}
             >
-              {s.title}
+              {doneWhen}
             </span>
-          </button>
-          <button
-            type="button"
-            onClick={() => onRemove(s.id)}
-            aria-label={`Usuń podzadanie: ${s.title}`}
+          )}
+        </div>
+        {hasSteps && expanded && (
+          <div
             style={{
-              width: 36,
-              height: 44,
-              border: 0,
-              background: 'transparent',
-              color: '#9AA59D',
+              margin: '0 14px 14px 56px',
+              padding: '8px 10px 10px',
+              borderLeft: `1px solid ${colors.borderSoft}`,
               display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flex: 'none',
+              flexDirection: 'column',
+              gap: 2,
             }}
           >
-            <CloseIcon />
-          </button>
-        </div>
-      ))}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 6,
-          marginTop: 4,
-          padding: '4px 4px 4px 14px',
-          borderRadius: 22,
-          background: colors.cream,
-        }}
-      >
-        <label htmlFor={inputId} className="sr-only">
-          Nowe podzadanie
-        </label>
-        <input
-          id={inputId}
-          type="text"
-          placeholder="Dodaj krok…"
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && add()}
-          style={{
-            flex: 1,
-            minWidth: 0,
-            height: 40,
-            border: 0,
-            background: 'transparent',
-            fontSize: 16,
-            color: colors.green900,
-            outline: 'none',
-          }}
-        />
-        <button
-          type="button"
-          onClick={add}
-          aria-label="Dodaj podzadanie"
-          style={{
-            width: 40,
-            height: 40,
-            border: 0,
-            borderRadius: 20,
-            background: colors.green900,
-            color: colors.brass300,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flex: 'none',
-          }}
-        >
-          <PlusIcon size={18} strokeWidth={2.4} />
-        </button>
-      </div>
+            {task.subtasks.map((s) => (
+              <SubtaskToggle
+                key={s.id}
+                title={s.title}
+                done={s.done}
+                onToggle={() => onToggleSub(s.id)}
+              />
+            ))}
+          </div>
+        )}
+      </SwipeRow>
     </div>
   )
 }
 
-function CheckedBox() {
+/** Wiersz podzadania z kwadracikiem (lista i arkusz zadania). */
+export function SubtaskToggle({
+  title,
+  done,
+  onToggle,
+}: {
+  title: string
+  done: boolean
+  onToggle: () => void
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-pressed={done}
+      style={{
+        flex: 1,
+        minWidth: 0,
+        display: 'flex',
+        alignItems: 'center',
+        gap: 10,
+        minHeight: 44,
+        padding: 0,
+        border: 0,
+        background: 'transparent',
+        textAlign: 'left',
+        color: colors.green900,
+      }}
+    >
+      <span
+        style={{
+          width: 20,
+          height: 20,
+          borderRadius: 7,
+          flex: 'none',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          ...(done
+            ? { background: colors.green900, border: 0 }
+            : { background: colors.white, border: `2px solid ${colors.brass500}` }),
+        }}
+      >
+        {done && (
+          <span style={{ color: colors.cream, display: 'flex' }}>
+            <CheckIcon size={12} strokeWidth={3.5} />
+          </span>
+        )}
+      </span>
+      <span
+        style={{
+          fontSize: 15,
+          lineHeight: 1.3,
+          ...(done ? { color: '#8A968E', textDecoration: 'line-through' } : {}),
+        }}
+      >
+        {title}
+      </span>
+    </button>
+  )
+}
+
+/** Zielony kwadracik z mosiężnym ptaszkiem (zadanie ogarnięte). */
+export function DoneBox({ size = 24 }: { size?: number }) {
   return (
     <span
-      className="pop-center"
       style={{
-        width: 24,
-        height: 24,
-        borderRadius: 8,
+        width: size,
+        height: size,
+        borderRadius: Math.round(size / 3),
         background: colors.green900,
         color: colors.brass300,
+        flex: 'none',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
       }}
     >
-      <svg
-        width="14"
-        height="14"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="3"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M5 12.5l4.5 4.5L19 7.5" />
-      </svg>
+      <CheckIcon size={Math.round(size * 0.58)} strokeWidth={3} />
     </span>
   )
 }

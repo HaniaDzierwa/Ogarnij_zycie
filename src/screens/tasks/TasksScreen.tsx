@@ -1,48 +1,63 @@
 import { useState } from 'react'
-import { useSearchParams } from 'react-router'
+import { Link, useSearchParams } from 'react-router'
+import { paths } from '../../app/screens.ts'
 import { Accent, Header } from '../../components/Header.tsx'
 import { TabBar } from '../../components/TabBar.tsx'
-import { SwipeRow } from '../../components/SwipeRow.tsx'
-import { Box, ConfirmDialog, Dot, SyncBadge } from '../../components/ui.tsx'
-import { CloseIcon, SlidersIcon } from '../../components/icons.tsx'
-import { shortDayLabel } from '../../data/dates.ts'
+import { UndoToast } from '../../components/UndoToast.tsx'
+import { Box, Dot, SyncBadge } from '../../components/ui.tsx'
+import { ChevronRightIcon, CloseIcon, SlidersIcon, TrashIcon } from '../../components/icons.tsx'
+import { shortDayLabel, whenLabel } from '../../data/dates.ts'
 import { useStore } from '../../data/MockStore.tsx'
 import { plural } from '../../data/plural.ts'
-import { addSubtask, removeSubtask, toggleSubtask, toggleTask } from '../../data/taskOps.ts'
+import {
+  addSubtask,
+  markDone,
+  markOpen,
+  moveToTrash,
+  removeSubtask,
+  toggleSubtask,
+} from '../../data/taskOps.ts'
 import type { Task } from '../../data/types.ts'
-import { colors, fonts, priorities, sizes } from '../../theme'
+import { colors, fonts, priorities, shadows, sizes } from '../../theme'
+import { ClearSheet } from './ClearSheet.tsx'
 import { FiltersPanel, TextButton } from './FiltersPanel.tsx'
-import { TaskSheet } from './TaskSheet.tsx'
+import { TaskDetailSheet } from './TaskDetailSheet.tsx'
 import { Chevron, TaskRow } from './TaskRow.tsx'
+import { TaskSheet } from './TaskSheet.tsx'
 import {
   categoriesWithNone,
   categoryKey,
   deleteCategory,
+  doneGroups,
   emptyLabel,
   SHOWS,
   showFromParam,
   tasksView,
   type GroupBy,
   type Show,
+  type Tab,
 } from './tasksView.ts'
 
-/** 3 Zadania (Zadania.dc.html). Adres: `?pokaz=pilne|wazne|przy-okazji|ogarniete`, `?nowe=zadanie`. */
+/**
+ * 3 Zadania (Zadania.dc.html). Adres: `?pokaz=pilne|wazne|przy-okazji`, `?zakladka=ogarniete`,
+ * `?nowe=zadanie`.
+ */
 export function TasksScreen() {
   const store = useStore()
-  const { today, tasks, categories } = store
+  const { today, tasks, categories, members } = store
   const [params, setParams] = useSearchParams()
 
+  const [tab, setTab] = useState<Tab>(() =>
+    params.get('zakladka') === 'ogarniete' ? 'done' : 'todo',
+  )
   const [show, setShow] = useState<Show>(() => showFromParam(params.get('pokaz')))
   const [category, setCategory] = useState('all')
   const [groupBy, setGroupBy] = useState<GroupBy>('cat')
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({})
   const [expanded, setExpanded] = useState<string | null>(() => tasks[0]?.id ?? null)
-  const [showDoneToggle, setShowDoneToggle] = useState(false)
-  const [editingId, setEditingId] = useState<string | null>(null)
-  const editing = tasks.find((t) => t.id === editingId)
-  const [deletingId, setDeletingId] = useState<string | null>(null)
-  const deleting = tasks.find((t) => t.id === deletingId)
+  const [detailId, setDetailId] = useState<string | null>(null)
+  const [clearOpen, setClearOpen] = useState(false)
 
   const sheetOpen = params.get('nowe') === 'zadanie'
   const setSheetOpen = (open: boolean) =>
@@ -57,13 +72,46 @@ export function TasksScreen() {
 
   const cats = categoriesWithNone(categories, tasks)
   const view = tasksView(tasks, categories, { show, category, groupBy })
-  const showDone = show === 'done' || showDoneToggle
+  const done = doneGroups(tasks, today)
+  const trashCount = tasks.filter((t) => t.deleted).length
   const categoryName = (t: Task) => cats.find((c) => c.id === categoryKey(t))?.name ?? ''
   const activeCount = (show !== 'all' ? 1 : 0) + (category !== 'all' ? 1 : 0)
   const allCollapsed = view.groups.length > 0 && view.groups.every((g) => collapsed[g.key])
+  const detail = tasks.find((t) => t.id === detailId && !t.deleted)
 
-  const updateTask = (id: string, fn: (t: Task) => Task) =>
-    store.setTasks((list) => list.map((t) => (t.id === id ? fn(t) : t)))
+  const member = (uid: string | null) => members.find((m) => m.uid === uid)
+  /** „Ogarnęła Hania” / „Ogarnął Krzyś” */
+  const doneBy = (t: Task) => {
+    const m = member(t.doneBy)
+    return m ? `${m.verbForm === 'f' ? 'Ogarnęła' : 'Ogarnął'} ${m.name}` : ''
+  }
+
+  // Akcje z paskiem „Cofnij”
+  const update = (id: string, fn: (t: Task) => Task) => (list: Task[]) =>
+    list.map((t) => (t.id === id ? fn(t) : t))
+  const complete = (t: Task) =>
+    store.changeTasks(
+      `Ogarnięte: ${t.title}`,
+      update(t.id, (x) => markDone(x, store.who())),
+    )
+  const restore = (t: Task) =>
+    store.changeTasks(`Wróciło do „Do zrobienia”: ${t.title}`, update(t.id, markOpen))
+  const toggleDone = (t: Task) => (t.done ? restore(t) : complete(t))
+  const trash = (t: Task) => {
+    if (detailId === t.id) setDetailId(null)
+    store.changeTasks(
+      `Przeniesiono do kosza: ${t.title}`,
+      update(t.id, (x) => moveToTrash(x, store.who())),
+    )
+  }
+  /** Zmiana kroków – gdy ogarnia albo przywraca zadanie, też z paskiem „Cofnij”. */
+  const changeSteps = (t: Task, fn: (t: Task) => Task) => {
+    const next = fn(t)
+    if (next.done && !t.done) store.changeTasks(`Ogarnięte: ${t.title}`, update(t.id, fn))
+    else if (!next.done && t.done)
+      store.changeTasks(`Wróciło do „Do zrobienia”: ${t.title}`, update(t.id, fn))
+    else store.setTasks(update(t.id, fn))
+  }
 
   const addCategory = (name: string, color: string) => {
     const id = `k${Date.now()}`
@@ -71,14 +119,28 @@ export function TasksScreen() {
     return id
   }
 
-  const closeFilters = () => setFiltersOpen(false)
+  const rowProps = (t: Task, kind: 'todo' | 'done') => ({
+    task: t,
+    kind,
+    groupBy,
+    categoryName: categoryName(t),
+    today,
+    doneByLabel: kind === 'done' ? doneBy(t).toUpperCase() : undefined,
+    doneWhen: kind === 'done' && t.doneAt ? whenLabel(t.doneAt, today) : undefined,
+    expanded: expanded === t.id,
+    onExpand: () => setExpanded((e) => (e === t.id ? null : t.id)),
+    onOpen: () => setDetailId(t.id),
+    onToggleDone: () => toggleDone(t),
+    onTrash: () => trash(t),
+    onToggleSub: (sid: string) => changeSteps(t, (x) => toggleSubtask(x, sid, store.who())),
+  })
 
   return (
     <div style={{ maxWidth: 480, margin: '0 auto', minHeight: '100dvh' }}>
       {filtersOpen && (
         <div
           aria-hidden="true"
-          onClick={closeFilters}
+          onClick={() => setFiltersOpen(false)}
           style={{ position: 'fixed', inset: 0, zIndex: 5, background: 'rgba(31,61,46,0.04)' }}
         />
       )}
@@ -137,56 +199,199 @@ export function TasksScreen() {
           }
         />
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <button
-            type="button"
-            onClick={() => setFiltersOpen((o) => !o)}
-            aria-expanded={filtersOpen}
-            aria-controls="panel-filtrow"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 6,
-              height: sizes.chipHeight,
-              padding: '0 12px 0 10px',
-              borderRadius: 18,
-              fontSize: 13,
-              fontWeight: 800,
-              border: `1px solid ${filtersOpen || activeCount ? colors.green900 : colors.border}`,
-              background: filtersOpen || activeCount ? colors.green900 : 'transparent',
-              color: filtersOpen || activeCount ? colors.cream : colors.green900,
+        <div
+          role="tablist"
+          aria-label="Widok zadań"
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+            gap: 4,
+            padding: 3,
+            borderRadius: 18,
+            background: colors.sand,
+          }}
+        >
+          <TabButton
+            on={tab === 'todo'}
+            count={view.openCount}
+            onClick={() => {
+              setTab('todo')
+              setFiltersOpen(false)
             }}
           >
-            <SlidersIcon size={18} />
-            <span>Filtry</span>
-            {activeCount > 0 && (
-              <span
-                aria-label={`Aktywne filtry: ${activeCount}`}
+            Do zrobienia
+          </TabButton>
+          <TabButton
+            on={tab === 'done'}
+            count={view.doneCount}
+            onClick={() => {
+              setTab('done')
+              setFiltersOpen(false)
+            }}
+          >
+            Ogarnięte
+          </TabButton>
+        </div>
+
+        {tab === 'todo' && (
+          <>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <button
+                type="button"
+                onClick={() => setFiltersOpen((o) => !o)}
+                aria-expanded={filtersOpen}
+                aria-controls="panel-filtrow"
                 style={{
-                  minWidth: 20,
-                  height: 20,
-                  padding: '0 5px',
-                  borderRadius: 10,
-                  background: colors.brass300,
-                  color: colors.green900,
-                  fontSize: 12,
-                  fontWeight: 800,
                   display: 'inline-flex',
                   alignItems: 'center',
-                  justifyContent: 'center',
+                  gap: 6,
+                  height: sizes.chipHeight,
+                  padding: '0 12px 0 10px',
+                  borderRadius: 18,
+                  fontSize: 13,
+                  fontWeight: 800,
+                  border: `1px solid ${filtersOpen || activeCount ? colors.green900 : colors.border}`,
+                  background: filtersOpen || activeCount ? colors.green900 : 'transparent',
+                  color: filtersOpen || activeCount ? colors.cream : colors.green900,
                 }}
               >
-                {activeCount}
-              </span>
+                <SlidersIcon size={18} />
+                <span>Filtry</span>
+                {activeCount > 0 && (
+                  <span
+                    aria-label={`Aktywne filtry: ${activeCount}`}
+                    style={{
+                      minWidth: 20,
+                      height: 20,
+                      padding: '0 5px',
+                      borderRadius: 10,
+                      background: colors.brass300,
+                      color: colors.green900,
+                      fontSize: 12,
+                      fontWeight: 800,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    {activeCount}
+                  </span>
+                )}
+                <Chevron open={filtersOpen} size={16} />
+              </button>
+              {view.groups.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    setCollapsed(Object.fromEntries(view.groups.map((g) => [g.key, !allCollapsed])))
+                  }
+                  style={{
+                    marginLeft: 'auto',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 4,
+                    height: 36,
+                    padding: '0 4px 0 8px',
+                    border: 0,
+                    background: 'transparent',
+                    color: colors.brass700,
+                    fontSize: 12,
+                    fontWeight: 800,
+                    letterSpacing: '0.6px',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {allCollapsed ? 'ROZWIŃ WSZYSTKO' : 'ZWIŃ WSZYSTKO'}
+                  <Chevron open={allCollapsed} size={16} up />
+                </button>
+              )}
+            </div>
+
+            {activeCount > 0 && !filtersOpen && (
+              <div
+                style={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  alignItems: 'center',
+                  gap: 6,
+                  marginTop: -4,
+                }}
+              >
+                {show !== 'all' && (
+                  <ActiveChip
+                    name={SHOWS.find((s) => s.id === show)!.name}
+                    mark={<Box color={priorities[show].line} size={12} />}
+                    onRemove={() => setShow('all')}
+                  />
+                )}
+                {category !== 'all' && (
+                  <ActiveChip
+                    name={cats.find((c) => c.id === category)?.name ?? ''}
+                    mark={
+                      <Dot color={cats.find((c) => c.id === category)?.color ?? colors.muted} />
+                    }
+                    onRemove={() => setCategory('all')}
+                  />
+                )}
+                {activeCount === 2 && (
+                  <TextButton
+                    onClick={() => {
+                      setShow('all')
+                      setCategory('all')
+                    }}
+                  >
+                    WYCZYŚĆ
+                  </TextButton>
+                )}
+              </div>
             )}
-            <Chevron open={filtersOpen} size={16} />
-          </button>
-          {view.groups.length > 0 && (
+
+            {filtersOpen && (
+              <FiltersPanel
+                show={show}
+                onShow={setShow}
+                category={category}
+                onCategory={setCategory}
+                categories={cats}
+                counts={view.categoryCounts}
+                groupBy={groupBy}
+                onGroupBy={setGroupBy}
+                onAddCategory={addCategory}
+                onDeleteCategory={(id) => {
+                  const after = deleteCategory(categories, tasks, id)
+                  store.setCategories(() => after.categories)
+                  store.setTasks(() => after.tasks)
+                  if (category === id) setCategory('all')
+                }}
+              />
+            )}
+          </>
+        )}
+
+        {tab === 'done' && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <button
               type="button"
-              onClick={() =>
-                setCollapsed(Object.fromEntries(view.groups.map((g) => [g.key, !allCollapsed])))
-              }
+              onClick={() => setClearOpen(true)}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+                height: 36,
+                padding: '0 14px 0 10px',
+                borderRadius: 18,
+                border: `1px solid ${colors.border}`,
+                background: 'transparent',
+                color: colors.green900,
+                fontSize: 13,
+                fontWeight: 800,
+              }}
+            >
+              <TrashIcon />
+              Wyczyść
+            </button>
+            <Link
+              to={paths.kosz}
               style={{
                 marginLeft: 'auto',
                 display: 'inline-flex',
@@ -194,78 +399,17 @@ export function TasksScreen() {
                 gap: 4,
                 height: 36,
                 padding: '0 4px 0 8px',
-                border: 0,
-                background: 'transparent',
                 color: colors.brass700,
                 fontSize: 12,
                 fontWeight: 800,
                 letterSpacing: '0.6px',
-                whiteSpace: 'nowrap',
+                textDecoration: 'none',
               }}
             >
-              {allCollapsed ? 'ROZWIŃ WSZYSTKO' : 'ZWIŃ WSZYSTKO'}
-              <Chevron open={allCollapsed} size={16} up />
-            </button>
-          )}
-        </div>
-
-        {activeCount > 0 && !filtersOpen && (
-          <div
-            style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              alignItems: 'center',
-              gap: 6,
-              marginTop: -4,
-            }}
-          >
-            {show !== 'all' && (
-              <ActiveChip
-                name={SHOWS.find((s) => s.id === show)!.name}
-                label="Usuń filtr"
-                mark={show !== 'done' ? <Box color={priorities[show].line} size={12} /> : null}
-                onRemove={() => setShow('all')}
-              />
-            )}
-            {category !== 'all' && (
-              <ActiveChip
-                name={cats.find((c) => c.id === category)?.name ?? ''}
-                label={`Usuń filtr ${cats.find((c) => c.id === category)?.name ?? ''}`}
-                mark={<Dot color={cats.find((c) => c.id === category)?.color ?? colors.muted} />}
-                onRemove={() => setCategory('all')}
-              />
-            )}
-            {activeCount === 2 && (
-              <TextButton
-                onClick={() => {
-                  setShow('all')
-                  setCategory('all')
-                }}
-              >
-                WYCZYŚĆ
-              </TextButton>
-            )}
+              KOSZ · {trashCount}
+              <ChevronRightIcon size={16} />
+            </Link>
           </div>
-        )}
-
-        {filtersOpen && (
-          <FiltersPanel
-            show={show}
-            onShow={setShow}
-            category={category}
-            onCategory={setCategory}
-            categories={cats}
-            counts={view.categoryCounts}
-            groupBy={groupBy}
-            onGroupBy={setGroupBy}
-            onAddCategory={addCategory}
-            onDeleteCategory={(id) => {
-              const after = deleteCategory(categories, tasks, id)
-              store.setCategories(() => after.categories)
-              store.setTasks(() => after.tasks)
-              if (category === id) setCategory('all')
-            }}
-          />
         )}
       </div>
 
@@ -277,247 +421,119 @@ export function TasksScreen() {
           gap: 18,
         }}
       >
-        {show !== 'done' && view.groups.length === 0 && (
-          <div
-            style={{
-              padding: '28px 20px',
-              borderRadius: 22,
-              background: colors.white,
-              boxShadow: '0 6px 20px rgba(31,61,46,0.07)',
-              textAlign: 'center',
-              fontFamily: fonts.serif,
-              fontStyle: 'italic',
-              fontSize: 17,
-              color: colors.muted,
-            }}
-          >
-            {emptyLabel(show)}
-          </div>
-        )}
-
-        {view.groups.map((g) => {
-          const open = !collapsed[g.key]
-          const high = g.items.filter((t) => t.priority === 'high').length
-          return (
-            <section key={g.key} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <button
-                type="button"
-                onClick={() => setCollapsed((c) => ({ ...c, [g.key]: open }))}
-                aria-expanded={open}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 8,
-                  width: '100%',
-                  minHeight: 48,
-                  border: 0,
-                  textAlign: 'left',
-                  fontSize: 12,
-                  fontWeight: 800,
-                  letterSpacing: '1.4px',
-                  color: colors.green900,
-                  ...(open
-                    ? { padding: '0 6px', background: 'transparent', borderRadius: 14 }
-                    : {
-                        padding: '0 14px',
-                        background: colors.white,
-                        borderRadius: 18,
-                        boxShadow: '0 4px 14px rgba(31,61,46,0.06)',
-                      }),
-                }}
-              >
-                {g.kind === 'cat' ? <Dot color={g.color} /> : <Box color={g.color} size={12} />}
-                <span>{g.name}</span>
-                <span
-                  style={{
-                    fontFamily: fonts.serif,
-                    fontStyle: 'italic',
-                    fontSize: 14,
-                    fontWeight: 500,
-                    letterSpacing: 0,
-                    color: colors.brass700,
-                  }}
-                >
-                  {g.items.length}
-                </span>
-                {!open && high > 0 && (
-                  <span
+        {tab === 'todo' && (
+          <>
+            {view.groups.length === 0 && <Empty>{emptyLabel(show)}</Empty>}
+            {view.groups.map((g) => {
+              const open = !collapsed[g.key]
+              const high = g.items.filter((t) => t.priority === 'high').length
+              return (
+                <section key={g.key} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <button
+                    type="button"
+                    onClick={() => setCollapsed((c) => ({ ...c, [g.key]: open }))}
+                    aria-expanded={open}
                     style={{
-                      fontSize: 11,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 8,
+                      width: '100%',
+                      minHeight: 48,
+                      border: 0,
+                      textAlign: 'left',
+                      fontSize: 12,
                       fontWeight: 800,
-                      letterSpacing: '0.6px',
-                      color: priorities.high.fg,
-                      background: priorities.high.bg,
-                      padding: '2px 8px',
-                      borderRadius: 10,
+                      letterSpacing: '1.4px',
+                      color: colors.green900,
+                      ...(open
+                        ? { padding: '0 6px', background: 'transparent', borderRadius: 14 }
+                        : {
+                            padding: '0 14px',
+                            background: colors.white,
+                            borderRadius: 18,
+                            boxShadow: '0 4px 14px rgba(31,61,46,0.06)',
+                          }),
                     }}
                   >
-                    {high} PILNE
-                  </span>
-                )}
-                <span style={{ marginLeft: 'auto', color: colors.brass700, display: 'flex' }}>
-                  <Chevron open={open} size={18} />
-                </span>
-              </button>
-              {open && (
-                <div
-                  style={{
-                    background: colors.white,
-                    borderRadius: 22,
-                    boxShadow: '0 6px 20px rgba(31,61,46,0.07)',
-                    overflow: 'hidden',
-                  }}
-                >
-                  {g.items.map((t) => (
-                    <TaskRow
-                      key={t.id}
-                      task={t}
-                      groupBy={groupBy}
-                      categoryName={categoryName(t)}
-                      today={today}
-                      expanded={expanded === t.id}
-                      onExpand={() => setExpanded((e) => (e === t.id ? null : t.id))}
-                      onEdit={() => setEditingId(t.id)}
-                      onDelete={() => setDeletingId(t.id)}
-                      onToggleDone={() => updateTask(t.id, toggleTask)}
-                      onToggleSub={(sid) => updateTask(t.id, (x) => toggleSubtask(x, sid))}
-                      onRemoveSub={(sid) => updateTask(t.id, (x) => removeSubtask(x, sid))}
-                      onAddSub={(title) =>
-                        updateTask(t.id, (x) =>
-                          addSubtask(x, { id: `${x.id}s${Date.now()}`, title, done: false }),
-                        )
-                      }
-                    />
-                  ))}
-                </div>
-              )}
-            </section>
-          )
-        })}
-
-        {view.done.length > 0 && (
-          <section style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <button
-              type="button"
-              onClick={() => {
-                setShowDoneToggle(!showDone)
-                if (show === 'done') setShow('all')
-              }}
-              aria-expanded={showDone}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-                height: 44,
-                padding: '0 4px',
-                border: 0,
-                background: 'transparent',
-                color: colors.green900,
-              }}
-            >
-              <span style={{ fontFamily: fonts.serif, fontSize: 20, fontWeight: 500 }}>
-                Już <em>ogarnięte</em>
-              </span>
-              <span
-                style={{
-                  fontFamily: fonts.serif,
-                  fontStyle: 'italic',
-                  fontSize: 15,
-                  color: colors.brass700,
-                }}
-              >
-                {view.done.length}
-              </span>
-              <span
-                style={{
-                  marginLeft: 'auto',
-                  fontSize: 12,
-                  fontWeight: 800,
-                  letterSpacing: '1px',
-                  color: colors.brass700,
-                }}
-              >
-                {showDone ? 'UKRYJ' : 'POKAŻ'}
-              </span>
-            </button>
-            {showDone && (
-              <div style={{ background: colors.sand, borderRadius: 22, overflow: 'hidden' }}>
-                {view.done.map((t) => (
-                  <SwipeRow
-                    key={t.id}
-                    background={colors.sand}
-                    onSwipeLeft={() => setEditingId(t.id)}
-                    onSwipeRight={() => setDeletingId(t.id)}
-                    editLabel={`Edytuj zadanie: ${t.title}`}
-                    deleteLabel={`Usuń zadanie: ${t.title}`}
-                  >
-                    <button
-                      type="button"
-                      onClick={() => updateTask(t.id, toggleTask)}
-                      aria-label={`Przywróć zadanie: ${t.title}`}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 4,
-                        width: '100%',
-                        padding: '4px 16px 4px 4px',
-                        minHeight: 52,
-                        border: 0,
-                        borderBottom: `1px solid ${colors.borderSoft}`,
-                        background: 'transparent',
-                        color: colors.muted,
-                        textAlign: 'left',
-                      }}
-                    >
+                    {g.kind === 'cat' ? <Dot color={g.color} /> : <Box color={g.color} size={12} />}
+                    <span>{g.name}</span>
+                    <Count>{g.items.length}</Count>
+                    {!open && high > 0 && (
                       <span
                         style={{
-                          width: 44,
-                          height: 44,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          flex: 'none',
+                          fontSize: 11,
+                          fontWeight: 800,
+                          letterSpacing: '0.6px',
+                          color: priorities.high.fg,
+                          background: priorities.high.bg,
+                          padding: '2px 8px',
+                          borderRadius: 10,
                         }}
                       >
-                        <span
-                          style={{
-                            width: 24,
-                            height: 24,
-                            borderRadius: 8,
-                            background: colors.green900,
-                            color: colors.brass300,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                          }}
-                        >
-                          <svg
-                            width="14"
-                            height="14"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="3"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            aria-hidden="true"
-                          >
-                            <path d="M5 12.5l4.5 4.5L19 7.5" />
-                          </svg>
-                        </span>
+                        {high} PILNE
                       </span>
-                      <span style={{ flex: 1, fontSize: 15, textDecoration: 'line-through' }}>
-                        {t.title}
-                      </span>
-                      <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '1px' }}>
-                        {categoryName(t).toUpperCase()}
-                      </span>
-                    </button>
-                  </SwipeRow>
-                ))}
-              </div>
+                    )}
+                    <span style={{ marginLeft: 'auto', color: colors.brass700, display: 'flex' }}>
+                      <Chevron open={open} size={18} />
+                    </span>
+                  </button>
+                  {open && (
+                    <ListCard>
+                      {g.items.map((t) => (
+                        <TaskRow key={t.id} {...rowProps(t, 'todo')} />
+                      ))}
+                    </ListCard>
+                  )}
+                </section>
+              )
+            })}
+            {view.groups.length > 0 && (
+              <span
+                style={{
+                  padding: '0 12px',
+                  fontSize: 12,
+                  lineHeight: 1.5,
+                  color: colors.muted,
+                  textAlign: 'center',
+                }}
+              >
+                Dotknij zadania, by je otworzyć. Przeciągnij w prawo – ogarnięte, w lewo – do kosza.
+              </span>
             )}
-          </section>
+          </>
+        )}
+
+        {tab === 'done' && (
+          <>
+            {done.length === 0 && (
+              <Empty>Nic jeszcze nie ogarnięte – ale dzień się nie skończył.</Empty>
+            )}
+            {done.map((g) => (
+              <section key={g.name} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    minHeight: 36,
+                    padding: '0 6px',
+                    fontSize: 12,
+                    fontWeight: 800,
+                    letterSpacing: '1.4px',
+                    color: colors.green900,
+                  }}
+                >
+                  <h2 style={{ margin: 0, font: 'inherit', letterSpacing: 'inherit' }}>{g.name}</h2>
+                  <Count>{g.items.length}</Count>
+                </div>
+                <ListCard>
+                  {g.items.map((t) => (
+                    <TaskRow key={t.id} {...rowProps(t, 'done')} />
+                  ))}
+                </ListCard>
+              </section>
+            ))}
+          </>
         )}
       </main>
 
@@ -527,56 +543,195 @@ export function TasksScreen() {
           categories={categories}
           today={today}
           onAddCategory={addCategory}
-          onSave={(task) => {
+          onSave={(draft) => {
             const id = `t${Date.now()}`
-            store.setTasks((list) => [{ ...task, id }, ...list])
+            const task: Task = {
+              ...draft,
+              id,
+              done: false,
+              createdBy: store.currentUid,
+              doneAt: null,
+              doneBy: null,
+              deleted: false,
+              deletedAt: null,
+              deletedBy: null,
+            }
+            store.setTasks((list) => [task, ...list])
             if (task.subtasks.length) setExpanded(id)
+            setTab('todo')
             setSheetOpen(false)
           }}
         />
       )}
-      {editing && (
-        <TaskSheet
-          key={editing.id}
-          task={editing}
-          onClose={() => setEditingId(null)}
+
+      {detail && (
+        <TaskDetailSheet
+          key={detail.id}
+          task={detail}
           categories={categories}
           today={today}
-          onAddCategory={addCategory}
-          onSave={(task) => {
-            updateTask(editing.id, () => ({ ...task, id: editing.id }))
-            setEditingId(null)
+          status={
+            detail.done && detail.doneAt
+              ? `OGARNIĘTE · ${whenLabel(detail.doneAt, today).toUpperCase()}`
+              : `DO ZROBIENIA · ${categoryName(detail).toUpperCase()}`
+          }
+          meta={
+            detail.done ? doneBy(detail) : `Dodane przez: ${member(detail.createdBy)?.name ?? ''}`
+          }
+          onChange={(fn) => store.setTasks(update(detail.id, fn))}
+          onToggleDone={() => toggleDone(detail)}
+          onToggleSub={(sid) => changeSteps(detail, (x) => toggleSubtask(x, sid, store.who()))}
+          onRemoveSub={(sid) => changeSteps(detail, (x) => removeSubtask(x, sid, store.who()))}
+          onAddSub={(title) =>
+            changeSteps(detail, (x) =>
+              addSubtask(x, { id: `${x.id}s${Date.now()}`, title, done: false }, store.who()),
+            )
+          }
+          onTrash={() => trash(detail)}
+          onClose={() => setDetailId(null)}
+        />
+      )}
+
+      {clearOpen && (
+        <ClearSheet
+          tasks={tasks}
+          today={today}
+          onClose={() => setClearOpen(false)}
+          onClear={(ids) => {
+            setClearOpen(false)
+            const n = ids.length
+            store.changeTasks(
+              `Przeniesiono do kosza: ${n} ${plural(n, ['zadanie', 'zadania', 'zadań'])}`,
+              (list) => list.map((t) => (ids.includes(t.id) ? moveToTrash(t, store.who()) : t)),
+            )
           }}
         />
       )}
 
-      {deleting && (
-        <ConfirmDialog
-          title="Usunąć zadanie?"
-          message={<>„{deleting.title}” zniknie z listy.</>}
-          confirmLabel="Usuń"
-          danger
-          onCancel={() => setDeletingId(null)}
-          onConfirm={() => {
-            store.setTasks((list) => list.filter((x) => x.id !== deleting.id))
-            setDeletingId(null)
-          }}
-        />
-      )}
-
+      <UndoToast />
       <TabBar active="zadania" onAddTask={() => setSheetOpen(true)} />
+    </div>
+  )
+}
+
+/** Zmiana `?pokaz=` / `?zakladka=` (np. kafelek na Starcie) zaczyna widok od nowa. */
+export function TasksRoute() {
+  const [params] = useSearchParams()
+  return <TasksScreen key={`${params.get('pokaz') ?? ''}|${params.get('zakladka') ?? ''}`} />
+}
+
+function TabButton({
+  on,
+  count,
+  onClick,
+  children,
+}: {
+  on: boolean
+  count: number
+  onClick: () => void
+  children: string
+}) {
+  return (
+    <button
+      type="button"
+      role="tab"
+      aria-selected={on}
+      onClick={onClick}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 8,
+        height: 40,
+        border: 0,
+        borderRadius: 15,
+        fontSize: 14,
+        fontWeight: 800,
+        background: on ? colors.white : 'transparent',
+        color: on ? colors.green900 : colors.muted,
+        boxShadow: on ? '0 1px 3px rgba(31,61,46,0.15)' : 'none',
+      }}
+    >
+      {children}
+      <span
+        style={{
+          minWidth: 22,
+          height: 22,
+          padding: '0 7px',
+          borderRadius: 11,
+          fontSize: 12,
+          fontWeight: 800,
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: on ? colors.green900 : 'rgba(255,255,255,0.7)',
+          color: on ? colors.brass300 : colors.muted,
+        }}
+      >
+        {count}
+      </span>
+    </button>
+  )
+}
+
+function ListCard({ children }: { children: React.ReactNode }) {
+  return (
+    <div
+      style={{
+        background: colors.white,
+        borderRadius: 22,
+        boxShadow: shadows.card,
+        overflow: 'hidden',
+      }}
+    >
+      {children}
+    </div>
+  )
+}
+
+function Count({ children }: { children: React.ReactNode }) {
+  return (
+    <span
+      style={{
+        fontFamily: fonts.serif,
+        fontStyle: 'italic',
+        fontSize: 14,
+        fontWeight: 500,
+        letterSpacing: 0,
+        color: colors.brass700,
+      }}
+    >
+      {children}
+    </span>
+  )
+}
+
+function Empty({ children }: { children: React.ReactNode }) {
+  return (
+    <div
+      style={{
+        padding: '28px 20px',
+        borderRadius: 22,
+        background: colors.white,
+        boxShadow: shadows.card,
+        textAlign: 'center',
+        fontFamily: fonts.serif,
+        fontStyle: 'italic',
+        fontSize: 17,
+        color: colors.muted,
+      }}
+    >
+      {children}
     </div>
   )
 }
 
 function ActiveChip({
   name,
-  label,
   mark,
   onRemove,
 }: {
   name: string
-  label: string
   mark: React.ReactNode
   onRemove: () => void
 }) {
@@ -584,7 +739,7 @@ function ActiveChip({
     <button
       type="button"
       onClick={onRemove}
-      aria-label={`${label}: ${name}`}
+      aria-label={`Usuń filtr: ${name}`}
       style={{
         display: 'inline-flex',
         alignItems: 'center',
@@ -607,10 +762,4 @@ function ActiveChip({
       </span>
     </button>
   )
-}
-
-/** Zmiana `?pokaz=` (np. kafelek na Starcie) zaczyna widok od nowa z tym filtrem. */
-export function TasksRoute() {
-  const [params] = useSearchParams()
-  return <TasksScreen key={params.get('pokaz') ?? ''} />
 }

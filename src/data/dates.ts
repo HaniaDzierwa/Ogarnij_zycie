@@ -134,3 +134,31 @@ export function isDaytime(date = new Date()): boolean {
   const h = date.getHours()
   return h >= 6 && h < 18
 }
+
+/** Chwila 'RRRR-MM-DDTHH:MM' w czasie lokalnym. */
+export type Stamp = string
+
+export function stamp(day: DateKey, time: string): Stamp {
+  return `${day}T${time}`
+}
+
+/** Teraz – na dzień `today` (w mockupie może być podmieniony przez `?dzis=`). */
+export function nowStamp(today: DateKey, now = new Date()): Stamp {
+  return stamp(today, `${pad(now.getHours())}:${pad(now.getMinutes())}`)
+}
+
+export const stampDay = (s: Stamp): DateKey => s.slice(0, 10)
+
+/**
+ * Kiedy ogarnięte: dziś „9:10”, wczoraj „wczoraj”, w ostatnim tygodniu „wt 6 paź”,
+ * wcześniej „27 wrz”.
+ */
+export function whenLabel(s: Stamp, today: DateKey): string {
+  const n = diffDays(stampDay(s), today)
+  if (n <= 0) return String(Number(s.slice(11, 13))) + s.slice(13, 16)
+  if (n === 1) return 'wczoraj'
+  const d = parseKey(stampDay(s))
+  const month = MONTHS_SHORT[d.getMonth()].toLowerCase()
+  if (n < 7) return `${DAYS_SHORT[d.getDay()].toLowerCase()} ${d.getDate()} ${month}`
+  return `${d.getDate()} ${month}`
+}

@@ -99,3 +99,44 @@ export function CloseIcon({ size = 16 }: IconProps) {
     </svg>
   )
 }
+
+export function CheckIcon({ size = 20, strokeWidth = 2.6 }: IconProps & { strokeWidth?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      {...stroke}
+      strokeWidth={strokeWidth}
+      aria-hidden="true"
+    >
+      <path d="M5 12.5l4.5 4.5L19 7.5" />
+    </svg>
+  )
+}
+
+export function UndoIcon({ size = 20, strokeWidth = 2.6 }: IconProps & { strokeWidth?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      {...stroke}
+      strokeWidth={strokeWidth}
+      aria-hidden="true"
+    >
+      <path d="M9 14L4 9l5-5M4 9h10a6 6 0 0 1 0 12h-3" />
+    </svg>
+  )
+}
+
+export function TrashIcon({ size = 18 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" {...stroke} aria-hidden="true">
+      <path d="M4 7h16" />
+      <path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+      <path d="M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12" />
+      <path d="M10 11v6M14 11v6" />
+    </svg>
+  )
+}

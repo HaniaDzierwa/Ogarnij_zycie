@@ -1,6 +1,16 @@
 import { expect, test } from 'vitest'
-import { addSubtask, removeSubtask, toggleSubtask, toggleTask } from './taskOps.ts'
+import {
+  addSubtask,
+  markDone,
+  moveToTrash,
+  removeSubtask,
+  restoreFromTrash,
+  toggleDone,
+  toggleSubtask,
+} from './taskOps.ts'
 import type { Task } from './types.ts'
+
+const who = { uid: 'hania', at: '2026-10-09T10:00' }
 
 const task: Task = {
   id: 't',
@@ -13,32 +23,52 @@ const task: Task = {
     { id: 'a', title: 'Wybrać', done: true },
     { id: 'b', title: 'Zapakować', done: false },
   ],
+  createdBy: 'hania',
+  doneAt: null,
+  doneBy: null,
+  deleted: false,
+  deletedAt: null,
+  deletedBy: null,
 }
 
-test('odhaczenie ostatniego podzadania kończy zadanie', () => {
-  expect(toggleSubtask(task, 'b').done).toBe(true)
+test('odhaczenie ostatniego podzadania ogarnia zadanie: kto i kiedy', () => {
+  const done = toggleSubtask(task, 'b', who)
+  expect([done.done, done.doneBy, done.doneAt]).toEqual([true, 'hania', '2026-10-09T10:00'])
 })
 
-test('odznaczenie podzadania w zrobionym zadaniu przywraca zadanie', () => {
-  const done = toggleSubtask(task, 'b')
-  expect(toggleSubtask(done, 'a').done).toBe(false)
+test('odznaczenie podzadania w ogarniętym zadaniu przywraca je i czyści „kto/kiedy”', () => {
+  const back = toggleSubtask(toggleSubtask(task, 'b', who), 'a', who)
+  expect([back.done, back.doneBy, back.doneAt]).toEqual([false, null, null])
 })
 
-test('usunięcie jedynego nieodhaczonego podzadania kończy zadanie', () => {
-  expect(removeSubtask(task, 'b').done).toBe(true)
+test('usunięcie jedynego nieodhaczonego podzadania ogarnia zadanie', () => {
+  expect(removeSubtask(task, 'b', who).done).toBe(true)
 })
 
-test('usunięcie wszystkich podzadań nie zmienia stanu zadania', () => {
-  const none = removeSubtask(removeSubtask(task, 'a'), 'b')
-  expect(none.subtasks).toHaveLength(0)
-  expect(none.done).toBe(false)
+test('nowy krok w ogarniętym zadaniu otwiera je ponownie', () => {
+  const done = toggleSubtask(task, 'b', who)
+  expect(addSubtask(done, { id: 'c', title: 'Kartka', done: false }, who).done).toBe(false)
 })
 
-test('nowy krok w zrobionym zadaniu otwiera je ponownie', () => {
-  const done = toggleSubtask(task, 'b')
-  expect(addSubtask(done, { id: 'c', title: 'Kartka', done: false }).done).toBe(false)
+test('kwadracik: ogarnij ⇄ przywróć', () => {
+  const plain = { ...task, subtasks: [] }
+  const done = toggleDone(plain, who)
+  expect([done.done, done.doneBy]).toEqual([true, 'hania'])
+  expect(toggleDone(done, who).done).toBe(false)
 })
 
-test('zadanie bez podzadań odhacza się ręcznie', () => {
-  expect(toggleTask({ ...task, subtasks: [] }).done).toBe(true)
+test('kosz: przeniesienie i przywrócenie zachowuje kategorię, priorytet i kroki', () => {
+  const trashed = moveToTrash(markDone(task, who), who)
+  expect([trashed.deleted, trashed.deletedBy, trashed.deletedAt]).toEqual([
+    true,
+    'hania',
+    '2026-10-09T10:00',
+  ])
+  const back = restoreFromTrash(trashed)
+  expect(back.deleted).toBe(false)
+  expect([back.categoryId, back.priority, back.subtasks]).toEqual([
+    task.categoryId,
+    task.priority,
+    task.subtasks,
+  ])
 })

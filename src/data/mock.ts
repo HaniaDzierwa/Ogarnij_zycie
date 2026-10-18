@@ -2,7 +2,7 @@
 // Daty liczone względem „dziś” tak, jak w projekcie względem piątku 9 października 2026.
 
 import { builtInEventTypes, defaultCategories, type Priority } from '../theme'
-import { addDays, type DateKey } from './dates.ts'
+import { addDays, stamp, type DateKey } from './dates.ts'
 import type {
   CalendarEvent,
   Category,
@@ -39,76 +39,96 @@ export const mockEventTypes: EventType[] = builtInEventTypes.map((t) => ({
   system: t.system,
 }))
 
-type TaskSeed = [
-  title: string,
-  categoryId: string,
-  priority: Priority,
-  /** Dni od „dziś” (null = bez terminu). */
-  dueIn: number | null,
-  done: boolean,
-  subtasks?: [string, boolean][],
-]
+type TaskSeed = {
+  title: string
+  cat: string
+  prio: Priority
+  /** Dni od „dziś” (brak = bez terminu). */
+  dueIn?: number
+  subs?: [string, boolean][]
+  /** Ogarnięte: [dni temu, 'GG:MM', kto]. */
+  done?: [number, string, string]
+  /** W koszu: [dni temu, kto]. */
+  deleted?: [number, string]
+  by?: string
+}
 
+// Jak w Zadania.dc.html i Kosz.dc.html (projekt z 9 paź).
 const taskSeed: TaskSeed[] = [
-  [
-    'Prezent dla mamy na imieniny',
-    'shop',
-    'high',
-    7,
-    false,
-    [
+  {
+    title: 'Prezent dla mamy na imieniny',
+    cat: 'shop',
+    prio: 'high',
+    dueIn: 7,
+    subs: [
       ['Wybrać prezent', true],
       ['Kupić kartkę', true],
       ['Zapakować', false],
       ['Odebrać kwiaty w piątek rano', false],
     ],
-  ],
-  ['Baterie AA do pilota', 'shop', 'low', null, false],
-  ['Mleko i chleb', 'shop', 'mid', 0, true],
-  ['Zadzwonić do hydraulika – cieknący kran', 'home', 'high', 0, false],
-  ['Wymienić filtr w okapie', 'home', 'low', null, false],
-  ['Oddać ubrania do PCK', 'home', 'low', null, false],
-  ['Wykupić receptę', 'health', 'high', 1, false],
-  ['Umówić wizytę u dentysty', 'health', 'mid', null, false],
-  ['Zapłacić rachunek za prąd', 'office', 'high', 6, false],
-  [
-    'Wymienić dowód osobisty',
-    'office',
-    'mid',
-    null,
-    false,
-    [
+  },
+  { title: 'Baterie AA do pilota', cat: 'shop', prio: 'low' },
+  { title: 'Mleko i chleb', cat: 'shop', prio: 'mid', dueIn: 0, done: [0, '09:10', 'hania'] },
+  { title: 'Zadzwonić do hydraulika – cieknący kran', cat: 'home', prio: 'high', dueIn: 0 },
+  { title: 'Wymienić filtr w okapie', cat: 'home', prio: 'low' },
+  { title: 'Oddać ubrania do PCK', cat: 'home', prio: 'low' },
+  { title: 'Wykupić receptę', cat: 'health', prio: 'high', dueIn: 1 },
+  { title: 'Umówić wizytę u dentysty', cat: 'health', prio: 'mid' },
+  { title: 'Zapłacić rachunek za prąd', cat: 'office', prio: 'high', dueIn: 6 },
+  {
+    title: 'Wymienić dowód osobisty',
+    cat: 'office',
+    prio: 'mid',
+    subs: [
       ['Zrobić zdjęcie do dowodu', true],
       ['Złożyć wniosek w urzędzie', false],
       ['Odebrać nowy dowód', false],
     ],
-  ],
-  [
-    'Przegląd techniczny',
-    'car',
-    'mid',
-    21,
-    false,
-    [
+  },
+  {
+    title: 'Przegląd techniczny',
+    cat: 'car',
+    prio: 'mid',
+    dueIn: 21,
+    subs: [
       ['Znaleźć stację kontroli', false],
       ['Umówić termin', false],
     ],
-  ],
-  ['Założyć opony zimowe', 'car', 'mid', null, true],
-  ['Zebranie w szkole', 'family', 'mid', 4, false],
-  ['Bilety do kina na sobotę', 'family', 'low', null, false],
-  ['Wynieść śmieci', 'home', 'low', 0, true],
+  },
+  { title: 'Założyć opony zimowe', cat: 'car', prio: 'mid', done: [0, '11:40', 'krzys'] },
+  { title: 'Zebranie w szkole', cat: 'family', prio: 'mid', dueIn: 4, by: 'krzys' },
+  { title: 'Bilety do kina na sobotę', cat: 'family', prio: 'low' },
+  { title: 'Wynieść śmieci', cat: 'home', prio: 'low', dueIn: 0, done: [0, '08:05', 'hania'] },
+  { title: 'Odebrać pranie z pralni', cat: 'home', prio: 'low', done: [1, '18:20', 'krzys'] },
+  { title: 'Opłacić przedszkole', cat: 'office', prio: 'high', done: [3, '10:15', 'hania'] },
+  { title: 'Wymienić żarówkę w łazience', cat: 'home', prio: 'low', done: [12, '19:00', 'krzys'] },
+  {
+    title: 'Oddać książki do biblioteki',
+    cat: 'family',
+    prio: 'low',
+    done: [40, '16:30', 'hania'],
+  },
+  // Kosz
+  { title: 'Kupić nowy czajnik', cat: 'shop', prio: 'mid', deleted: [2, 'hania'] },
+  { title: 'Umówić przegląd pieca', cat: 'home', prio: 'mid', deleted: [9, 'krzys'] },
+  { title: 'Odnowić kartę biblioteczną', cat: 'family', prio: 'low', deleted: [27, 'hania'] },
 ]
 
 export function mockTasks(today: DateKey): Task[] {
-  return taskSeed.map(([title, categoryId, priority, dueIn, done, subs = []], i) => ({
+  return taskSeed.map((s, i) => ({
     id: `t${i + 1}`,
-    title,
-    categoryId,
-    priority,
-    due: dueIn === null ? null : addDays(today, dueIn),
-    done,
-    subtasks: subs.map(([t, d], j) => ({ id: `t${i + 1}s${j + 1}`, title: t, done: d })),
+    title: s.title,
+    categoryId: s.cat,
+    priority: s.prio,
+    due: s.dueIn === undefined ? null : addDays(today, s.dueIn),
+    done: !!s.done,
+    subtasks: (s.subs ?? []).map(([t, d], j) => ({ id: `t${i + 1}s${j + 1}`, title: t, done: d })),
+    createdBy: s.by ?? 'hania',
+    doneAt: s.done ? stamp(addDays(today, -s.done[0]), s.done[1]) : null,
+    doneBy: s.done ? s.done[2] : null,
+    deleted: !!s.deleted,
+    deletedAt: s.deleted ? stamp(addDays(today, -s.deleted[0]), '12:00') : null,
+    deletedBy: s.deleted ? s.deleted[1] : null,
   }))
 }
 
@@ -148,12 +168,17 @@ export function mockEvents(today: DateKey): CalendarEvent[] {
 
 export const mockUserName = 'Hania'
 
+/** Zalogowany domownik w mockupie. */
+export const mockCurrentUid = 'hania'
+
 export const mockMembers: Member[] = [
   {
     uid: 'hania',
     name: 'Hania',
     role: 'owner',
     scope: { all: true, categoryIds: [], calendar: true },
+    verbForm: 'f',
+    nameGenitive: 'Hani',
     lastSeen: 'TERAZ',
   },
   {
@@ -161,6 +186,8 @@ export const mockMembers: Member[] = [
     name: 'Krzyś',
     role: 'member',
     scope: { all: true, categoryIds: [], calendar: true },
+    verbForm: 'm',
+    nameGenitive: 'Krzysia',
     lastSeen: 'DZIŚ 13:05',
   },
 ]

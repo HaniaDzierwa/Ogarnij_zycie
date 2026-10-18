@@ -3,7 +3,14 @@
 import { addDays, diffDays, weekStart, type DateKey } from './dates.ts'
 import type { CalendarEvent, Task } from './types.ts'
 
-export const openTasks = (tasks: Task[]) => tasks.filter((t) => !t.done)
+/** Zadania poza koszem. */
+export const liveTasks = (tasks: Task[]) => tasks.filter((t) => !t.deleted)
+
+export const openTasks = (tasks: Task[]) => liveTasks(tasks).filter((t) => !t.done)
+
+/** Ogarnięte danego dnia (wg doneAt). */
+export const doneOn = (tasks: Task[], day: string) =>
+  liveTasks(tasks).filter((t) => t.done && t.doneAt?.startsWith(day))
 
 export const urgentOpen = (tasks: Task[]) => openTasks(tasks).filter((t) => t.priority === 'high')
 

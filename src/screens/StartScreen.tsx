@@ -19,6 +19,7 @@ import { useStore } from '../data/MockStore.tsx'
 import { plural } from '../data/plural.ts'
 import {
   calendarItems,
+  doneOn,
   openTasks,
   upcomingEvents,
   urgentOpen,
@@ -40,7 +41,8 @@ export function StartScreen() {
   const open = openTasks(tasks)
   const urgent = urgentOpen(tasks)
   const urgentToday = urgent.filter((t) => t.due && diffDays(today, t.due) <= 0)
-  const done = tasks.filter((t) => t.done)
+  // „Ogarnięte dziś” = ogarnięte dzisiaj (wg doneAt) / (te + otwarte pilne) – wrócimy do tego w etapie 6
+  const done = doneOn(tasks, today)
   const items = calendarItems(tasks, events, categoryName, (t) => priorities[t.priority].label)
   const week = weekDays(today)
   const weekLeft = items.filter((i) => i.date >= today && i.date <= week[6])

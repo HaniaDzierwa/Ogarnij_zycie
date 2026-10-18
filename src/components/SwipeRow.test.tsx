@@ -18,64 +18,80 @@ beforeAll(() => {
 afterEach(cleanup)
 
 function setup() {
-  const onSwipeLeft = vi.fn()
-  const onSwipeRight = vi.fn()
+  const onRight = vi.fn()
+  const onLeft = vi.fn()
   const onTap = vi.fn()
   render(
     <SwipeRow
-      onSwipeLeft={onSwipeLeft}
-      onSwipeRight={onSwipeRight}
-      editLabel="Edytuj"
-      deleteLabel="Usuń"
+      right={{
+        label: 'Ogarnij',
+        icon: null,
+        bg: '#1F3D2E',
+        fg: '#E8C98E',
+        srLabel: 'Ogarnij zadanie',
+        run: onRight,
+      }}
+      left={{
+        label: 'Usuń',
+        icon: null,
+        bg: '#A4492F',
+        fg: '#FFFFFF',
+        srLabel: 'Do kosza',
+        run: onLeft,
+      }}
     >
       <button type="button" onClick={onTap}>
         Zadanie
       </button>
     </SwipeRow>,
   )
-  const row = screen.getByRole('button', { name: 'Zadanie' }).closest('div')!.parentElement!
-  const swipe = (to: number) => {
-    fireEvent.pointerDown(row, { clientX: 200, clientY: 10, pointerId: 1 })
-    fireEvent.pointerMove(row, { clientX: 200 + to / 2, clientY: 10, pointerId: 1 })
-    fireEvent.pointerMove(row, { clientX: 200 + to, clientY: 10, pointerId: 1 })
+  const front = screen.getByRole('button', { name: 'Zadanie' }).parentElement!
+  const move = (to: number) => {
+    fireEvent.pointerDown(front, { clientX: 200, clientY: 10, pointerId: 1 })
+    fireEvent.pointerMove(front, { clientX: 200 + to / 2, clientY: 10, pointerId: 1 })
+    fireEvent.pointerMove(front, { clientX: 200 + to, clientY: 10, pointerId: 1 })
   }
-  const release = (to: number) =>
-    fireEvent.pointerUp(row, { clientX: 200 + to, clientY: 10, pointerId: 1 })
-  return { onSwipeLeft, onSwipeRight, onTap, swipe, release }
+  const release = () => fireEvent.pointerUp(front, { pointerId: 1 })
+  return { onRight, onLeft, onTap, move, release }
 }
 
-test('w lewo: podpowiedź „Edytuj” → „Puść, aby edytować” → edycja', () => {
+test('w prawo: odsłania „Ogarnij”, po progu 90 px – ogarnia', () => {
   const s = setup()
-  s.swipe(-40)
-  expect(screen.getByText('Edytuj', { selector: 'span' })).toBeDefined()
-  s.swipe(-160)
-  expect(screen.getByText(/Puść, abys*edytować/)).toBeDefined()
-  s.release(-160)
-  expect(s.onSwipeLeft).toHaveBeenCalledOnce()
-  expect(s.onSwipeRight).not.toHaveBeenCalled()
+  s.move(100)
+  expect(screen.getByText('Ogarnij')).toBeDefined()
+  s.release()
+  expect(s.onRight).toHaveBeenCalledOnce()
+  expect(s.onLeft).not.toHaveBeenCalled()
 })
 
-test('w prawo: podpowiedź „Puść, aby usunąć” → usunięcie', () => {
+test('w lewo: odsłania „Usuń”, po progu – do kosza', () => {
   const s = setup()
-  s.swipe(160)
-  expect(screen.getByText(/Puść, abys*usunąć/)).toBeDefined()
-  s.release(160)
-  expect(s.onSwipeRight).toHaveBeenCalledOnce()
+  s.move(-100)
+  expect(screen.getByText('Usuń')).toBeDefined()
+  s.release()
+  expect(s.onLeft).toHaveBeenCalledOnce()
 })
 
 test('za krótki gest wraca bez skutku', () => {
   const s = setup()
-  s.swipe(50)
-  s.release(50)
-  expect(s.onSwipeLeft).not.toHaveBeenCalled()
-  expect(s.onSwipeRight).not.toHaveBeenCalled()
+  s.move(60)
+  s.release()
+  expect(s.onRight).not.toHaveBeenCalled()
+  expect(screen.queryByText('Ogarnij')).toBeNull()
 })
 
 test('ruch w pionie (przewijanie) nie jest gestem', () => {
   const s = setup()
-  const row = screen.getByRole('button', { name: 'Zadanie' }).closest('div')!.parentElement!
-  fireEvent.pointerDown(row, { clientX: 200, clientY: 10, pointerId: 1 })
-  fireEvent.pointerMove(row, { clientX: 260, clientY: 200, pointerId: 1 })
-  fireEvent.pointerUp(row, { clientX: 260, clientY: 200, pointerId: 1 })
-  expect(s.onSwipeRight).not.toHaveBeenCalled()
+  const front = screen.getByRole('button', { name: 'Zadanie' }).parentElement!
+  fireEvent.pointerDown(front, { clientX: 200, clientY: 10, pointerId: 1 })
+  fireEvent.pointerMove(front, { clientX: 230, clientY: 200, pointerId: 1 })
+  fireEvent.pointerMove(front, { clientX: 330, clientY: 210, pointerId: 1 })
+  fireEvent.pointerUp(front, { pointerId: 1 })
+  expect(s.onRight).not.toHaveBeenCalled()
+})
+
+test('ukryte przyciski dla czytników ekranu', () => {
+  const s = setup()
+  fireEvent.click(screen.getByRole('button', { name: 'Do kosza' }))
+  expect(s.onLeft).toHaveBeenCalledOnce()
 })

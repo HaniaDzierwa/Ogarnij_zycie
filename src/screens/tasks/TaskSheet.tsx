@@ -10,16 +10,14 @@ const PRESETS = ['Bez terminu', 'Dziś', 'Jutro', 'W tym tygodniu'] as const
 type Preset = (typeof PRESETS)[number]
 type DueChoice = Preset | 'Inna data'
 
+/** Nowe zadanie z formularza (resztę pól – kto, kiedy – uzupełnia ekran). */
+export type TaskDraft = Pick<Task, 'title' | 'categoryId' | 'priority' | 'due' | 'subtasks'>
+
 function presetDate(p: Preset, today: DateKey): DateKey | null {
   if (p === 'Dziś') return today
   if (p === 'Jutro') return addDays(today, 1)
   if (p === 'W tym tygodniu') return addDays(weekStart(today), 6)
   return null
-}
-
-/** Który chip terminu zaznaczyć dla istniejącej daty. */
-function choiceFor(due: DateKey | null, today: DateKey): DueChoice {
-  return PRESETS.find((p) => presetDate(p, today) === due) ?? 'Inna data'
 }
 
 type Props = {
@@ -28,27 +26,20 @@ type Props = {
   today: DateKey
   /** Zwraca id nowej kategorii. */
   onAddCategory: (name: string, color: string) => string
-  /** Zadanie do edycji; brak = nowe zadanie. */
-  task?: Task
-  onSave: (task: Omit<Task, 'id'>) => void
+  onSave: (task: TaskDraft) => void
 }
 
 /**
- * Arkusz „Nowe zadanie” / „Edytuj zadanie”: tytuł, kategoria, priorytet, kroki, termin.
+ * Arkusz „Nowe zadanie”: tytuł, kategoria, priorytet, kroki, termin („Inna data” – kalendarz telefonu).
  * Otwierany warunkowo – stan formularza startuje od nowa przy każdym otwarciu.
  */
-export function TaskSheet({ onClose, categories, today, onAddCategory, task, onSave }: Props) {
-  const editing = task !== undefined
-  const [title, setTitle] = useState(task?.title ?? '')
-  const [categoryId, setCategoryId] = useState<string | null>(
-    editing ? task.categoryId : (categories[0]?.id ?? null),
-  )
-  const [priority, setPriority] = useState<Priority>(task?.priority ?? 'mid')
-  const [choice, setChoice] = useState<DueChoice>(
-    editing ? choiceFor(task.due, today) : 'Bez terminu',
-  )
-  const [customDate, setCustomDate] = useState<DateKey>(task?.due ?? addDays(today, 7))
-  const [steps, setSteps] = useState<Subtask[]>(task?.subtasks ?? [])
+export function TaskSheet({ onClose, categories, today, onAddCategory, onSave }: Props) {
+  const [title, setTitle] = useState('')
+  const [categoryId, setCategoryId] = useState<string | null>(categories[0]?.id ?? null)
+  const [priority, setPriority] = useState<Priority>('mid')
+  const [choice, setChoice] = useState<DueChoice>('Bez terminu')
+  const [customDate, setCustomDate] = useState<DateKey>(addDays(today, 7))
+  const [steps, setSteps] = useState<Subtask[]>([])
   const [step, setStep] = useState('')
   const [addingCategory, setAddingCategory] = useState(false)
 
@@ -63,14 +54,13 @@ export function TaskSheet({ onClose, categories, today, onAddCategory, task, onS
   const submit = () => {
     const t = title.trim()
     if (!t) return
-    const done = steps.length > 0 ? steps.every((s) => s.done) : editing ? task.done : false
-    onSave({ title: t, categoryId, priority, due, done, subtasks: steps })
+    onSave({ title: t, categoryId, priority, due, subtasks: steps })
   }
 
   return (
-    <Sheet open onClose={onClose} label={editing ? 'Edytuj zadanie' : 'Nowe zadanie'}>
+    <Sheet open onClose={onClose} label="Nowe zadanie">
       <span style={{ fontFamily: fonts.serif, fontSize: 28, fontWeight: 500 }}>
-        {editing ? 'Edytuj' : 'Nowe'} <em style={{ color: colors.brass700 }}>zadanie</em>
+        Nowe <em style={{ color: colors.brass700 }}>zadanie</em>
       </span>
       <Field
         id="tytul"
@@ -293,7 +283,7 @@ export function TaskSheet({ onClose, categories, today, onAddCategory, task, onS
         )}
       </Group>
 
-      <PrimaryButton onClick={submit}>{editing ? 'Zapisz zmiany' : 'Dodaj zadanie'}</PrimaryButton>
+      <PrimaryButton onClick={submit}>Dodaj zadanie</PrimaryButton>
     </Sheet>
   )
 }
