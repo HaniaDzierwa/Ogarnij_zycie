@@ -7,28 +7,54 @@ import { Dot, Screen, Sheet } from '../../components/ui.tsx'
 import { TrashIcon, UndoIcon } from '../../components/icons.tsx'
 import { useStore } from '../../data/MockStore.tsx'
 import { plural } from '../../data/plural.ts'
+import { MONTHS_SHORT, parseKey } from '../../data/dates.ts'
+import { restoreEvent } from '../../data/eventOps.ts'
 import { restoreFromTrash } from '../../data/taskOps.ts'
 import { colors, fonts, noCategory, priorities, shadows } from '../../theme'
-import { trashItems, TRASH_DAYS } from './tasksView.ts'
+import { trashCountLabel, trashItems, trashWhat, TRASH_DAYS, type TrashItem } from './tasksView.ts'
 
-const zadan = (n: number) => `${n} ${plural(n, ['zadanie', 'zadania', 'zadań'])}`
 const dni = (n: number) => (n === 1 ? '1 dzień' : `${n} dni`)
 
-/** 3a Kosz (Kosz.dc.html): usunięte zadania czekają 30 dni na przywrócenie. */
+/** 3a Kosz (Kosz.dc.html): usunięte zadania i wydarzenia czekają 30 dni na przywrócenie. */
 export function TrashScreen() {
   const store = useStore()
-  const { tasks, today, categories, members, currentUid } = store
+  const { tasks, events, eventTypes, today, categories, members, currentUid } = store
   const [confirm, setConfirm] = useState(false)
-  const items = trashItems(tasks, today)
+  const items = trashItems(tasks, events, today)
   const n = items.length
 
   const others = members.filter((m) => m.uid !== currentUid)
   const alsoFor =
     others.length === 1
-      ? ` – zadania znikną też u ${others[0].nameGenitive}`
+      ? ` – ${trashWhat(items)} znikną też u ${others[0].nameGenitive}`
       : others.length > 1
-        ? ' – zadania znikną też u pozostałych domowników'
+        ? ` – ${trashWhat(items)} znikną też u pozostałych domowników`
         : ''
+  // „jest” / „są” wg pierwszej liczby w zdaniu (zadania stoją pierwsze): „są 3 zadania i 1 wydarzenie”
+  const tasksIn = items.filter((i) => i.kind === 'task').length
+  const first = tasksIn || n
+
+  /** Kropka i nazwa: kategoria zadania albo rodzaj wydarzenia z datą. */
+  const origin = (i: TrashItem) => {
+    if (i.kind === 'task') {
+      const cat = categories.find((c) => c.id === i.task.categoryId) ?? noCategory
+      return { color: cat.color, label: cat.name.toUpperCase() }
+    }
+    const type = eventTypes.find((t) => t.id === i.event.typeId) ?? eventTypes[0]
+    const d = parseKey(i.event.date)
+    return {
+      color: type.fg,
+      label: `${type.name.toUpperCase()} · ${d.getDate()} ${MONTHS_SHORT[d.getMonth()]}`,
+    }
+  }
+  const restore = (i: TrashItem) =>
+    i.kind === 'task'
+      ? store.changeTasks(`Przywrócono do „Do zrobienia”: ${i.title}`, (list) =>
+          list.map((t) => (t.id === i.id ? restoreFromTrash(t) : t)),
+        )
+      : store.changeEvents(`Przywrócono do kalendarza: ${i.title}`, (list) =>
+          list.map((e) => (e.id === i.id ? restoreEvent(e) : e)),
+        )
 
   return (
     <Screen gap={18}>
@@ -53,13 +79,13 @@ export function TrashScreen() {
         }
         aside={
           <span style={{ fontSize: 12, fontWeight: 700, color: colors.onDarkMuted3 }}>
-            {n ? zadan(n) : 'pusto'}
+            {n ? trashCountLabel(items, ' · ') : 'pusto'}
           </span>
         }
       />
       <span style={{ padding: '0 4px', fontSize: 14, lineHeight: 1.45, color: colors.muted2 }}>
-        Usunięte zadania czekają tu {TRASH_DAYS} dni. Możesz je przywrócić – potem znikną same, u
-        wszystkich domowników.
+        Usunięte zadania i wydarzenia czekają tu {TRASH_DAYS} dni. Możesz je przywrócić – potem
+        znikną same, u wszystkich domowników.
       </span>
 
       {n === 0 ? (
@@ -114,15 +140,16 @@ export function TrashScreen() {
               overflow: 'hidden',
             }}
           >
-            {items.map(({ task, ago, left }) => {
-              const cat = categories.find((c) => c.id === task.categoryId) ?? noCategory
-              const by = members.find((m) => m.uid === task.deletedBy)
+            {items.map((item) => {
+              const { ago, left } = item
+              const from = origin(item)
+              const by = members.find((m) => m.uid === item.deletedBy)
               const verb = by?.verbForm === 'm' ? 'USUNĄŁ' : 'USUNĘŁA'
               const when =
                 ago === 0 ? 'DZIŚ' : ago === 1 ? 'WCZORAJ' : `${dni(ago).toUpperCase()} TEMU`
               return (
                 <div
-                  key={task.id}
+                  key={item.id}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -142,7 +169,7 @@ export function TrashScreen() {
                     }}
                   >
                     <span style={{ fontSize: 16, fontWeight: 700, color: colors.muted }}>
-                      {task.title}
+                      {item.title}
                     </span>
                     <span
                       style={{
@@ -155,8 +182,8 @@ export function TrashScreen() {
                         color: colors.muted,
                       }}
                     >
-                      <Dot color={cat.color} />
-                      {cat.name.toUpperCase()} · {verb} {by?.name.toUpperCase()} · {when}
+                      <Dot color={from.color} />
+                      {from.label} · {verb} {by?.name.toUpperCase()} · {when}
                     </span>
                     <span
                       style={{
@@ -171,12 +198,8 @@ export function TrashScreen() {
                   </span>
                   <button
                     type="button"
-                    aria-label={`Przywróć: ${task.title}`}
-                    onClick={() =>
-                      store.changeTasks(`Przywrócono do „Do zrobienia”: ${task.title}`, (list) =>
-                        list.map((t) => (t.id === task.id ? restoreFromTrash(t) : t)),
-                      )
-                    }
+                    aria-label={`Przywróć: ${item.title}`}
+                    onClick={() => restore(item)}
                     style={{
                       display: 'inline-flex',
                       alignItems: 'center',
@@ -228,8 +251,8 @@ export function TrashScreen() {
             Usunąć <em style={{ color: priorities.high.line }}>na zawsze?</em>
           </span>
           <span style={{ fontSize: 15, lineHeight: 1.45, color: colors.muted2 }}>
-            W koszu {n === 1 ? 'jest' : plural(n, ['jest', 'są', 'jest'])} {zadan(n)}. Tego nie da
-            się cofnąć{alsoFor}.
+            W koszu {first === 1 ? 'jest' : plural(first, ['jest', 'są', 'jest'])}{' '}
+            {trashCountLabel(items)}. Tego nie da się cofnąć{alsoFor}.
           </span>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: 8, marginTop: 4 }}>
             <button
@@ -251,6 +274,7 @@ export function TrashScreen() {
               type="button"
               onClick={() => {
                 store.setTasks((list) => list.filter((t) => !t.deleted))
+                store.setEvents((list) => list.filter((e) => !e.deleted))
                 setConfirm(false)
               }}
               style={{

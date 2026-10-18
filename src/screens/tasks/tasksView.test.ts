@@ -76,7 +76,7 @@ describe('Ogarnięte', () => {
 
 describe('Kosz', () => {
   test('3 zadania, najnowsze najpierw, „zniknie za N dni”', () => {
-    expect(trashItems(tasks, DAY).map((i) => [i.task.title, i.ago, i.left])).toEqual([
+    expect(trashItems(tasks, [], DAY).map((i) => [i.title, i.ago, i.left])).toEqual([
       ['Kupić nowy czajnik', 2, 28],
       ['Umówić przegląd pieca', 9, 21],
       ['Odnowić kartę biblioteczną', 27, 3],

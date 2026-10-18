@@ -17,6 +17,10 @@ export function deleteEvent(event: CalendarEvent, who: Who): CalendarEvent {
   return { ...event, deleted: true, deletedAt: who.at, deletedBy: who.uid }
 }
 
+export function restoreEvent(event: CalendarEvent): CalendarEvent {
+  return { ...event, deleted: false, deletedAt: null, deletedBy: null }
+}
+
 /** Cały dzień ⇄ godzina (domyślnie 18:00, jak w arkuszu nowego wydarzenia). */
 export function setAllDay(event: CalendarEvent, allDay: boolean): CalendarEvent {
   return allDay

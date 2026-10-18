@@ -113,7 +113,7 @@ export function CalendarScreen() {
 
   const removeEvent = (e: CalendarEvent) => {
     if (eventId === e.id) setEventId(null)
-    store.changeEvents(`Usunięto z kalendarza: ${e.title}`, (list) =>
+    store.changeEvents(`Przeniesiono do kosza: ${e.title}`, (list) =>
       list.map((x) => (x.id === e.id ? deleteEvent(x, store.who()) : x)),
     )
   }
@@ -398,7 +398,6 @@ export function CalendarScreen() {
               onOpen={() => (task ? setTaskId(task.id) : setEventId(e.id))}
               onDone={task && (() => taskActions.toggleDone(task))}
               onDelete={() => (task ? taskActions.trash(task) : event && removeEvent(event))}
-              deleteLabel={task ? `Przenieś do kosza: ${e.title}` : `Usuń wydarzenie: ${e.title}`}
             />
           )
         })}
@@ -594,14 +593,12 @@ function AgendaRow({
   onOpen,
   onDone,
   onDelete,
-  deleteLabel,
 }: {
   item: CalendarItem
   type: EventType
   onOpen: () => void
   onDone?: () => void
   onDelete: () => void
-  deleteLabel: string
 }) {
   return (
     <div style={{ borderRadius: 20, boxShadow: shadows.card, overflow: 'hidden' }}>
@@ -621,7 +618,7 @@ function AgendaRow({
           icon: <TrashIcon />,
           bg: priorities.high.line,
           fg: colors.white,
-          srLabel: deleteLabel,
+          srLabel: `Przenieś do kosza: ${item.title}`,
           run: onDelete,
         }}
       >

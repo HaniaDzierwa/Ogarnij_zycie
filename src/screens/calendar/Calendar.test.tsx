@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, describe, expect, test } from 'vitest'
 import { routes } from '../../app/router.tsx'
@@ -167,7 +167,7 @@ describe('edycja i usuwanie – jak w Zadaniach', () => {
     expect(screen.queryByRole('dialog')).toBeNull()
     expect(agenda().textContent).not.toContain('Kino z Krzysiem')
     expect(screen.getByRole('status').textContent).toContain(
-      'Usunięto z kalendarza: Kino z Krzysiem',
+      'Przeniesiono do kosza: Kino z Krzysiem',
     )
     fireEvent.click(screen.getByRole('button', { name: 'COFNIJ' }))
     expect(agenda().textContent).toContain('Kino z Krzysiem')
@@ -175,7 +175,7 @@ describe('edycja i usuwanie – jak w Zadaniach', () => {
 
   test('przeciągnięcie w lewo usuwa wydarzenie (też ze Startu)', () => {
     renderAt('/kalendarz?dzien=2026-10-10')
-    fireEvent.click(screen.getByRole('button', { name: 'Usuń wydarzenie: Kino z Krzysiem' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Przenieś do kosza: Kino z Krzysiem' }))
     expect(agenda().textContent).not.toContain('Kino z Krzysiem')
     fireEvent.click(screen.getByRole('link', { name: 'Start' }))
     const section = screen
@@ -200,5 +200,27 @@ describe('edycja i usuwanie – jak w Zadaniach', () => {
     expect(screen.getByRole('status').textContent).toContain(
       'Przeniesiono do kosza: Wykupić receptę',
     )
+  })
+
+  test('usunięte wydarzenie czeka w Koszu i wraca do kalendarza', async () => {
+    const router = renderAt('/kalendarz?dzien=2026-10-10')
+    fireEvent.click(screen.getByRole('button', { name: 'Przenieś do kosza: Kino z Krzysiem' }))
+    await act(() => router.navigate('/zadania/kosz'))
+    expect(screen.getByText('3 zadania · 1 wydarzenie')).toBeDefined()
+    expect(screen.getByText(/WYDARZENIE · 10 PAŹ · USUNĘŁA HANIA · DZIŚ/)).toBeDefined()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Opróżnij kosz' }))
+    expect(screen.getByRole('dialog', { name: 'Opróżnij kosz' }).textContent).toContain(
+      'W koszu są 3 zadania i 1 wydarzenie. Tego nie da się cofnąć – zadania i wydarzenia znikną też u Krzysia.',
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Anuluj' }))
+
+    fireEvent.click(screen.getByRole('button', { name: 'Przywróć: Kino z Krzysiem' }))
+    expect(screen.getByRole('status').textContent).toContain(
+      'Przywrócono do kalendarza: Kino z Krzysiem',
+    )
+    expect(screen.getByText('3 zadania')).toBeDefined()
+    await act(() => router.navigate('/kalendarz?dzien=2026-10-10'))
+    expect(agenda().textContent).toContain('Kino z Krzysiem')
   })
 })

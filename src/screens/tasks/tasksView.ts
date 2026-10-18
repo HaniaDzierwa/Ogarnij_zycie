@@ -2,7 +2,8 @@
 
 import { noCategory, priorities, type Priority } from '../../theme'
 import { diffDays, stampDay, type DateKey } from '../../data/dates.ts'
-import type { Category, Task } from '../../data/types.ts'
+import { plural } from '../../data/plural.ts'
+import type { CalendarEvent, Category, Task } from '../../data/types.ts'
 
 export type Show = 'all' | Priority
 export type GroupBy = 'cat' | 'prio'
@@ -136,15 +137,65 @@ export function clearCandidates(tasks: Task[], today: DateKey, option: ClearOpti
 
 export const TRASH_DAYS = 30
 
-/** Kosz: najnowsze usunięcia najpierw; ile dni temu i za ile zniknie. */
-export function trashItems(tasks: Task[], today: DateKey) {
-  return tasks
-    .filter((t) => t.deleted)
-    .sort((a, b) => (b.deletedAt ?? '').localeCompare(a.deletedAt ?? ''))
-    .map((t) => {
-      const ago = t.deletedAt ? diffDays(stampDay(t.deletedAt), today) : 0
-      return { task: t, ago, left: Math.max(0, TRASH_DAYS - ago) }
-    })
+/** Wpis w koszu: zadanie albo wydarzenie z kalendarza. */
+export type TrashItem = {
+  id: string
+  title: string
+  deletedBy: string | null
+  /** Ile dni temu usunięte. */
+  ago: number
+  /** Za ile dni zniknie na zawsze. */
+  left: number
+} & ({ kind: 'task'; task: Task } | { kind: 'event'; event: CalendarEvent })
+
+/** Kosz: zadania i wydarzenia, najnowsze usunięcia najpierw; ile dni temu i za ile zniknie. */
+export function trashItems(tasks: Task[], events: CalendarEvent[], today: DateKey): TrashItem[] {
+  const timing = (deletedAt: string | null) => {
+    const ago = deletedAt ? diffDays(stampDay(deletedAt), today) : 0
+    return { ago, left: Math.max(0, TRASH_DAYS - ago) }
+  }
+  const items: (TrashItem & { at: string })[] = [
+    ...tasks
+      .filter((t) => t.deleted)
+      .map((t) => ({
+        kind: 'task' as const,
+        task: t,
+        id: t.id,
+        title: t.title,
+        deletedBy: t.deletedBy,
+        at: t.deletedAt ?? '',
+        ...timing(t.deletedAt),
+      })),
+    ...events
+      .filter((e) => e.deleted)
+      .map((e) => ({
+        kind: 'event' as const,
+        event: e,
+        id: e.id,
+        title: e.title,
+        deletedBy: e.deletedBy,
+        at: e.deletedAt ?? '',
+        ...timing(e.deletedAt),
+      })),
+  ]
+  return items.sort((a, b) => b.at.localeCompare(a.at))
+}
+
+const zadania = (n: number) => `${n} ${plural(n, ['zadanie', 'zadania', 'zadań'])}`
+const wydarzenia = (n: number) => `${n} ${plural(n, ['wydarzenie', 'wydarzenia', 'wydarzeń'])}`
+
+/** „3 zadania i 1 wydarzenie”, „3 zadania”, „1 wydarzenie”; pusto, gdy nic. */
+export function trashCountLabel(items: TrashItem[], join = ' i '): string {
+  const t = items.filter((i) => i.kind === 'task').length
+  const e = items.length - t
+  return [t && zadania(t), e && wydarzenia(e)].filter(Boolean).join(join)
+}
+
+/** „zadania”, „wydarzenia”, „zadania i wydarzenia” – co jest w koszu. */
+export function trashWhat(items: TrashItem[]): string {
+  const t = items.some((i) => i.kind === 'task')
+  const e = items.some((i) => i.kind === 'event')
+  return t && e ? 'zadania i wydarzenia' : e ? 'wydarzenia' : 'zadania'
 }
 
 export function emptyLabel(show: Show): string {

@@ -67,7 +67,8 @@ export function TasksScreen() {
   const cats = categoriesWithNone(categories, tasks)
   const view = tasksView(tasks, categories, { show, category, groupBy })
   const done = doneGroups(tasks, today)
-  const trashCount = tasks.filter((t) => t.deleted).length
+  const trashCount =
+    tasks.filter((t) => t.deleted).length + store.events.filter((e) => e.deleted).length
   const categoryName = (t: Task) => cats.find((c) => c.id === categoryKey(t))?.name ?? ''
   const activeCount = (show !== 'all' ? 1 : 0) + (category !== 'all' ? 1 : 0)
   const allCollapsed = view.groups.length > 0 && view.groups.every((g) => collapsed[g.key])
