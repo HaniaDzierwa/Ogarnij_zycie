@@ -179,3 +179,14 @@ export function EventTypeIcon({
     </svg>
   )
 }
+
+export function UsersIcon({ size = 20 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" {...stroke} aria-hidden="true">
+      <circle cx="9" cy="8" r="3.5" />
+      <path d="M3 20c.5-3.5 3-5.5 6-5.5s5.5 2 6 5.5" />
+      <path d="M16 4.5a3.5 3.5 0 0 1 0 7" />
+      <path d="M18 14.7c1.7.7 2.8 2.5 3 5.3" />
+    </svg>
+  )
+}

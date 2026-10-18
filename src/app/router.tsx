@@ -7,6 +7,7 @@ import { FirstRunScreen } from '../screens/FirstRunScreen.tsx'
 import { LoadingScreen } from '../screens/LoadingScreen.tsx'
 import { MapScreen } from '../screens/MapScreen.tsx'
 import { PlaceholderScreen } from '../screens/PlaceholderScreen.tsx'
+import { SettingsScreen } from '../screens/settings/SettingsScreen.tsx'
 import { StartScreen } from '../screens/StartScreen.tsx'
 import { TasksRoute } from '../screens/tasks/TasksScreen.tsx'
 import { TrashScreen } from '../screens/tasks/TrashScreen.tsx'
@@ -23,6 +24,7 @@ const built: Partial<Record<ScreenId, ReactNode>> = {
   zadania: <TasksRoute />,
   kosz: <TrashScreen />,
   kalendarz: <CalendarRoute />,
+  ustawienia: <SettingsScreen />,
 }
 
 export const routes: RouteObject[] = [

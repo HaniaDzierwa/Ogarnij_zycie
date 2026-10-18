@@ -21,6 +21,7 @@ import {
 import type { Who } from './taskOps.ts'
 import type {
   CalendarEvent,
+  CleanupDays,
   Category,
   EventType,
   Member,
@@ -44,6 +45,8 @@ type Store = {
   eventTypes: EventType[]
   members: Member[]
   notifications: NotificationSettings
+  /** Sprzątanie ogarniętych: po 7 / 30 dniach, null = nigdy. */
+  cleanupDays: CleanupDays
   toast: Toast | null
   /** Kto i teraz – do oznaczania zmian. */
   who: () => Who
@@ -58,6 +61,7 @@ type Store = {
   setEvents: (update: (events: CalendarEvent[]) => CalendarEvent[]) => void
   setEventTypes: (update: (types: EventType[]) => EventType[]) => void
   setNotifications: (update: (n: NotificationSettings) => NotificationSettings) => void
+  setCleanupDays: (days: CleanupDays) => void
 }
 
 const StoreContext = createContext<Store | null>(null)
@@ -70,6 +74,7 @@ export function MockStoreProvider({ children, today }: { children: ReactNode; to
   const [events, setEvents] = useState(() => mockEvents(day))
   const [eventTypes, setEventTypes] = useState(mockEventTypes)
   const [notifications, setNotifications] = useState(mockNotifications)
+  const [cleanupDays, setCleanupDays] = useState<CleanupDays>(30)
   const [toast, setToast] = useState<Toast | null>(null)
   const toastId = useRef(0)
 
@@ -116,6 +121,7 @@ export function MockStoreProvider({ children, today }: { children: ReactNode; to
       eventTypes,
       members: mockMembers,
       notifications,
+      cleanupDays,
       toast,
       who,
       setUserName,
@@ -127,6 +133,7 @@ export function MockStoreProvider({ children, today }: { children: ReactNode; to
       setEvents,
       setEventTypes,
       setNotifications,
+      setCleanupDays,
     }),
     [
       day,
@@ -136,6 +143,7 @@ export function MockStoreProvider({ children, today }: { children: ReactNode; to
       events,
       eventTypes,
       notifications,
+      cleanupDays,
       toast,
       who,
       changeTasks,

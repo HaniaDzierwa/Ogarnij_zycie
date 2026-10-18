@@ -78,3 +78,6 @@ export type NotificationSettings = {
   morning: boolean
   house: boolean
 }
+
+/** Sprzątanie ogarniętych (Ustawienia → Porządki): po 7 / 30 dniach, null = nigdy. */
+export type CleanupDays = 7 | 30 | null
