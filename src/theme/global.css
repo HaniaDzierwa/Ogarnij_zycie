@@ -239,3 +239,21 @@ button {
     animation: none;
   }
 }
+
+/* Zaproś domownika: „Czekam na drugi telefon…” – pulsująca kropka. */
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(63, 138, 94, 0.5);
+  }
+  100% {
+    box-shadow: 0 0 0 10px rgba(63, 138, 94, 0);
+  }
+}
+.pulse {
+  animation: pulse 1.6s ease-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .pulse {
+    animation: none;
+  }
+}

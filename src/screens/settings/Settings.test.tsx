@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import { routes } from '../../app/router.tsx'
@@ -91,4 +91,42 @@ test('plakietka OFFLINE tylko bez internetu; online – nic', () => {
   renderAt('/ustawienia')
   expect(screen.getByRole('status', { name: /Offline/ }).textContent).toBe('OFFLINE')
   spy.mockRestore()
+})
+
+test('Zaproś: kod 6 cyfr, ważność 10 min, teksty o Firebase, zakres „Wybrane”', () => {
+  renderAt('/ustawienia/domownicy/zapros')
+  expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Zaproś domownika')
+  expect(screen.getByText('JEDNORAZOWY KOD')).toBeDefined()
+  const code = screen.getByTestId('kod').textContent!
+  expect(code).toMatch(/^\d{3} \d{3}$/)
+  expect(screen.getByText('10:00')).toBeDefined()
+  expect(screen.getByText(/Kod działa raz i wygasa po 10 minutach/)).toBeDefined()
+  expect(screen.getByText(/otwiera link – i gotowe/)).toBeDefined()
+  expect(screen.queryByText(/Wi‑Fi/)).toBeNull()
+  expect(screen.getByRole('button', { name: /Wyślij link wiadomością/ })).toBeDefined()
+
+  fireEvent.click(screen.getByRole('radio', { name: 'Wybrane' }))
+  expect(screen.getByRole('button', { name: 'Kalendarz' }).getAttribute('aria-pressed')).toBe(
+    'true',
+  )
+  fireEvent.click(screen.getByRole('button', { name: 'Zdrowie' }))
+  expect(screen.getByRole('button', { name: 'Zdrowie' }).getAttribute('aria-pressed')).toBe('true')
+})
+
+test('Zaproś: po 10 minutach kod wygasa, „Nowy kod” daje kolejne 10 minut', () => {
+  vi.useFakeTimers({ toFake: ['Date', 'setInterval', 'clearInterval'] })
+  renderAt('/ustawienia/domownicy/zapros')
+  act(() => vi.advanceTimersByTime(10 * 60 * 1000 + 1000))
+  expect(screen.getByText('Kod wygasł')).toBeDefined()
+  fireEvent.click(screen.getByRole('button', { name: 'NOWY KOD' }))
+  expect(screen.getByText('10:00')).toBeDefined()
+  vi.useRealTimers()
+})
+
+test('Zaproś: stan „Ola dołączyła” (podgląd ?etap=dolaczyla), „Gotowe” → Domownicy', () => {
+  const router = renderAt('/ustawienia/domownicy/zapros?etap=dolaczyla')
+  expect(screen.getByText(/Zmiany pojawią się u Was w kilka sekund/)).toBeDefined()
+  expect(screen.getByText('WSZYSTKIE KATEGORIE I KALENDARZ')).toBeDefined()
+  fireEvent.click(screen.getByRole('link', { name: /Gotowe/ }))
+  expect(router.state.location.pathname).toBe('/ustawienia/domownicy')
 })

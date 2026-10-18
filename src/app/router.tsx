@@ -8,6 +8,7 @@ import { LoadingScreen } from '../screens/LoadingScreen.tsx'
 import { MapScreen } from '../screens/MapScreen.tsx'
 import { PlaceholderScreen } from '../screens/PlaceholderScreen.tsx'
 import { SettingsScreen } from '../screens/settings/SettingsScreen.tsx'
+import { InviteScreen } from '../screens/settings/InviteScreen.tsx'
 import { MembersScreen } from '../screens/settings/MembersScreen.tsx'
 import { StartScreen } from '../screens/StartScreen.tsx'
 import { TasksRoute } from '../screens/tasks/TasksScreen.tsx'
@@ -27,6 +28,7 @@ const built: Partial<Record<ScreenId, ReactNode>> = {
   kalendarz: <CalendarRoute />,
   ustawienia: <SettingsScreen />,
   domownicy: <MembersScreen />,
+  zapros: <InviteScreen />,
 }
 
 export const routes: RouteObject[] = [
