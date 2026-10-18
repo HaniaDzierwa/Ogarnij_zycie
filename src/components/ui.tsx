@@ -615,3 +615,24 @@ export function ConfirmDialog({
     </div>
   )
 }
+
+/** Przyklejony dolny pasek z przyciskami (ekrany bez menu: Zaproś, Dołącz). Ostatni w <Screen>. */
+export function BottomActions({ children }: { children: ReactNode }) {
+  return (
+    <div
+      style={{
+        position: 'sticky',
+        bottom: 0,
+        margin: 'auto -16px -32px',
+        padding: '12px 16px calc(24px + env(safe-area-inset-bottom))',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 4,
+        background: colors.cream,
+        boxShadow: `0 -1px 0 ${colors.borderSoft}`,
+      }}
+    >
+      {children}
+    </div>
+  )
+}

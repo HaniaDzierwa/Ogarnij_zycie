@@ -4,7 +4,15 @@ import { paths } from '../../app/screens.ts'
 import { Accent, Header } from '../../components/Header.tsx'
 import { CheckIcon } from '../../components/icons.tsx'
 import { Logo } from '../../components/Logo.tsx'
-import { Card, Chip, Dot, PrimaryButton, Screen, SectionLabel } from '../../components/ui.tsx'
+import {
+  BottomActions,
+  Card,
+  Chip,
+  Dot,
+  PrimaryButton,
+  Screen,
+  SectionLabel,
+} from '../../components/ui.tsx'
 import { useStore } from '../../data/MockStore.tsx'
 import { colors, fonts, shadows } from '../../theme'
 import { QR_PATH } from './qrMock.ts'
@@ -437,20 +445,7 @@ export function InviteScreen() {
         </>
       )}
 
-      <div
-        style={{
-          position: 'sticky',
-          bottom: 0,
-          margin: '0 -16px -32px',
-          padding: '12px 16px calc(24px + env(safe-area-inset-bottom))',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 4,
-          background: colors.cream,
-          boxShadow: `0 -1px 0 ${colors.borderSoft}`,
-          marginTop: 'auto',
-        }}
-      >
+      <BottomActions>
         {!joined ? (
           <>
             <PrimaryButton onClick={sendLink} disabled={expired}>
@@ -516,7 +511,7 @@ export function InviteScreen() {
             </button>
           </>
         )}
-      </div>
+      </BottomActions>
     </Screen>
   )
 }
