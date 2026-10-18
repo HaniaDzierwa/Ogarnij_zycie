@@ -19,6 +19,7 @@ Aktualny etap: **0 – Przygotowanie** (w toku)
 
 | Data | Etap | Uwaga | Kiedy | Status |
 | --- | --- | --- | --- | --- |
+| 2026-10-18 | 0 | Po założeniu konta użytkownik zostaje zalogowany na stałe (do „Wyloguj” w Ustawieniach); bez ponownego logowania przy każdym otwarciu. Firebase Auth z trwałym zapisem sesji (`browserLocalPersistence`); na iPhonie zalecane dodanie do ekranu głównego. | później (etap 2) | zapisane |
 
 ## Dziennik kroków
 
