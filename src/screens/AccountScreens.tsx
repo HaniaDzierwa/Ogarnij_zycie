@@ -514,8 +514,6 @@ function Hero() {
         <g transform="translate(0,144)">
           <path d={RIDGE_FAR} fill={colors.green800} />
           <path d={RIDGE_NEAR} fill={colors.green700} />
-          <rect x="104" y="36" width="7" height="8" rx="1.2" fill={colors.brass300} />
-          <rect x="252" y="34" width="7" height="8" rx="1.2" fill={colors.brass300} />
         </g>
       </svg>
       <div

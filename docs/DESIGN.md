@@ -90,7 +90,7 @@ Zakupy `#5E8C6A` · Dom `#B8925A` · Zdrowie `#A4492F` · Urzędy `#6E5F8C` · A
 
 ### Kształty i cienie
 
-- Nagłówek ekranu: wysokość **120 px na każdym ekranie**, promień 26, tło green-900, panorama dachów u dołu (dwie warstwy + dwa okienka brass-300).
+- Nagłówek ekranu: wysokość **120 px na każdym ekranie**, promień 26, tło green-900, panorama dachów u dołu (dwie warstwy; **bez okienek** – usunięte na prośbę Hani 2026-10-18, pogarszały czytelność; zostają tylko na animowanym ekranie ładowania).
 - Karty: promień 20–22, cień `0 6px 20px rgba(31,61,46,0.07)`.
 - Chipy: wysokość 36, promień 18; aktywny = tło green-900, tekst cream.
 - Przycisk główny: wysokość 56, promień 28, green-900, ikona w brass-300.

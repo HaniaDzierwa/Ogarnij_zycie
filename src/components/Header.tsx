@@ -140,7 +140,7 @@ export const RIDGE_FAR =
 export const RIDGE_NEAR =
   'M0 56V46L36 30L72 46V42L108 26L144 42V48L180 36L216 48V42L256 24L296 42V46L330 34L358 44V56Z'
 
-/** Panorama dachów (dwie warstwy + okienka), słońce lub księżyc. Szerokość dopasowana do ekranu. */
+/** Panorama dachów (dwie warstwy, bez okienek – uwaga Hani 2026-10-18), słońce lub księżyc. Szerokość dopasowana do ekranu. */
 export function Roofs({ tone }: { tone: HeaderTone }) {
   const day = tone === 'day'
   return (
@@ -179,12 +179,6 @@ export function Roofs({ tone }: { tone: HeaderTone }) {
       <g transform="translate(0,64)">
         <path d={RIDGE_FAR} fill={day ? dayHeader.roofsFar : colors.green800} />
         <path d={RIDGE_NEAR} fill={day ? dayHeader.roofsNear : colors.green700} />
-        {!day && (
-          <>
-            <rect x="104" y="36" width="7" height="8" rx="1.2" fill={colors.brass300} />
-            <rect x="252" y="34" width="7" height="8" rx="1.2" fill={colors.brass300} />
-          </>
-        )}
       </g>
     </svg>
   )
