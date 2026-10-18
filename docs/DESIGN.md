@@ -150,10 +150,25 @@ Zakupy `#5E8C6A` · Dom `#B8925A` · Zdrowie `#A4492F` · Urzędy `#6E5F8C` · A
 - Termin zadania (jedna zasada, 2026-10-18): dziś → **DZIŚ** (czerwona plakietka), jutro → **JUTRO**, w ciągu 7 dni → dzień i data (**WT 13 PAŹ**), dalej → **DO 30 PAŹ**.
 - „Najbliższe wydarzenia” na Starcie (2026-10-18): dwa najbliższe wydarzenia dowolnego rodzaju (bez terminów zadań).
 
-## Model danych (etap 2 – )
+## Model danych (etap 2 – `src/firebase/model.ts`)
 
-\
--  ustawia serwer (),  – zalogowany użytkownik (reguły sprawdzą, że to on).
+```
+users/{uid}                         name, houseId|null, notif{tasks,events,morning,house}, cleanupDays(7|30|null),
+                                    taskReminderTime('18:00'), pushSubscriptions[] (etap 7)
+houses/{houseId}                    name (wpisuje założyciel), ownerUid, createdAt
+houses/{houseId}/members/{uid}      name, role(owner|member), scope{all, categoryIds[], calendar}, joinedAt
+houses/{houseId}/categories/{id}    name, color, order, updatedAt, updatedBy
+houses/{houseId}/tasks/{id}         title, categoryId|null, priority(high|mid|low), due('RRRR-MM-DD'|null), done,
+                                    subtasks[{id,title,done}], createdBy, doneAt(Timestamp|null), doneBy,
+                                    deleted, deletedAt(Timestamp|null), deletedBy, updatedAt, updatedBy
+houses/{houseId}/eventTypes/{id}    name, dot, bg, fg, icon, system, updatedAt, updatedBy
+                                    (wbudowane id: task, birthday, party, event, doctor)
+houses/{houseId}/events/{id}        title, date('RRRR-MM-DD'), allDay, from|null, to|null, typeId, remind(none|day|week),
+                                    note, createdBy, deleted, deletedAt(Timestamp|null), deletedBy, updatedAt, updatedBy
+invites/{code}                      houseId, createdBy, expiresAt, usedBy|null, scope   (etap 8)
+```
+
+- `updatedAt` ustawia serwer (`serverTimestamp`), `updatedBy` – zalogowany użytkownik (reguły sprawdzą, że to on).
 - Godziny w aplikacji („RRRR-MM-DDTHH:MM”, czas lokalny) zapisujemy w bazie jako Timestamp; dni (termin, data wydarzenia) – jako tekst „RRRR-MM-DD”.
 - Domownik to samo imię – bez formy czasownika i odmiany (decyzja Hani 2026-10-18).
 - Limity (te same w regułach): tytuł 200 znaków, imię/nazwa 40, dopisek 500, kroki 50.
