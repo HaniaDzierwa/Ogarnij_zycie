@@ -18,12 +18,13 @@ Styl „domowy elegancki”: butelkowa zieleń, mosiądz i krem, szeryfowy Fraun
 | --- | --- | --- |
 | 1 Ładowanie | `Powitanie.dc.html` (+ `PowitanieDzien`, `PowitanieNoc`) | Słońce 6:00–18:00, księżyc w pozostałych godzinach |
 | 1a Pierwsze uruchomienie | `Pierwsze.dc.html` | Załóż nowy dom / Dołącz do domu |
+| 1b Konto: Zaloguj się, Załóż konto, Nie pamiętam hasła | – (projektuje Claude w etapie 1) | W stylu pozostałych ekranów; po akceptacji Hani |
 | 2 Start | `Kategorie.dc.html` (+ `StartDzien`, `StartNoc`) | Kafelki, Ten tydzień, Pilne, Najbliższe wydarzenia |
 | 2b Skróty ze Startu | `ZadaniaPilne`, `ZadaniaOgarniete`, `KalendarzImieniny`, `KalendarzUrodziny` | Zadania/Kalendarz otwarte z filtrem lub dniem |
 | 3 Zadania | `Zadania.dc.html` | Filtry, grupy, podzadania, arkusz „Nowe zadanie” |
 | 4 Kalendarz | `Kalendarz.dc.html` | Tydzień/miesiąc, agenda, arkusz wydarzenia |
 | 5 Ustawienia | `Ustawienia.dc.html` | Ty, Wspólny dom, Powiadomienia, Wygląd (motyw – ukryty na start) |
-| 5a Synchronizacja / Domownicy | `Synchronizacja.dc.html` | Teksty o Wi‑Fi do zmiany na Firebase (etap 0) |
+| 5a Synchronizacja / Domownicy | `Synchronizacja.dc.html` | Teksty i zmiany wg `docs/TEKSTY.md` (bez trybu lokalnego, Wi‑Fi i „Synchronizuj teraz”) |
 | 5b Zmiany od domownika | `Import.dc.html` | Nowe, zmienione, „Do decyzji” |
 | 5c–d Zaproś domownika | `Zaproszenie.dc.html`, `ZaproszenieGotowe.dc.html` | Dodać opcję „jednorazowy link” |
 | 5e–f Dołącz do domu | `Dolacz.dc.html`, `DolaczZnaleziono.dc.html` | Skan QR / 6 cyfr / link |

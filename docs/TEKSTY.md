@@ -2,7 +2,7 @@
 
 Projekt ekranów zakładał aplikację „bez konta i bez chmury”, z wymianą danych przez Wi‑Fi. Teraz dane są w Firebase (konto e‑mail, Firestore z pamięcią offline), więc te teksty trzeba zmienić.
 
-**Status: propozycja – czeka na akceptację Hani.** Po akceptacji używamy tych tekstów w etapie 1 zamiast tych z `docs/design/ekrany/`.
+**Status: zaakceptowane przez Hanię 2026-10-18 (części A i B).** W etapie 1 używamy tych tekstów i zmian zamiast tych z `docs/design/ekrany/`.
 
 ## A. Zmiany tekstów (wygląd bez zmian)
 

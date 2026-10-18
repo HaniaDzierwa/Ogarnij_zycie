@@ -45,13 +45,15 @@ Cel: wszystkie ekrany z projektu w aplikacji, na przykładowych danych (w pamię
 3. Start: kafelki, „Ten tydzień”, „Pilne”, „Najbliższe wydarzenia”; wersja dzienna i nocna nagłówka; skróty do filtrów.
 4. Zadania: grupy, zwijanie, „Zwiń/Rozwiń wszystko”, panel filtrów (zamykany kliknięciem obok), chipy aktywnych filtrów, podzadania z %, arkusz „Nowe zadanie”, „Już ogarnięte”.
 5. Kalendarz: tydzień i miesiąc, „Dziś”, agenda dnia, „Później”, arkusz wydarzenia z rodzajami.
-6. Ustawienia, Synchronizacja (Domownicy), Zmiany od domownika, Zaproś domownika, Dołącz do domu.
+6. Ustawienia, Synchronizacja (Domownicy), Zmiany od domownika, Zaproś domownika, Dołącz do domu – z tekstami i zmianami z `docs/TEKSTY.md`.
+7. Ekrany konta (nowe – nie ma ich w `docs/design/ekrany/`): Zaloguj się, Załóż konto, Nie pamiętam hasła. Projektuje Claude w stylu pozostałych ekranów (nagłówek 120 px z panoramą, karty, pola 48 px, przycisk główny); Hania akceptuje wygląd przed etapem 2.
 
 **Odbiór:**
 - [ ] Każdy ekran z `docs/design/ekrany/` jest w aplikacji i wygląda tak samo (porównanie zrzutów obok projektu)
 - [ ] Wszystkie przyciski i linki prowadzą tam, gdzie w projekcie
 - [ ] Animacje dzień/noc działają płynnie na telefonie
 - [ ] Lista poprawek wyglądu zebrana i naniesiona
+- [ ] Hania akceptuje wygląd ekranów konta (logowanie, rejestracja, reset hasła)
 
 ## Etap 2 – Konta i dane w Firestore
 
