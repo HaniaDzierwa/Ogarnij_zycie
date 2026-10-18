@@ -15,6 +15,22 @@ Aktualny etap: **1 – Klikalny mockup** (w toku)
 | 8 Wspólny dom | – | – |
 | 9 Testy i publikacja | – | – |
 
+## Etap 1 – kroki
+
+Wersja testowa: https://ogarnij-zycie--test-56tdtc0y.web.app (kanał `test`, odnawiany przy każdej publikacji).
+
+| Krok (PLAN.md) | Status |
+| --- | --- |
+| 1 Elementy wspólne (nagłówek, dolny pasek, menu „Co dodajesz?”, karty, chipy, przełączniki, arkusze, przycisk) | zrobione |
+| 2 Ładowanie (nowy projekt) i Pierwsze uruchomienie | zrobione, ładowanie zaakceptowane |
+| 3 Start (dzień/noc, kafelki, Ten tydzień, Pilne, Najbliższe wydarzenia) | zrobione |
+| 4 Zadania (zakładki, filtry, grupy, gesty, arkusz zadania, Nowe zadanie, Cofnij, Wyczyść, Kosz) | zrobione – czeka na sprawdzenie przez Hanię |
+| 5 Kalendarz | do zrobienia (następny) |
+| 6 Ustawienia (z sekcją Zadania: sprzątanie, Kosz), Synchronizacja, Zmiany od domownika, Zaproś, Dołącz | do zrobienia |
+| 7 Ekrany konta (Zaloguj się, Załóż konto, Nie pamiętam hasła) | zrobione, zaakceptowane |
+| Przykładowe dane i daty (pomocnicze, `src/data`) | zrobione |
+| Porównanie zrzutów z projektem i lista poprawek (odbiór) | na koniec etapu |
+
 ## Uwagi Hani
 
 | Data | Etap | Uwaga | Kiedy | Status |
@@ -23,12 +39,14 @@ Aktualny etap: **1 – Klikalny mockup** (w toku)
 | 2026-10-18 | 1 | Aktualizacja projektu (docs2): zakładki Do zrobienia / Ogarnięte, gesty w prawo = ogarnij, w lewo = do kosza, klik w treść = arkusz zadania, pasek COFNIJ, Wyczyść, Kosz, Ustawienia → Zadania. Zastępuje gesty z poprzedniej uwagi (dotknięcie = ogarnij, lewo = edycja, prawo = usuń z pytaniem). | teraz | zrobione – do sprawdzenia |
 | 2026-10-18 | 1 | Zadania: dotknięcie = ogarnięte; przesunięcie w lewo = edycja, w prawo = usunięcie; podpowiedzi pod spodem pokazują, co się stanie; usunięcie z pytaniem „czy na pewno”. | teraz | zastąpione aktualizacją projektu (docs2) |
 | 2026-10-18 | 1 | Gdy wszystkie podzadania są odhaczone, całe zadanie ustawia się jako zrobione. | teraz | zrobione (odznaczenie kroku przywraca zadanie) |
-| 2026-10-18 | 1 | Brak edycji zadania – dodać (arkusz „Edytuj zadanie” po dotknięciu zadania; „Inna data”, „Usuń zadanie”). | teraz | zrobione – do akceptacji |
+| 2026-10-18 | 1 | Brak edycji zadania – dodać (arkusz „Edytuj zadanie” po dotknięciu zadania; „Inna data”, „Usuń zadanie”). | teraz | zastąpione arkuszem zadania z aktualizacji projektu (docs2); „Inna data” zachowana |
 | 2026-10-18 | 1 | Ekrany konta (logowanie, rejestracja, reset hasła) – zaakceptowane („teraz jest dobrze”). | teraz | zaakceptowane |
 | 2026-10-18 | 1 | Ekrany konta: „Pokaż/Ukryj” przy haśle zamienić na ikonkę. | teraz | zrobione (ikona oka / przekreślonego oka) |
 | 2026-10-18 | 1 | Termin zadania: zasada DZIŚ / JUTRO / WT 13 PAŹ / DO 30 PAŹ. | teraz | zrobione (krok 2) |
 | 2026-10-18 | 1 | „Najbliższe wydarzenia” na Starcie: dwa najbliższe dowolnego rodzaju (opcja a). | teraz | zrobione (krok 2) |
 | 2026-10-18 | 1 | Ekran ładowania: projektuje Claude (Powitanie.dc.html nie istnieje). | teraz | zaakceptowane („super”) |
+| 2026-10-18 | 1 | „Ogarnęła Hania / Ogarnął Krzyś”: forma czasownika domownika – przy prawdziwych kontach zapytać o nią w profilu (Pierwsze uruchomienie / Ustawienia). | później (etap 2) | zapisane |
+| 2026-10-18 | 1 | Kafelek „Ogarnięte dziś 3 / 7” – projekt nie mówi, co jest w mianowniku; na razie „ogarnięte dziś / (ogarnięte dziś + otwarte pilne)”. Ustalić z Hanią. | później (etap 6) | do decyzji |
 | 2026-10-18 | 0 | Demo na telefonie działa. | – | ok |
 | 2026-10-18 | 0 | Teksty o danych z `docs/TEKSTY.md` zaakceptowane (A i B). | teraz | zrobione |
 | 2026-10-18 | 0 | Ekrany logowania, rejestracji i resetu hasła projektuje Claude w tym samym stylu – dopisane do etapu 1 w PLAN.md. | później (etap 1) | zapisane |

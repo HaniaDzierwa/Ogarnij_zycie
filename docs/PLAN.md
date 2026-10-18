@@ -53,7 +53,7 @@ Cel: wszystkie ekrany z projektu w aplikacji, na przykładowych danych (w pamię
 - [ ] Wszystkie przyciski i linki prowadzą tam, gdzie w projekcie
 - [ ] Animacje dzień/noc działają płynnie na telefonie
 - [ ] Lista poprawek wyglądu zebrana i naniesiona
-- [ ] Hania akceptuje wygląd ekranów konta (logowanie, rejestracja, reset hasła)
+- [x] Hania akceptuje wygląd ekranów konta (logowanie, rejestracja, reset hasła)
 
 ## Etap 2 – Konta i dane w Firestore
 
