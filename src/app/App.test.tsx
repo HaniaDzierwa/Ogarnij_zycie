@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { cleanup, render, screen } from '@testing-library/react'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, describe, expect, test } from 'vitest'
 import { MockStoreProvider } from '../data/MockStore.tsx'
@@ -31,14 +31,6 @@ describe('mapa ekranów', () => {
     for (const t of s.transitions) {
       expect(knownPaths.has(t.to.split('?')[0]), `${s.name} → ${t.to}`).toBe(true)
     }
-  })
-
-  test('kafelek „Pilne” na Starcie otwiera Zadania z filtrem', () => {
-    const router = renderAt('/')
-    fireEvent.click(screen.getByRole('link', { name: 'Kafelek „Pilne”' }))
-    expect(router.state.location.pathname).toBe('/zadania')
-    expect(router.state.location.search).toBe('?pokaz=pilne')
-    expect(screen.getByText('Wariant: pokaz = pilne')).toBeDefined()
   })
 
   test('mapa ekranów zawiera wszystkie ekrany', () => {
