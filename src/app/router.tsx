@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import type { RouteObject } from 'react-router'
 import { LoginScreen, RegisterScreen, ResetPasswordScreen } from '../screens/AccountScreens.tsx'
+import { CalendarRoute } from '../screens/calendar/CalendarScreen.tsx'
 import { ElementsScreen } from '../screens/ElementsScreen.tsx'
 import { FirstRunScreen } from '../screens/FirstRunScreen.tsx'
 import { LoadingScreen } from '../screens/LoadingScreen.tsx'
@@ -21,6 +22,7 @@ const built: Partial<Record<ScreenId, ReactNode>> = {
   start: <StartScreen />,
   zadania: <TasksRoute />,
   kosz: <TrashScreen />,
+  kalendarz: <CalendarRoute />,
 }
 
 export const routes: RouteObject[] = [

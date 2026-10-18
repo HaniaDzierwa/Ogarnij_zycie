@@ -140,3 +140,42 @@ export function TrashIcon({ size = 18 }: IconProps) {
     </svg>
   )
 }
+
+/** Ikona rodzaju wydarzenia w kalendarzu (Kalendarz.dc.html). */
+export function EventTypeIcon({
+  icon,
+  size = 20,
+}: IconProps & { icon: 'deadline' | 'bday' | 'party' | 'event' | 'custom' }) {
+  if (icon === 'event') return <CalendarIcon size={size} />
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" {...stroke} aria-hidden="true">
+      {icon === 'deadline' && (
+        <>
+          <path d="M5 21V4" />
+          <path d="M5 4h11l-2 4 2 4H5" />
+        </>
+      )}
+      {icon === 'bday' && (
+        <>
+          <path d="M4 20h16" />
+          <path d="M5 20v-7h14v7" />
+          <path d="M5 16c2.3 1.3 4.7 1.3 7 0s4.7-1.3 7 0" />
+          <path d="M12 13V9" />
+          <path d="M12 6.5c-.8-.7-.8-1.8 0-2.5.8.7.8 1.8 0 2.5z" />
+        </>
+      )}
+      {icon === 'party' && (
+        <>
+          <path d="M4 20l5-14 9 9z" />
+          <path d="M14 4v2M19 9h2M17.5 5.5L16 7" />
+        </>
+      )}
+      {icon === 'custom' && (
+        <>
+          <path d="M3.5 12.5V5a1.5 1.5 0 0 1 1.5-1.5h7.5L21 12l-9 9z" />
+          <circle cx="8.5" cy="8.5" r="1.5" />
+        </>
+      )}
+    </svg>
+  )
+}

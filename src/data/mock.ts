@@ -162,6 +162,7 @@ export function mockEvents(today: DateKey): CalendarEvent[] {
     from,
     to,
     typeId,
+    remind: note.includes('dzień wcześniej') ? 'day' : note.includes('tydzień') ? 'week' : 'none',
     note,
   }))
 }
