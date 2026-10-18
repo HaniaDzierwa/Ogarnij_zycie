@@ -474,7 +474,7 @@ export function Field({
             height: 50,
             border: `${error ? 2 : 1}px solid ${error ? priorities.high.line : colors.border}`,
             borderRadius: 16,
-            padding: trailing ? '0 84px 0 16px' : '0 16px',
+            padding: trailing ? '0 52px 0 16px' : '0 16px',
             fontSize: 16,
             color: colors.green900,
             background: colors.white,

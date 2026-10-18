@@ -376,19 +376,59 @@ function PasswordField({
           aria-label={visible ? 'Ukryj hasło' : 'Pokaż hasło'}
           aria-pressed={visible}
           style={{
-            minWidth: 72,
+            width: 44,
             border: 0,
             borderRadius: 14,
-            background: colors.sand,
-            color: colors.green900,
-            fontSize: 13,
-            fontWeight: 800,
+            background: 'transparent',
+            color: colors.muted,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
         >
-          {visible ? 'Ukryj' : 'Pokaż'}
+          {visible ? <EyeOffIcon /> : <EyeIcon />}
         </button>
       }
     />
+  )
+}
+
+function EyeIcon() {
+  return (
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  )
+}
+
+function EyeOffIcon() {
+  return (
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M10.6 5.6A9.6 9.6 0 0 1 12 5.5c6 0 9.5 6.5 9.5 6.5a17 17 0 0 1-2.6 3.4M6.2 7.4C3.9 9 2.5 12 2.5 12S6 18.5 12 18.5c1.6 0 3-.4 4.2-1" />
+      <path d="M9.9 9.9a3 3 0 0 0 4.2 4.2" />
+      <path d="M3 3l18 18" />
+    </svg>
   )
 }
 

@@ -19,6 +19,7 @@ Aktualny etap: **1 – Klikalny mockup** (w toku)
 
 | Data | Etap | Uwaga | Kiedy | Status |
 | --- | --- | --- | --- | --- |
+| 2026-10-18 | 1 | Ekrany konta: „Pokaż/Ukryj” przy haśle zamienić na ikonkę. | teraz | zrobione (ikona oka / przekreślonego oka) |
 | 2026-10-18 | 1 | Termin zadania: zasada DZIŚ / JUTRO / WT 13 PAŹ / DO 30 PAŹ. | teraz | zrobione (krok 2) |
 | 2026-10-18 | 1 | „Najbliższe wydarzenia” na Starcie: dwa najbliższe dowolnego rodzaju (opcja a). | teraz | zrobione (krok 2) |
 | 2026-10-18 | 1 | Ekran ładowania: projektuje Claude (Powitanie.dc.html nie istnieje). | teraz | zaakceptowane („super”) |
