@@ -38,7 +38,7 @@ import {
   weekCountLabel,
   weekRangeLabel,
 } from './calendarView.ts'
-import { SwipeRow } from '../../components/SwipeRow.tsx'
+import { SwipeRow, type SwipeAction } from '../../components/SwipeRow.tsx'
 import { UndoToast } from '../../components/UndoToast.tsx'
 import { useConfirmDelete } from '../../components/useConfirmDelete.tsx'
 import { deleteEvent } from '../../data/eventOps.ts'
@@ -125,6 +125,16 @@ export function CalendarScreen() {
         list.map((x) => (x.id === e.id ? deleteEvent(x, store.who()) : x)),
       )
     })
+  /** Wiersz w agendzie i w „Później”: dotknięcie = arkusz, w lewo = do kosza, w prawo = ogarnij (zadanie). */
+  const rowActions = (e: CalendarItem) => {
+    const task = e.taskId ? tasks.find((t) => t.id === e.taskId) : undefined
+    const event = task ? undefined : events.find((x) => x.id === e.id)
+    return {
+      onOpen: () => (task ? setTaskId(task.id) : setEventId(e.id)),
+      onDone: task && (() => taskActions.toggleDone(task)),
+      onDelete: () => (task ? trashTask(task) : event && removeEvent(event)),
+    }
+  }
   /** „Dodane przez: Hania” / „Ogarnęła Hania” */
   const memberLabel = (t: Task) => {
     const m = members.find((x) => x.uid === (t.done ? t.doneBy : t.createdBy))
@@ -395,20 +405,9 @@ export function CalendarScreen() {
             Spokojny dzień – nic zaplanowanego
           </div>
         )}
-        {agenda.map((e) => {
-          const task = e.taskId ? tasks.find((t) => t.id === e.taskId) : undefined
-          const event = task ? undefined : events.find((x) => x.id === e.id)
-          return (
-            <AgendaRow
-              key={e.id}
-              item={e}
-              type={typeOf(e.typeId)}
-              onOpen={() => (task ? setTaskId(task.id) : setEventId(e.id))}
-              onDone={task && (() => taskActions.toggleDone(task))}
-              onDelete={() => (task ? trashTask(task) : event && removeEvent(event))}
-            />
-          )
-        })}
+        {agenda.map((e) => (
+          <AgendaRow key={e.id} item={e} type={typeOf(e.typeId)} {...rowActions(e)} />
+        ))}
       </section>
 
       {isWeek && later.length > 0 && (
@@ -429,88 +428,99 @@ export function CalendarScreen() {
             {later.map((e, i) => {
               const t = typeOf(e.typeId)
               const d = parseKey(e.date)
+              const { onOpen, onDone, onDelete } = rowActions(e)
               return (
-                <button
+                <div
                   key={e.id}
-                  type="button"
-                  onClick={() => pick(e.date)}
                   style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 14,
-                    width: '100%',
-                    padding: '10px 14px 10px 10px',
-                    border: 0,
                     borderBottom: i === later.length - 1 ? 0 : `1px solid ${colors.line}`,
-                    background: 'transparent',
-                    textAlign: 'left',
-                    color: colors.green900,
                   }}
                 >
-                  <span
-                    style={{
-                      width: 44,
-                      height: 50,
-                      borderRadius: '22px 22px 10px 10px',
-                      background: t.bg,
-                      color: t.fg,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: 1,
-                      flex: 'none',
-                    }}
+                  <SwipeRow
+                    right={onDone && doneAction(e, onDone)}
+                    left={deleteAction(e, onDelete)}
                   >
-                    <span
+                    <button
+                      type="button"
+                      onClick={onOpen}
                       style={{
-                        fontFamily: fonts.serif,
-                        fontSize: 19,
-                        fontWeight: 600,
-                        lineHeight: 1,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 14,
+                        width: '100%',
+                        padding: '10px 14px 10px 10px',
+                        border: 0,
+                        background: 'transparent',
+                        textAlign: 'left',
+                        color: colors.green900,
                       }}
                     >
-                      {d.getDate()}
-                    </span>
-                    <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: '1px' }}>
-                      {MONTHS_SHORT[d.getMonth()]}
-                    </span>
-                  </span>
-                  <span
-                    style={{
-                      flex: 1,
-                      minWidth: 0,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: 3,
-                    }}
-                  >
-                    <span style={{ fontSize: 15, fontWeight: 700 }}>{e.title}</span>
-                    <span
-                      style={{
-                        fontSize: 11,
-                        fontWeight: 800,
-                        letterSpacing: '1px',
-                        color: colors.muted,
-                      }}
-                    >
-                      {(t.name + (e.from ? ` · ${timeLabel(e)}` : '')).toUpperCase()}
-                    </span>
-                  </span>
-                  <span
-                    style={{
-                      fontSize: 12,
-                      fontWeight: 800,
-                      color: priorities.mid.fg,
-                      background: priorities.mid.bg,
-                      padding: '4px 10px',
-                      borderRadius: 12,
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
-                    {inDays(diffDays(today, e.date))}
-                  </span>
-                </button>
+                      <span
+                        style={{
+                          width: 44,
+                          height: 50,
+                          borderRadius: '22px 22px 10px 10px',
+                          background: t.bg,
+                          color: t.fg,
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: 1,
+                          flex: 'none',
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontFamily: fonts.serif,
+                            fontSize: 19,
+                            fontWeight: 600,
+                            lineHeight: 1,
+                          }}
+                        >
+                          {d.getDate()}
+                        </span>
+                        <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: '1px' }}>
+                          {MONTHS_SHORT[d.getMonth()]}
+                        </span>
+                      </span>
+                      <span
+                        style={{
+                          flex: 1,
+                          minWidth: 0,
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: 3,
+                        }}
+                      >
+                        <span style={{ fontSize: 15, fontWeight: 700 }}>{e.title}</span>
+                        <span
+                          style={{
+                            fontSize: 11,
+                            fontWeight: 800,
+                            letterSpacing: '1px',
+                            color: colors.muted,
+                          }}
+                        >
+                          {(t.name + (e.from ? ` · ${timeLabel(e)}` : '')).toUpperCase()}
+                        </span>
+                      </span>
+                      <span
+                        style={{
+                          fontSize: 12,
+                          fontWeight: 800,
+                          color: priorities.mid.fg,
+                          background: priorities.mid.bg,
+                          padding: '4px 10px',
+                          borderRadius: 12,
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        {inDays(diffDays(today, e.date))}
+                      </span>
+                    </button>
+                  </SwipeRow>
+                </div>
               )
             })}
           </div>
@@ -566,7 +576,10 @@ export function CalendarScreen() {
           onRemoveSub={(sid) => taskActions.removeSub(taskDetail, sid)}
           onAddSub={(title) => taskActions.addSub(taskDetail, title)}
           onTrash={() => trashTask(taskDetail)}
-          onClose={() => setTaskId(null)}
+          onClose={() => {
+            setTaskId(null)
+            if (taskDetail.due) pick(taskDetail.due)
+          }}
         />
       )}
 
@@ -589,6 +602,26 @@ function dayLabel(k: DateKey): string {
   return `${DAYS[d.getDay()]}, ${d.getDate()} ${MONTHS_GEN[d.getMonth()]}`
 }
 
+/** Gest w prawo na terminie zadania. */
+const doneAction = (item: CalendarItem, run: () => void): SwipeAction => ({
+  label: 'Ogarnij',
+  icon: <CheckIcon />,
+  bg: colors.green900,
+  fg: colors.brass300,
+  srLabel: `Ogarnij: ${item.title}`,
+  run,
+})
+
+/** Gest w lewo: do kosza (po pytaniu). */
+const deleteAction = (item: CalendarItem, run: () => void): SwipeAction => ({
+  label: 'Usuń',
+  icon: <TrashIcon />,
+  bg: priorities.high.line,
+  fg: colors.white,
+  srLabel: `Przenieś do kosza: ${item.title}`,
+  run,
+})
+
 /**
  * Wpis w agendzie – jak wiersz zadania: dotknięcie otwiera arkusz, w lewo = usuń,
  * w prawo = ogarnij (tylko termin zadania).
@@ -608,26 +641,7 @@ function AgendaRow({
 }) {
   return (
     <div style={{ borderRadius: 20, boxShadow: shadows.card, overflow: 'hidden' }}>
-      <SwipeRow
-        right={
-          onDone && {
-            label: 'Ogarnij',
-            icon: <CheckIcon />,
-            bg: colors.green900,
-            fg: colors.brass300,
-            srLabel: `Ogarnij: ${item.title}`,
-            run: onDone,
-          }
-        }
-        left={{
-          label: 'Usuń',
-          icon: <TrashIcon />,
-          bg: priorities.high.line,
-          fg: colors.white,
-          srLabel: `Przenieś do kosza: ${item.title}`,
-          run: onDelete,
-        }}
-      >
+      <SwipeRow right={onDone && doneAction(item, onDone)} left={deleteAction(item, onDelete)}>
         <button
           type="button"
           onClick={onOpen}

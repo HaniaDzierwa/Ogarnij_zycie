@@ -116,7 +116,7 @@ Zakupy `#5E8C6A` · Dom `#B8925A` · Zdrowie `#A4492F` · Urzędy `#6E5F8C` · A
 - Pod listą jednozdaniowa podpowiedź o gestach.
 - Na iPhonie gest zaczyna się na wierszu (margines 16 px od krawędzi), żeby nie wywołać „wstecz” w Safari.
 - Usunięcie zadania lub wydarzenia (gest w lewo, „Usuń” w arkuszu) zawsze poprzedza okienko „Usunąć zadanie?” / „Usunąć wydarzenie?” z tekstem „„…” trafi do kosza. Możesz je przywrócić przez 30 dni.” (Anuluj / Usuń); po usunięciu pasek COFNIJ (ustalone 2026-10-18).
-- Kalendarz: wydarzenie jak zadanie – dotknięcie = arkusz z edycją w miejscu, w lewo = do kosza; termin zadania w kalendarzu = wiersz zadania (w prawo ogarnij). Kosz zbiera zadania i wydarzenia (ustalone 2026-10-18).
+- Kalendarz: wydarzenie jak zadanie – dotknięcie = arkusz z edycją w miejscu, w lewo = do kosza; termin zadania w kalendarzu = wiersz zadania (w prawo ogarnij). Tak samo wiersze w „Później”; po zamknięciu arkusza kalendarz przechodzi do dnia wpisu. Kosz zbiera zadania i wydarzenia (ustalone 2026-10-18).
 - Odhaczenie wszystkich podzadań ogarnia zadanie; odznaczenie kroku w ogarniętym zadaniu przywraca je (ustalone 2026-10-18).
 
 ### Zakładki i kosz

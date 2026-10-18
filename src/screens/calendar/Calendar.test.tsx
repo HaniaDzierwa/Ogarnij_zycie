@@ -68,13 +68,15 @@ describe('ekran Kalendarz', () => {
     expect(rows[1]).toContain('Imieniny mamy')
   })
 
-  test('strzałki i „Później”: następny tydzień, klik w wpis wybiera dzień', () => {
+  test('strzałki i „Później”: dotknięcie otwiera arkusz, po zamknięciu – dzień wpisu', () => {
     renderAt('/kalendarz')
     const later = screen.getByRole('heading', { name: 'Później' }).closest('section')!
     const first = within(later).getAllByRole('button')[0]
     expect(first.textContent).toContain('Zebranie w szkole')
     expect(first.textContent).toContain('za 4 dni')
     fireEvent.click(first)
+    const sheet = screen.getByRole('dialog', { name: 'Zadanie' })
+    fireEvent.click(within(sheet).getAllByRole('button', { name: 'Gotowe' })[0])
     expect(agenda().textContent).toContain('Wtorek, 13 października')
 
     fireEvent.click(screen.getByRole('button', { name: 'Następny tydzień' }))
@@ -242,5 +244,39 @@ describe('edycja i usuwanie – jak w Zadaniach', () => {
     expect(screen.getByText('3 zadania')).toBeDefined()
     await act(() => router.navigate('/kalendarz?dzien=2026-10-10'))
     expect(agenda().textContent).toContain('Kino z Krzysiem')
+  })
+
+  test('„Później”: edycja i usuwanie wydarzenia jak w agendzie', () => {
+    renderAt('/kalendarz')
+    const later = () => screen.getByRole('heading', { name: 'Później' }).closest('section')!
+    fireEvent.click(within(later()).getByRole('button', { name: /^15 ?PAŹ ?Zapłacić/ }))
+    expect(screen.getByRole('dialog', { name: 'Zadanie' })).toBeDefined()
+    fireEvent.click(
+      within(screen.getByRole('dialog')).getAllByRole('button', { name: 'Gotowe' })[0],
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'DZIŚ' }))
+
+    // drugi „Zebranie w szkole” to wydarzenie (pierwszy – termin zadania)
+    const rows = within(later()).getAllByRole('button', { name: /^13 ?PAŹ ?Zebranie/ })
+    fireEvent.click(rows[1])
+    const sheet = screen.getByRole('dialog', { name: 'Wydarzenie' })
+    fireEvent.change(within(sheet).getByLabelText('Nazwa wydarzenia'), {
+      target: { value: 'Zebranie z wychowawczynią' },
+    })
+    fireEvent.click(within(sheet).getByRole('button', { name: 'Usuń' }))
+    fireEvent.click(
+      within(screen.getByRole('alertdialog', { name: 'Usunąć wydarzenie?' })).getByRole('button', {
+        name: 'Usuń',
+      }),
+    )
+    expect(screen.getByRole('status').textContent).toContain(
+      'Przeniesiono do kosza: Zebranie z wychowawczynią',
+    )
+    expect(within(later()).queryByText('Zebranie z wychowawczynią')).toBeNull()
+
+    fireEvent.click(
+      within(later()).getByRole('button', { name: 'Przenieś do kosza: Zapłacić rachunek za prąd' }),
+    )
+    expect(screen.getByRole('alertdialog', { name: 'Usunąć zadanie?' })).toBeDefined()
   })
 })
