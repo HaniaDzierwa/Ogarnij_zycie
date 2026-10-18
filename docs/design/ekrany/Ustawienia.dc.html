@@ -72,6 +72,31 @@ button{font-family:inherit;cursor:pointer}
     </div>
 
     <div style="display: flex; flex-direction: column; gap: 10px">
+      <span style="padding: 0 4px; font-size: 11px; font-weight: 800; letter-spacing: 1.6px; color: #7A5C2C">ZADANIA</span>
+      <div style="display: flex; flex-direction: column; background: #FFFFFF; border-radius: 22px; box-shadow: 0 6px 20px rgba(31,61,46,0.07); overflow: hidden">
+        <div style="display: flex; flex-direction: column; gap: 10px; padding: 14px 18px; border-bottom: 1px solid #EFE8DA">
+          <span style="display: flex; flex-direction: column; gap: 3px">
+            <span style="font-size: 16px; font-weight: 700">Sprzątanie ogarniętych</span>
+            <span style="font-size: 13px; color: #5E6D63">{{cleanHint}}</span>
+          </span>
+          <div role="radiogroup" aria-label="Sprzątanie ogarniętych" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; padding: 3px; border-radius: 16px; background: #EDE6D8">
+            <sc-for list="{{cleanOpts}}" as="o" hint-placeholder-count="3">
+              <button type="button" role="radio" aria-checked="{{o.on}}" onClick="{{o.pick}}" style="{{o.style}}">{{o.name}}</button>
+            </sc-for>
+          </div>
+        </div>
+        <a href="Kosz.dc.html" style="display: flex; align-items: center; gap: 14px; padding: 12px 16px; min-height: 68px; color: #1F3D2E; text-decoration: none; box-sizing: border-box">
+          <span style="width: 40px; height: 40px; border-radius: 14px; background: #F3DCD3; color: #8C3D27; display: flex; align-items: center; justify-content: center; flex: none"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"></path><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path><path d="M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12"></path><path d="M10 11v6M14 11v6"></path></svg></span>
+          <span style="flex: 1; display: flex; flex-direction: column; gap: 3px">
+            <span style="font-size: 16px; font-weight: 700">Kosz</span>
+            <span style="font-size: 11px; font-weight: 800; letter-spacing: 1px; color: #5E6D63">3 ZADANIA · ODZYSKASZ PRZEZ 30 DNI</span>
+          </span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B8925A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg>
+        </a>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px">
       <span style="padding: 0 4px; font-size: 11px; font-weight: 800; letter-spacing: 1.6px; color: #7A5C2C">POWIADOMIENIA</span>
       <div style="display: flex; flex-direction: column; background: #FFFFFF; border-radius: 22px; box-shadow: 0 6px 20px rgba(31,61,46,0.07); overflow: hidden">
         <sc-for list="{{notifs}}" as="n" hint-placeholder-count="4">
@@ -158,7 +183,7 @@ button{font-family:inherit;cursor:pointer}
 class Component extends DCLogic {
   constructor(props) {
     super(props);
-    this.state = { menu: false, nick: 'Hania', theme: 'system', nt: { tasks: true, events: true, morning: true, house: false } };
+    this.state = { menu: false, nick: 'Hania', theme: 'system', nt: { tasks: true, events: true, morning: true, house: false }, clean: '30' };
   }
   renderVals() {
     var self = this;
@@ -194,6 +219,12 @@ class Component extends DCLogic {
           track: 'position: relative; width: 46px; height: 28px; border-radius: 14px; flex: none; transition: background 150ms ease; background: ' + (on ? '#1F3D2E' : '#D9D0BE'),
           knob: 'position: absolute; top: 3px; left: ' + (on ? 21 : 3) + 'px; width: 22px; height: 22px; border-radius: 11px; background: ' + (on ? '#E8C98E' : '#FFFFFF') + '; box-shadow: 0 1px 3px rgba(31,61,46,0.25); transition: left 150ms ease'
         };
+      }),
+      cleanHint: { '7': 'Ogarnięte starsze niż 7 dni same trafiają do Kosza.', '30': 'Ogarnięte starsze niż 30 dni same trafiają do Kosza.', 'never': 'Ogarnięte zostają, dopóki ich nie wyczyścisz.' }[this.state.clean],
+      cleanOpts: [{ id: '7', name: 'Po 7 dniach' }, { id: '30', name: 'Po 30 dniach' }, { id: 'never', name: 'Nigdy' }].map(function (o) {
+        var on = self.state.clean === o.id;
+        return { name: o.name, on: on, pick: function () { self.setState({ clean: o.id }); },
+          style: 'height: 36px; border: 0; border-radius: 13px; font-size: 13px; font-weight: 800; background: ' + (on ? '#FFFFFF' : 'transparent') + '; color: ' + (on ? '#1F3D2E' : '#5E6D63') + '; box-shadow: ' + (on ? '0 1px 3px rgba(31,61,46,0.15)' : 'none') };
       }),
       nick: this.state.nick,
       setNick: function (e) { self.setState({ nick: e.target.value }); },

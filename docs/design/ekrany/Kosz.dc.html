@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<title>Ogarnij życie – Kosz</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,400..700,50;1,9..144,400..700,50&amp;family=Nunito:wght@500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#7A5C2C}a:hover{color:#5C4420}
+button{font-family:inherit;cursor:pointer}
+input{font-family:inherit}
+*::-webkit-scrollbar{width:10px;height:10px}
+*::-webkit-scrollbar-track{background:transparent;margin:10px 0}
+*::-webkit-scrollbar-thumb{background:rgba(31,61,46,0.22);border-radius:10px;border:3px solid transparent;background-clip:padding-box;min-height:40px}
+*::-webkit-scrollbar-button{display:none}
+@supports (-moz-appearance:none){*{scrollbar-width:thin;scrollbar-color:rgba(31,61,46,0.25) transparent}}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; display: flex; flex-direction: column; background: #F6F1E7; color: #1F3D2E; font-family: 'Nunito', sans-serif; overflow: hidden; box-sizing: border-box">
+
+  <div style="flex: 1; overflow-y: auto; padding: 16px 16px 120px; display: flex; flex-direction: column; gap: 18px">
+    <div style="position: relative; height: 120px; border-radius: 26px; background: #1F3D2E; color: #F6F1E7; overflow: hidden; flex: none">
+      <svg width="358" height="120" viewBox="0 0 358 120" fill="none" aria-hidden="true" style="position: absolute; left: 0; top: 0">
+        <g transform="translate(0,64)">
+          <path d="M0 56V34L26 18L52 34V28L84 8L116 28V34L142 20L168 34V26L204 4L240 26V32L268 16L296 32V26L326 10L358 28V56Z" fill="#2C5240"></path>
+          <path d="M0 56V46L36 30L72 46V42L108 26L144 42V48L180 36L216 48V42L256 24L296 42V46L330 34L358 44V56Z" fill="#3A6650"></path>
+          <rect x="104" y="36" width="7" height="8" rx="1.2" fill="#E8C98E"></rect>
+          <rect x="252" y="34" width="7" height="8" rx="1.2" fill="#E8C98E"></rect>
+        </g>
+      </svg>
+      <div style="position: relative; height: 100%; box-sizing: border-box; padding: 6px 14px 16px 8px; display: flex; flex-direction: column; justify-content: space-between">
+        <div style="display: flex; align-items: center; justify-content: space-between">
+          <a href="ZadaniaOgarniete.dc.html" style="display: inline-flex; align-items: center; gap: 2px; min-height: 44px; padding: 0 10px 0 4px; color: #E8C98E; font-size: 11px; font-weight: 800; letter-spacing: 1.6px; text-decoration: none">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+            OGARNIĘTE
+          </a>
+          <span style="font-size: 11px; font-weight: 800; letter-spacing: 1.2px; color: #A9C2B2">30 DNI NA ODZYSKANIE</span>
+        </div>
+        <div style="padding-left: 10px; display: flex; align-items: baseline; justify-content: space-between; gap: 8px">
+          <h1 style="margin: 0; font-family: 'Fraunces', serif; font-size: 24px; line-height: 1.1; font-weight: 500">W <em style="font-style: italic; color: #E8C98E">koszu</em></h1>
+          <span style="font-size: 12px; font-weight: 700; color: #D6E4DA">{{countLabel}}</span>
+        </div>
+      </div>
+    </div>
+
+    <span style="padding: 0 4px; font-size: 14px; line-height: 1.45; color: #4F5B53">Usunięte zadania czekają tu 30 dni. Możesz je przywrócić – potem znikną same, u wszystkich domowników.</span>
+
+    <sc-if value="{{isEmpty}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 36px 20px; border-radius: 22px; background: #FFFFFF; box-shadow: 0 6px 20px rgba(31,61,46,0.07); text-align: center; color: #5E6D63">
+        <span style="width: 56px; height: 56px; border-radius: 28px; background: #EDE6D8; color: #7A5C2C; display: flex; align-items: center; justify-content: center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"></path><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path><path d="M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12"></path><path d="M10 11v6M14 11v6"></path></svg></span>
+        <span style="font-family: 'Fraunces', serif; font-style: italic; font-size: 18px; color: #1F3D2E">Kosz jest pusty</span>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{hasItems}}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; flex-direction: column; background: #FFFFFF; border-radius: 22px; box-shadow: 0 6px 20px rgba(31,61,46,0.07); overflow: hidden">
+        <sc-for list="{{items}}" as="it" hint-placeholder-count="3">
+          <div style="display: flex; align-items: center; gap: 12px; padding: 12px 12px 12px 18px; min-height: 72px; border-bottom: 1px solid #EFE8DA; box-sizing: border-box">
+            <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px">
+              <span style="font-size: 16px; font-weight: 700; color: #5E6D63">{{it.title}}</span>
+              <span style="display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 800; letter-spacing: 0.8px; color: #5E6D63"><span style="{{it.dot}}"></span>{{it.meta}}</span>
+              <span style="{{it.leftStyle}}">{{it.left}}</span>
+            </span>
+            <button type="button" onClick="{{it.restore}}" style="display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 14px; border-radius: 20px; border: 1px solid #B8925A; background: #FFFFFF; color: #7A5C2C; font-size: 13px; font-weight: 800; flex: none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5M4 9h10a6 6 0 0 1 0 12h-3"></path></svg>Przywróć</button>
+          </div>
+        </sc-for>
+      </div>
+      <button type="button" onClick="{{askEmpty}}" style="display: flex; align-items: center; justify-content: center; gap: 8px; height: 52px; border: 1px solid #E7B8A8; border-radius: 26px; background: transparent; color: #A4492F; font-size: 15px; font-weight: 800"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"></path><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path><path d="M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12"></path><path d="M10 11v6M14 11v6"></path></svg>Opróżnij kosz</button>
+    </sc-if>
+  </div>
+
+  <div aria-hidden="true" style="position: absolute; left: 0; right: 0; bottom: 0; height: 116px; background: linear-gradient(180deg, rgba(246,241,231,0) 0%, #F6F1E7 30%); pointer-events: none"></div>
+  <nav aria-label="Główna nawigacja" style="position: absolute; left: 16px; right: 16px; bottom: 20px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); align-items: center; padding: 8px; border-radius: 30px; background: #1F3D2E; box-shadow: 0 12px 30px rgba(31,61,46,0.35)">
+    <a href="Kategorie.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; min-height: 52px; font-size: 11px; font-weight: 700; letter-spacing: 0.4px; color: #C7D8CD; text-decoration: none">
+      <svg width="22" height="22" viewBox="0 0 120 120" fill="none" stroke="currentColor" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"><path d="M24 60L60 28l36 32"></path><path d="M34 54v34a6 6 0 0 0 6 6h40a6 6 0 0 0 6-6V54"></path></svg>
+      Start
+    </a>
+    <a href="Zadania.dc.html" aria-current="page" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; min-height: 52px; font-size: 11px; font-weight: 800; letter-spacing: 0.4px; color: #E8C98E; text-decoration: none">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="4.5"></rect><path d="M8.5 12l2.5 2.5 4.5-5"></path></svg>
+      Zadania
+      <span style="width: 4px; height: 4px; border-radius: 2px; background: #E8C98E"></span>
+    </a>
+    <a href="Zadania.dc.html" aria-label="Dodaj" style="justify-self: center; width: 52px; height: 52px; border: 0; border-radius: 26px; background: #E8C98E; color: #1F3D2E; display: flex; align-items: center; justify-content: center; text-decoration: none">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+    </a>
+    <a href="Kalendarz.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; min-height: 52px; font-size: 11px; font-weight: 700; letter-spacing: 0.4px; color: #C7D8CD; text-decoration: none">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="15" rx="4"></rect><path d="M4 10h16M9 3v4M15 3v4"></path></svg>
+      Kalendarz
+    </a>
+    <a href="Ustawienia.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; min-height: 52px; font-size: 11px; font-weight: 700; letter-spacing: 0.4px; color: #C7D8CD; text-decoration: none">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"></path><circle cx="16" cy="7" r="2"></circle><circle cx="10" cy="17" r="2"></circle></svg>
+      Ustawienia
+    </a>
+  </nav>
+
+  <sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}">
+    <div role="status" style="position: absolute; left: 16px; right: 16px; bottom: 104px; z-index: 8; display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 0 8px 0 18px; border-radius: 18px; background: #1F3D2E; color: #F6F1E7; box-shadow: 0 10px 26px rgba(31,61,46,0.3); box-sizing: border-box">
+      <span style="flex: 1; min-width: 0; font-size: 14px; font-weight: 700; line-height: 1.3">{{toastText}}</span>
+      <button type="button" onClick="{{undo}}" style="height: 40px; padding: 0 12px; border: 0; background: transparent; color: #E8C98E; font-size: 13px; font-weight: 800; letter-spacing: 1px">COFNIJ</button>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{confirmOpen}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; z-index: 9">
+      <button type="button" onClick="{{cancelEmpty}}" aria-label="Zamknij" style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; border: 0; background: rgba(31,61,46,0.5)"></button>
+      <div role="alertdialog" aria-label="Opróżnij kosz" style="position: absolute; left: 0; right: 0; bottom: 0; box-sizing: border-box; background: #FFFCF6; border-radius: 30px 30px 0 0; padding: 12px 22px 28px; display: flex; flex-direction: column; gap: 14px">
+        <div style="width: 40px; height: 4px; border-radius: 4px; background: #D9D0BE; align-self: center"></div>
+        <span style="font-family: 'Fraunces', serif; font-size: 26px; font-weight: 500">Usunąć <em style="font-style: italic; color: #A4492F">na zawsze?</em></span>
+        <span style="font-size: 15px; line-height: 1.45; color: #4F5B53">{{confirmText}} Tego nie da się cofnąć – zadania znikną też u Krzysia.</span>
+        <div style="display: grid; grid-template-columns: 1fr 1.4fr; gap: 8px; margin-top: 4px">
+          <button type="button" onClick="{{cancelEmpty}}" style="height: 54px; border: 1px solid #D9D0BE; border-radius: 27px; background: #FFFFFF; color: #1F3D2E; font-size: 16px; font-weight: 700">Anuluj</button>
+          <button type="button" onClick="{{doEmpty}}" style="height: 54px; border: 0; border-radius: 27px; background: #A4492F; color: #FFFFFF; font-size: 16px; font-weight: 800">Usuń na zawsze</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"etap":{"editor":"enum","options":["lista","potwierdzenie","pusty"],"default":"lista","section":"Stan do pokazania"},"$preview":{"width":390,"height":844}}'>
+var CAT = { shop: { name: 'Zakupy', color: '#5E8C6A' }, home: { name: 'Dom', color: '#B8925A' }, health: { name: 'Zdrowie', color: '#A4492F' }, office: { name: 'Urzędy', color: '#6E5F8C' }, car: { name: 'Auto', color: '#4D7A93' }, family: { name: 'Rodzina', color: '#1F3D2E' } };
+var SEED = [
+  { id: 1, title: 'Kupić nowy czajnik', cat: 'shop', ago: 2, who: 'Hania' },
+  { id: 2, title: 'Umówić przegląd pieca', cat: 'home', ago: 9, who: 'Krzyś' },
+  { id: 3, title: 'Odnowić kartę biblioteczną', cat: 'family', ago: 27, who: 'Hania' }
+];
+function plural(n) { return n === 1 ? 'zadanie' : ((n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20)) ? 'zadania' : 'zadań'); }
+function days(n) { return n === 1 ? '1 dzień' : n + ' dni'; }
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    var etap = (props && props.etap) || 'lista';
+    this.state = { items: etap === 'pusty' ? [] : SEED, confirm: etap === 'potwierdzenie', toast: null, toastId: 0 };
+  }
+  renderVals() {
+    var self = this, s = this.state;
+    function toast(text, prev) {
+      var tid = s.toastId + 1;
+      self.setState({ toast: { text: text, items: prev }, toastId: tid });
+      setTimeout(function () { if (self.state.toastId === tid) self.setState({ toast: null }); }, 4500);
+    }
+    var n = s.items.length;
+    return {
+      countLabel: n ? n + ' ' + plural(n) : 'pusto',
+      isEmpty: n === 0,
+      hasItems: n > 0,
+      items: s.items.map(function (it) {
+        var c = CAT[it.cat], left = 30 - it.ago;
+        return {
+          title: it.title,
+          dot: 'width: 8px; height: 8px; border-radius: 4px; flex: none; background: ' + c.color,
+          meta: c.name.toUpperCase() + ' · ' + (it.who === 'Krzyś' ? 'USUNĄŁ KRZYŚ' : 'USUNĘŁA HANIA') + ' · ' + (it.ago === 1 ? 'WCZORAJ' : days(it.ago).toUpperCase() + ' TEMU'),
+          left: 'zniknie za ' + days(left),
+          leftStyle: "font-family: 'Fraunces', serif; font-style: italic; font-size: 13px; color: " + (left <= 5 ? '#A4492F' : '#7A5C2C'),
+          restore: function () {
+            var prev = s.items;
+            self.setState({ items: s.items.filter(function (x) { return x.id !== it.id; }) });
+            toast('Przywrócono do „Do zrobienia”: ' + it.title, prev);
+          }
+        };
+      }),
+      askEmpty: function () { self.setState({ confirm: true }); },
+      cancelEmpty: function () { self.setState({ confirm: false }); },
+      confirmOpen: s.confirm && n > 0,
+      confirmText: 'W koszu ' + (n === 1 ? 'jest 1 zadanie.' : (plural(n) === 'zadania' ? 'są ' : 'jest ') + n + ' ' + plural(n) + '.'),
+      doEmpty: function () { self.setState({ items: [], confirm: false, toast: null }); },
+      hasToast: !!s.toast,
+      toastText: s.toast ? s.toast.text : '',
+      undo: function () { if (s.toast) self.setState({ items: s.toast.items, toast: null }); }
+    };
+  }
+}
+</script>
+</body>
+</html>

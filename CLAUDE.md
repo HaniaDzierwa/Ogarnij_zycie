@@ -43,7 +43,18 @@ Nie zmieniaj stosu bez pytania Hani.
 - **Termin** to nie status. „DZIŚ” przy niezrobionym zadaniu = czerwona plakietka; pozostałe terminy (JUTRO, DO 15 PAŹ) zwykłym mosiężnym tekstem.
 - „Ogarnięte” = zrobione. „Już ogarnięte” = sekcja zrobionych.
 - „Domownik”, „Wspólny dom”, „Zaproś domownika”, „Dołącz do domu”.
-- Filtr „Pokaż”: Wszystkie · Pilne · Ważne · Przy okazji · Ogarnięte (bez „Na dziś”).
+- Filtr „Pokaż”: Wszystkie · Pilne · Ważne · Przy okazji (bez „Na dziś” i bez „Ogarnięte” – ogarnięte mają własną zakładkę).
+- Zakładki na ekranie Zadania: „Do zrobienia” i „Ogarnięte”.
+- „Kosz”: usunięte zadania czekają 30 dni na przywrócenie, potem znikają same.
+
+## Interakcje na liście zadań (ustalone)
+
+- Kwadracik po lewej (pole 56 px × cała wysokość wiersza) = ogarnięte / przywróć.
+- Klik w treść zadania = arkusz zadania (edycja w miejscu, na dole „Usuń” i „Ogarnij/Przywróć”).
+- Przeciągnięcie w prawo = ogarnij (w zakładce Ogarnięte: przywróć); w lewo = do kosza. Próg ok. 90 px.
+- Każda taka akcja pokazuje pasek „… · COFNIJ” (ok. 4,5 s).
+- Strzałka „˅” rozwija podzadania (tylko gdy zadanie je ma).
+- Odhaczenie wszystkich podzadań ogarnia zadanie; odznaczenie kroku przywraca je.
 
 ## Komendy
 

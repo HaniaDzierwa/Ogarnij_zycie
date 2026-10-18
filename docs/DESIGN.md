@@ -21,9 +21,13 @@ Styl „domowy elegancki”: butelkowa zieleń, mosiądz i krem, szeryfowy Fraun
 | 1b Konto: Zaloguj się, Załóż konto, Nie pamiętam hasła | brak – zaprojektował Claude w etapie 1 (`src/screens/AccountScreens.tsx`) | Ładowanie → Zaloguj się → Start; Załóż konto → Pierwsze uruchomienie; hasło min. 8 znaków, ikona oka; zaakceptowane 2026-10-18 |
 | 2 Start | `Kategorie.dc.html` (+ `StartDzien`, `StartNoc`) | Kafelki, Ten tydzień, Pilne, Najbliższe wydarzenia |
 | 2b Skróty ze Startu | `ZadaniaPilne`, `ZadaniaOgarniete`, `KalendarzImieniny`, `KalendarzUrodziny` | Zadania/Kalendarz otwarte z filtrem lub dniem |
-| 3 Zadania | `Zadania.dc.html` | Filtry, grupy, podzadania, arkusz „Nowe zadanie” |
+| 3 Zadania | `Zadania.dc.html` | Zakładki Do zrobienia / Ogarnięte, filtry, grupy, podzadania, gesty, arkusz zadania, arkusz „Nowe zadanie”, pasek „Cofnij”; wariant `demo` pokazuje stany |
+| 3a Gesty | `ZadaniaPrawo`, `ZadaniaLewo` | Odsłonięte tło przy przeciąganiu w prawo (ogarnij) i w lewo (do kosza) |
+| 3a Arkusz zadania | `ZadaniaArkusz` | Edycja w miejscu: nazwa, kategoria, priorytet, termin, kroki; Usuń / Ogarnij |
+| 3a Wyczyść ogarnięte | `ZadaniaWyczysc` | Zakładka Ogarnięte + arkusz: starsze niż 7 dni / 30 dni / wszystkie |
+| 3a Kosz | `Kosz.dc.html` (+ `KoszPotwierdzenie`) | Lista usuniętych z licznikiem dni, Przywróć, Opróżnij kosz z potwierdzeniem |
 | 4 Kalendarz | `Kalendarz.dc.html` | Tydzień/miesiąc, agenda, arkusz wydarzenia |
-| 5 Ustawienia | `Ustawienia.dc.html` | Ty, Wspólny dom, Powiadomienia, Wygląd (motyw – ukryty na start) |
+| 5 Ustawienia | `Ustawienia.dc.html` | Ty, Wspólny dom, Zadania (sprzątanie ogarniętych 7/30 dni/nigdy, Kosz), Powiadomienia, Wygląd (motyw – ukryty na start) |
 | 5a Synchronizacja / Domownicy | `Synchronizacja.dc.html` | Teksty i zmiany wg `docs/TEKSTY.md` (bez trybu lokalnego, Wi‑Fi i „Synchronizuj teraz”) |
 | 5b Zmiany od domownika | `Import.dc.html` | Nowe, zmienione, „Do decyzji” |
 | 5c–d Zaproś domownika | `Zaproszenie.dc.html`, `ZaproszenieGotowe.dc.html` | Dodać opcję „jednorazowy link” |
@@ -97,6 +101,32 @@ Zakupy `#5E8C6A` · Dom `#B8925A` · Zdrowie `#A4492F` · Urzędy `#6E5F8C` · A
 
 ## Zachowania (ustalone z Hanią)
 
+### Lista zadań – interakcje
+
+| Gdzie / jak | Akcja |
+| --- | --- |
+| Kwadracik po lewej (pole 56 px × wysokość wiersza) | Ogarnięte; w zakładce Ogarnięte – przywróć |
+| Klik w treść zadania | Arkusz zadania (edycja w miejscu, zmiany zapisują się od razu) |
+| Przeciągnięcie w prawo (> ~90 px) | Ogarnij – tło `#1F3D2E`, ptaszek i napis w `#E8C98E`; w zakładce Ogarnięte: Przywróć – tło `#E8C98E` |
+| Przeciągnięcie w lewo (> ~90 px) | Do kosza – tło `#A4492F`, kosz i „Usuń” na biało |
+| Strzałka „˅” (tylko gdy są kroki) | Rozwija podzadania |
+| Po każdej akcji | Pasek na dole nad menu: „Ogarnięte: … / Przeniesiono do kosza: … · COFNIJ”, znika po ~4,5 s |
+
+- Gest: `touch-action: pan-y`, rozpoznanie poziomego ruchu po 8 px, przewijanie pionowe ma pierwszeństwo; po przeciągnięciu klik nie otwiera arkusza.
+- Pod listą jednozdaniowa podpowiedź o gestach.
+- Na iPhonie gest zaczyna się na wierszu (margines 16 px od krawędzi), żeby nie wywołać „wstecz” w Safari.
+- Odhaczenie wszystkich podzadań ogarnia zadanie; odznaczenie kroku w ogarniętym zadaniu przywraca je (ustalone 2026-10-18).
+
+### Zakładki i kosz
+
+- Zakładki pod nagłówkiem: „Do zrobienia N · Ogarnięte N” (przełącznik segmentowy jak w Kalendarzu).
+- Ogarnięte pogrupowane: Dziś, Wczoraj, W tym tygodniu, Wcześniej; przy zadaniu kto ogarnął („OGARNĘŁA HANIA / OGARNĄŁ KRZYŚ”) i kiedy (godzina, „wczoraj”, data).
+- W zakładce Ogarnięte: przycisk „Wyczyść” (arkusz: starsze niż 7 dni / 30 dni / wszystkie, z licznikiem) i link „KOSZ · N”.
+- Kosz: usunięte czekają 30 dni („zniknie za N dni”, czerwone gdy ≤ 5), „Przywróć” przy każdym, „Opróżnij kosz” z potwierdzeniem „Usunąć na zawsze?”.
+- Ustawienia → Zadania: „Sprzątanie ogarniętych: po 7 dniach / po 30 dniach / nigdy” (domyślnie 30) i wejście do Kosza.
+
+### Pozostałe
+
 - Panel filtrów zamyka kliknięcie w dowolne miejsce poza nim; przycisk „Filtry” ma stałą nazwę i licznik aktywnych filtrów; pod nim chipy aktywnych filtrów z „×”; „Wyczyść” tylko przy 2 filtrach.
 - „Zwiń wszystko” ⇄ „Rozwiń wszystko”.
 - Kafelki na Starcie otwierają Zadania/Kalendarz z gotowym filtrem lub dniem.
@@ -104,22 +134,21 @@ Zakupy `#5E8C6A` · Dom `#B8925A` · Zdrowie `#A4492F` · Urzędy `#6E5F8C` · A
 - Strzałki tygodnia w kalendarzu pod nagłówkiem, nie w nim.
 - Tryb dzień/noc nagłówka Startu i ekranu ładowania wg godziny (6:00–18:00 dzień).
 - Termin zadania (jedna zasada, 2026-10-18): dziś → **DZIŚ** (czerwona plakietka), jutro → **JUTRO**, w ciągu 7 dni → dzień i data (**WT 13 PAŹ**), dalej → **DO 30 PAŹ**.
-- Zadanie z podzadaniami jest ogarnięte, gdy wszystkie podzadania są odhaczone; odznaczenie kroku przywraca zadanie (2026-10-18).
-- Gesty na zadaniu (2026-10-18, nie ma ich w projekcie): **dotknięcie** = ogarnięte (zaznaczenie, po chwili do „Już ogarnięte”; tam dotknięcie przywraca); **przesunięcie w lewo** = edycja (arkusz „Edytuj zadanie” – ten sam co „Nowe zadanie”, pola wypełnione, „Zapisz zmiany”, w terminie chip „Inna data”); **przesunięcie w prawo** = usunięcie (okienko „Usunąć zadanie?” – Anuluj / Usuń). Pod wierszem podpowiedź z ikoną: jasne tło „Edytuj”/„Usuń”, za progiem mocny kolor i „Puść, aby …”.
 - „Najbliższe wydarzenia” na Starcie (2026-10-18): dwa najbliższe wydarzenia dowolnego rodzaju (bez terminów zadań).
 
 ## Model danych (propozycja do etapu 2)
 
 ```
-users/{uid}                 name, houseId, notif{tasks,events,morning,house}, pushSubscriptions[]
+users/{uid}                 name, houseId, notif{tasks,events,morning,house}, cleanupDays(7|30|null), pushSubscriptions[]
 houses/{houseId}            name, ownerUid, createdAt
 houses/{houseId}/members/{uid}      name, role(owner|member), scope{all:boolean, categoryIds[], calendar:boolean}, joinedAt
 houses/{houseId}/categories/{id}    name, color, order, updatedAt, updatedBy
 houses/{houseId}/tasks/{id}         title, categoryId, priority(high|mid|low), due(date|null), done, doneAt,
-                                    subtasks[{id,title,done}], updatedAt, updatedBy, deleted(bool)
+                                    subtasks[{id,title,done}], createdBy, doneAt, doneBy,
+                                    deleted(bool), deletedAt, deletedBy, updatedAt, updatedBy
 houses/{houseId}/eventTypes/{id}    name, dot, bg, fg, icon, system
 houses/{houseId}/events/{id}        title, date, allDay, from, to, typeId, remind, note, updatedAt, updatedBy, deleted
 invites/{code}              houseId, createdBy, expiresAt, usedBy|null, scope
 ```
 
-Usuwanie jako `deleted: true` (miękkie), żeby konflikty „usunął vs. zmieniła” dało się pokazać w „Do decyzji”.
+Usuwanie jako `deleted: true` + `deletedAt` (miękkie) = Kosz. Po 30 dniach od `deletedAt` dokument usuwamy naprawdę. Dzięki temu da się też pokazać konflikty „usunął vs. zmieniła” w „Do decyzji”.

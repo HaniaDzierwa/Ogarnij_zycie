@@ -43,7 +43,7 @@ Cel: wszystkie ekrany z projektu w aplikacji, na przykładowych danych (w pamię
 1. Elementy wspólne: nagłówek 120 px z panoramą dachów, pływający dolny pasek (Start, Zadania, +, Kalendarz, Ustawienia) z menu „Co dodajesz?”, kremowe wyciszenie pod paskiem, karty, chipy, przełączniki, arkusze (bottom sheet), przycisk główny.
 2. Ładowanie (słońce 6:00–18:00, księżyc wieczorem) i Pierwsze uruchomienie.
 3. Start: kafelki, „Ten tydzień”, „Pilne”, „Najbliższe wydarzenia”; wersja dzienna i nocna nagłówka; skróty do filtrów.
-4. Zadania: grupy, zwijanie, „Zwiń/Rozwiń wszystko”, panel filtrów (zamykany kliknięciem obok), chipy aktywnych filtrów, podzadania z %, arkusz „Nowe zadanie”, „Już ogarnięte”.
+4. Zadania: zakładki Do zrobienia / Ogarnięte, grupy, zwijanie, „Zwiń/Rozwiń wszystko”, panel filtrów (zamykany kliknięciem obok), chipy aktywnych filtrów, podzadania z %, gesty przeciągania, arkusz zadania, arkusz „Nowe zadanie”, pasek „Cofnij”, arkusz „Wyczyść”, ekran Kosza.
 5. Kalendarz: tydzień i miesiąc, „Dziś”, agenda dnia, „Później”, arkusz wydarzenia z rodzajami.
 6. Ustawienia, Synchronizacja (Domownicy), Zmiany od domownika, Zaproś domownika, Dołącz do domu – z tekstami i zmianami z `docs/TEKSTY.md`.
 7. Ekrany konta (nowe – nie ma ich w `docs/design/ekrany/`): Zaloguj się, Załóż konto, Nie pamiętam hasła. Projektuje Claude w stylu pozostałych ekranów (nagłówek 120 px z panoramą, karty, pola 48 px, przycisk główny); Hania akceptuje wygląd przed etapem 2.
@@ -69,15 +69,22 @@ Cel: wszystkie ekrany z projektu w aplikacji, na przykładowych danych (w pamię
 
 ## Etap 3 – Zadania
 
-- Dodawanie, edycja, usuwanie, odhaczanie, sekcja „Już ogarnięte”.
+- Dodawanie (arkusz „Nowe zadanie”), edycja w arkuszu zadania (klik w treść), odhaczanie kwadracikiem.
+- Zakładki „Do zrobienia” / „Ogarnięte”; ogarnięte pogrupowane po dacie, z informacją kto i kiedy.
+- Gesty: przeciągnięcie w prawo = ogarnij / przywróć, w lewo = do kosza; pasek „Cofnij” po każdej akcji.
+- Kosz: miękkie usuwanie (`deleted`, `deletedAt`), przywracanie, „Opróżnij kosz” z potwierdzeniem, licznik „zniknie za N dni”.
+- „Wyczyść” w zakładce Ogarnięte: starsze niż 7 dni / 30 dni / wszystkie → do kosza.
 - Podzadania z % postępu, termin (czerwona plakietka „DZIŚ”), priorytet Pilne/Ważne/Przy okazji.
 
-**Odbiór:** przez tydzień Hania prowadzi w aplikacji prawdziwe zadania i nic nie znika.
+**Odbiór:**
+- [ ] Przez tydzień Hania prowadzi w aplikacji prawdziwe zadania i nic nie znika
+- [ ] Gesty działają na telefonie i nie przeszkadzają w przewijaniu; „Cofnij” przywraca dokładnie poprzedni stan
+- [ ] Zadanie z kosza wraca na swoje miejsce (kategoria, priorytet, kroki)
 
 ## Etap 4 – Kategorie i filtry
 
 - Własne kategorie z kolorem; usuwanie z przeniesieniem zadań do „Bez kategorii”.
-- Panel filtrów: Pokaż (Wszystkie, Pilne, Ważne, Przy okazji, Ogarnięte) + kategoria; chipy aktywnych filtrów z „×”; licznik na przycisku „Filtry”; zamykanie kliknięciem obok.
+- Panel filtrów: Pokaż (Wszystkie, Pilne, Ważne, Przy okazji) + kategoria; chipy aktywnych filtrów z „×”; licznik na przycisku „Filtry”; zamykanie kliknięciem obok.
 - Grupowanie po kategorii lub priorytecie, zwijanie grup, „Zwiń/Rozwiń wszystko”.
 
 **Odbiór:** każda kombinacja filtrów daje poprawną listę, liczniki się zgadzają.
@@ -92,7 +99,7 @@ Cel: wszystkie ekrany z projektu w aplikacji, na przykładowych danych (w pamię
 ## Etap 6 – Start
 
 - Kafelki liczone z danych: do zrobienia, pilne, w tym tygodniu, ogarnięte dziś.
-- Skróty: kafelek otwiera Zadania z filtrem (np. Pilne, Ogarnięte) albo Kalendarz z zaznaczonym dniem.
+- Skróty: kafelek otwiera Zadania z filtrem (np. Pilne), zakładkę Ogarnięte albo Kalendarz z zaznaczonym dniem.
 - Powitanie z imieniem; wersja dzienna/nocna zależnie od godziny.
 
 **Odbiór:** liczby na Starcie zawsze zgadzają się z listą zadań.
@@ -100,6 +107,7 @@ Cel: wszystkie ekrany z projektu w aplikacji, na przykładowych danych (w pamię
 ## Etap 7 – Ustawienia i powiadomienia push
 
 - Profil (imię lub pseudonim), cztery przełączniki powiadomień zapisane w Firestore.
+- Zadania: „Sprzątanie ogarniętych” (7 / 30 dni / nigdy) i wejście do Kosza. Automatyczne sprzątanie i trwałe usuwanie z kosza po 30 dniach wykonuje Worker raz dziennie (zapasowo: aplikacja przy uruchomieniu).
 - Web Push: zgoda w przeglądarce, subskrypcja zapisana przy użytkowniku, instrukcja „Dodaj do ekranu głównego” na iPhonie.
 - Cloudflare Worker (darmowy plan, cron co minutę): sprawdza, co jest do wysłania (terminy, wydarzenia, poranne podsumowanie o 8:00), wysyła push. Instrukcja dla Hani: konto Cloudflare, klucze VAPID, konto serwisowe Firebase jako sekret Workera.
 - Motyw: tylko jasny, wybór ukryty.
