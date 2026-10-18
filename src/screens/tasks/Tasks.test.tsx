@@ -39,9 +39,13 @@ test('filtr „Pokaż” nie ma już „Ogarnięte”', () => {
   expect(within(panel).getByRole('button', { name: 'Przy okazji' })).toBeDefined()
 })
 
-test('kwadracik ogarnia: pasek „Ogarnięte: … · COFNIJ”, COFNIJ przywraca', () => {
+test('kwadracik: najpierw ptaszek, po chwili „Ogarnięte: … · COFNIJ”; COFNIJ przywraca', () => {
+  vi.useFakeTimers()
   renderAt('/zadania')
   click('Oznacz jako ogarnięte: Baterie AA do pilota')
+  // animacja zaznaczenia – zadanie jeszcze na liście
+  expect(tab(/Ogarnięte/).textContent).toBe('Ogarnięte7')
+  act(() => vi.advanceTimersByTime(400))
   expect(screen.getByRole('status').textContent).toBe('Ogarnięte: Baterie AA do pilotaCOFNIJ')
   expect(tab(/Ogarnięte/).textContent).toBe('Ogarnięte8')
   click('COFNIJ')
@@ -53,6 +57,7 @@ test('pasek „Cofnij” znika po ok. 4,5 s', () => {
   vi.useFakeTimers()
   renderAt('/zadania')
   click('Oznacz jako ogarnięte: Baterie AA do pilota')
+  act(() => vi.advanceTimersByTime(400))
   expect(screen.getByRole('status')).toBeDefined()
   act(() => vi.advanceTimersByTime(4600))
   expect(screen.queryByRole('status')).toBeNull()

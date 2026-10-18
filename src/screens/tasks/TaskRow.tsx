@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { SwipeRow } from '../../components/SwipeRow.tsx'
 import { Box } from '../../components/ui.tsx'
 import { CheckIcon, TrashIcon, UndoIcon } from '../../components/icons.tsx'
@@ -53,6 +54,15 @@ export function TaskRow({
   const byCat = groupBy === 'cat'
   const hasSteps = !task.done && task.subtasks.length > 0
   const done = kind === 'done'
+  const [completing, setCompleting] = useState(false)
+
+  /** Kwadracik: najpierw widać ptaszek, po chwili zadanie przechodzi do Ogarniętych. */
+  const clickBox = () => {
+    if (task.done) return onToggleDone()
+    if (completing) return
+    setCompleting(true)
+    setTimeout(onToggleDone, 350)
+  }
 
   return (
     <div style={{ borderBottom: `1px solid ${colors.line}` }}>
@@ -86,7 +96,7 @@ export function TaskRow({
         <div style={{ display: 'flex', alignItems: 'stretch', minHeight: 64 }}>
           <button
             type="button"
-            onClick={onToggleDone}
+            onClick={clickBox}
             aria-label={
               task.done
                 ? `Przywróć do „Do zrobienia”: ${task.title}`
@@ -103,7 +113,13 @@ export function TaskRow({
               justifyContent: 'center',
             }}
           >
-            {task.done ? <DoneBox /> : <Box color={p.line} />}
+            {task.done || completing ? (
+              <span className={completing ? 'pop-center' : undefined} style={{ display: 'flex' }}>
+                <DoneBox />
+              </span>
+            ) : (
+              <Box color={p.line} />
+            )}
           </button>
           <button
             type="button"
@@ -121,6 +137,8 @@ export function TaskRow({
               background: 'transparent',
               textAlign: 'left',
               color: colors.green900,
+              transition: 'opacity 250ms ease',
+              opacity: completing ? 0.5 : 1,
             }}
           >
             <span

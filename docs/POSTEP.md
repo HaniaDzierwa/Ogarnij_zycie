@@ -19,6 +19,7 @@ Aktualny etap: **1 – Klikalny mockup** (w toku)
 
 | Data | Etap | Uwaga | Kiedy | Status |
 | --- | --- | --- | --- | --- |
+| 2026-10-18 | 1 | Po kliknięciu kwadracika zniknęła animacja ogarniania – przywrócić. | teraz | zrobione (ptaszek z animacją, treść blednie, po 0,35 s do Ogarniętych + pasek COFNIJ) |
 | 2026-10-18 | 1 | Aktualizacja projektu (docs2): zakładki Do zrobienia / Ogarnięte, gesty w prawo = ogarnij, w lewo = do kosza, klik w treść = arkusz zadania, pasek COFNIJ, Wyczyść, Kosz, Ustawienia → Zadania. Zastępuje gesty z poprzedniej uwagi (dotknięcie = ogarnij, lewo = edycja, prawo = usuń z pytaniem). | teraz | zrobione – do sprawdzenia |
 | 2026-10-18 | 1 | Zadania: dotknięcie = ogarnięte; przesunięcie w lewo = edycja, w prawo = usunięcie; podpowiedzi pod spodem pokazują, co się stanie; usunięcie z pytaniem „czy na pewno”. | teraz | zastąpione aktualizacją projektu (docs2) |
 | 2026-10-18 | 1 | Gdy wszystkie podzadania są odhaczone, całe zadanie ustawia się jako zrobione. | teraz | zrobione (odznaczenie kroku przywraca zadanie) |

@@ -105,7 +105,7 @@ Zakupy `#5E8C6A` · Dom `#B8925A` · Zdrowie `#A4492F` · Urzędy `#6E5F8C` · A
 
 | Gdzie / jak | Akcja |
 | --- | --- |
-| Kwadracik po lewej (pole 56 px × wysokość wiersza) | Ogarnięte; w zakładce Ogarnięte – przywróć |
+| Kwadracik po lewej (pole 56 px × wysokość wiersza) | Ogarnięte – najpierw animacja: zielony kwadracik z ptaszkiem, treść blednie, po ~0,35 s zadanie przechodzi do Ogarniętych; w zakładce Ogarnięte – przywróć od razu |
 | Klik w treść zadania | Arkusz zadania (edycja w miejscu, zmiany zapisują się od razu) |
 | Przeciągnięcie w prawo (> ~90 px) | Ogarnij – tło `#1F3D2E`, ptaszek i napis w `#E8C98E`; w zakładce Ogarnięte: Przywróć – tło `#E8C98E` |
 | Przeciągnięcie w lewo (> ~90 px) | Do kosza – tło `#A4492F`, kosz i „Usuń” na biało |
