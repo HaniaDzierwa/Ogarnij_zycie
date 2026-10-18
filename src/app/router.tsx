@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import type { RouteObject } from 'react-router'
+import { LoginScreen, RegisterScreen, ResetPasswordScreen } from '../screens/AccountScreens.tsx'
 import { ElementsScreen } from '../screens/ElementsScreen.tsx'
 import { FirstRunScreen } from '../screens/FirstRunScreen.tsx'
 import { LoadingScreen } from '../screens/LoadingScreen.tsx'
@@ -11,6 +12,9 @@ import { screens, type ScreenId } from './screens.ts'
 const built: Partial<Record<ScreenId, ReactNode>> = {
   ladowanie: <LoadingScreen />,
   pierwsze: <FirstRunScreen />,
+  logowanie: <LoginScreen />,
+  rejestracja: <RegisterScreen />,
+  haslo: <ResetPasswordScreen />,
 }
 
 export const routes: RouteObject[] = [

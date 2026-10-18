@@ -16,10 +16,10 @@ function renderAt(url: string) {
   return router
 }
 
-test('Ładowanie: dotknięcie prowadzi do Pierwszego uruchomienia', () => {
+test('Ładowanie: dotknięcie prowadzi do logowania', () => {
   const router = renderAt('/ladowanie?pora=noc')
   fireEvent.click(screen.getByRole('button', { name: /wczytywanie/ }))
-  expect(router.state.location.pathname).toBe('/witaj')
+  expect(router.state.location.pathname).toBe('/logowanie')
 })
 
 test('Pierwsze uruchomienie: imię w podglądzie powitania, „Zaczynamy” → Start', () => {

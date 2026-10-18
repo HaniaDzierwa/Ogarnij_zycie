@@ -8,7 +8,7 @@ import { colors, dayHeader, fonts } from '../theme'
 /**
  * 1 Ładowanie. Słońce 6:00–18:00, księżyc 18:00–6:00 (podgląd: `?pora=dzien` / `?pora=noc`).
  * Projekt: styl banera z „Pierwszego uruchomienia” i nagłówka Startu (Powitanie.dc.html nie ma w eksporcie).
- * W mockupie dotknięcie przechodzi dalej; od etapu 2 ekran zniknie sam po wczytaniu konta.
+ * W mockupie dotknięcie przechodzi do logowania; od etapu 2 ekran zniknie sam po wczytaniu konta.
  */
 export function LoadingScreen() {
   const [params] = useSearchParams()
@@ -24,7 +24,7 @@ export function LoadingScreen() {
     <button
       type="button"
       aria-label="Ogarnij życie – wczytywanie. Dotknij, aby przejść dalej."
-      onClick={() => navigate(paths.pierwsze)}
+      onClick={() => navigate(paths.logowanie)}
       style={{
         position: 'fixed',
         inset: 0,

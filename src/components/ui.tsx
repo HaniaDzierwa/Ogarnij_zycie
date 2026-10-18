@@ -1,7 +1,7 @@
 import type { CSSProperties, ReactNode } from 'react'
 import { Link } from 'react-router'
 import { paths } from '../app/screens.ts'
-import { colors, radii, shadows, sizes } from '../theme'
+import { colors, priorities, radii, shadows, sizes } from '../theme'
 
 /** Układ ekranu: kremowe tło, odstępy 16 px, miejsce na dolny pasek. */
 export function Screen({
@@ -438,12 +438,22 @@ export function Sheet({
   )
 }
 
-/** Pole tekstowe z etykietą (min. 16 px – bez zoomu na iPhonie). */
+/** Pole tekstowe z etykietą (min. 16 px – bez zoomu na iPhonie), podpowiedzią, błędem i przyciskiem z prawej. */
 export function Field({
   id,
   label,
+  hint,
+  error,
+  trailing,
   ...input
-}: { id: string; label: string } & React.InputHTMLAttributes<HTMLInputElement>) {
+}: {
+  id: string
+  label: string
+  hint?: string
+  error?: string
+  trailing?: ReactNode
+} & React.InputHTMLAttributes<HTMLInputElement>) {
+  const describedBy = error ? `${id}-blad` : hint ? `${id}-podpowiedz` : undefined
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
       <label
@@ -452,21 +462,47 @@ export function Field({
       >
         {label}
       </label>
-      <input
-        id={id}
-        {...input}
-        style={{
-          height: 50,
-          border: `1px solid ${colors.border}`,
-          borderRadius: 16,
-          padding: '0 16px',
-          fontSize: 16,
-          color: colors.green900,
-          background: colors.white,
-          outlineColor: colors.green900,
-          ...input.style,
-        }}
-      />
+      <div style={{ position: 'relative', display: 'flex' }}>
+        <input
+          id={id}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={describedBy}
+          {...input}
+          style={{
+            flex: 1,
+            minWidth: 0,
+            height: 50,
+            border: `${error ? 2 : 1}px solid ${error ? priorities.high.line : colors.border}`,
+            borderRadius: 16,
+            padding: trailing ? '0 84px 0 16px' : '0 16px',
+            fontSize: 16,
+            color: colors.green900,
+            background: colors.white,
+            outlineColor: colors.green900,
+            ...input.style,
+          }}
+        />
+        {trailing && (
+          <span style={{ position: 'absolute', right: 4, top: 3, bottom: 3, display: 'flex' }}>
+            {trailing}
+          </span>
+        )}
+      </div>
+      {error ? (
+        <span
+          id={`${id}-blad`}
+          role="alert"
+          style={{ fontSize: 13, fontWeight: 700, color: priorities.high.fg }}
+        >
+          {error}
+        </span>
+      ) : (
+        hint && (
+          <span id={`${id}-podpowiedz`} style={{ fontSize: 13, color: colors.muted }}>
+            {hint}
+          </span>
+        )
+      )}
     </div>
   )
 }

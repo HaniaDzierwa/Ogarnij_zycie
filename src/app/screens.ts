@@ -3,6 +3,9 @@
 export type ScreenId =
   | 'ladowanie'
   | 'pierwsze'
+  | 'logowanie'
+  | 'rejestracja'
+  | 'haslo'
   | 'start'
   | 'zadania'
   | 'kalendarz'
@@ -35,6 +38,9 @@ export type Screen = {
 export const paths = {
   ladowanie: '/ladowanie',
   pierwsze: '/witaj',
+  logowanie: '/logowanie',
+  rejestracja: '/rejestracja',
+  haslo: '/haslo',
   start: '/',
   zadania: '/zadania',
   zadaniaPilne: '/zadania?pokaz=pilne',
@@ -67,8 +73,9 @@ export const screens: Screen[] = [
     name: 'Ładowanie',
     source: 'PowitanieDzien.dc.html, PowitanieNoc.dc.html',
     transitions: [
-      { label: 'Pierwsze uruchomienie (bez domu)', to: paths.pierwsze },
-      { label: 'Start (dom już jest)', to: paths.start },
+      { label: 'Zaloguj się (bez konta)', to: paths.logowanie },
+      { label: 'Pierwsze uruchomienie (konto bez domu)', to: paths.pierwsze },
+      { label: 'Start (konto z domem)', to: paths.start },
     ],
   },
   {
@@ -81,6 +88,39 @@ export const screens: Screen[] = [
       { label: 'Załóż nowy dom', to: paths.start },
       { label: 'Dołącz do domu', to: paths.dolacz },
     ],
+  },
+  {
+    id: 'logowanie',
+    path: paths.logowanie,
+    number: '1b',
+    name: 'Zaloguj się',
+    source: 'nowy ekran (Claude, etap 1)',
+    transitions: [
+      { label: 'Zaloguj się → Start', to: paths.start },
+      { label: 'Nie pamiętam hasła', to: paths.haslo },
+      { label: 'Załóż konto', to: paths.rejestracja },
+    ],
+  },
+  {
+    id: 'rejestracja',
+    path: paths.rejestracja,
+    number: '1b',
+    name: 'Załóż konto',
+    source: 'nowy ekran (Claude, etap 1)',
+    back: { to: paths.logowanie, label: 'ZALOGUJ SIĘ' },
+    transitions: [
+      { label: 'Załóż konto → Pierwsze uruchomienie', to: paths.pierwsze },
+      { label: 'Zaloguj się', to: paths.logowanie },
+    ],
+  },
+  {
+    id: 'haslo',
+    path: paths.haslo,
+    number: '1b',
+    name: 'Nie pamiętam hasła',
+    source: 'nowy ekran (Claude, etap 1)',
+    back: { to: paths.logowanie, label: 'ZALOGUJ SIĘ' },
+    transitions: [{ label: 'Wróć do logowania', to: paths.logowanie }],
   },
   {
     id: 'start',
