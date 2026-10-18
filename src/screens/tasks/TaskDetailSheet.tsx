@@ -51,7 +51,13 @@ export function TaskDetailSheet({
 }: Props) {
   const [originalTitle] = useState(task.title)
   const [step, setStep] = useState('')
-  const preset = PRESETS.find((p) => presetDate(p, today) === task.due)
+  // Kliknięty przycisk wygrywa, gdy dwa dają tę samą datę (w niedzielę „Dziś” = „W tym tygodniu”,
+  // w sobotę „Jutro” = „W tym tygodniu”); bez kliknięcia – pierwszy pasujący do terminu.
+  const [picked, setPicked] = useState<Preset | null>(null)
+  const preset =
+    picked && presetDate(picked, today) === task.due
+      ? picked
+      : PRESETS.find((p) => presetDate(p, today) === task.due)
   const [customOpen, setCustomOpen] = useState(false)
   const showCustom = customOpen || (!preset && task.due !== null)
   const subDone = task.subtasks.filter((s) => s.done).length
@@ -214,6 +220,7 @@ export function TaskDetailSheet({
               on={!showCustom && preset === p}
               onClick={() => {
                 setCustomOpen(false)
+                setPicked(p)
                 setDue(presetDate(p, today))
               }}
             >

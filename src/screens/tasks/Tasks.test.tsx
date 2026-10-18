@@ -9,10 +9,10 @@ afterEach(() => {
   vi.useRealTimers()
 })
 
-function renderAt(url: string) {
+function renderAt(url: string, today = '2026-10-09') {
   const router = createMemoryRouter(routes, { initialEntries: [url] })
   render(
-    <MockStoreProvider today="2026-10-09">
+    <MockStoreProvider today={today}>
       <RouterProvider router={router} />
     </MockStoreProvider>,
   )
@@ -259,4 +259,17 @@ test('panel filtrów zamyka dotknięcie poza nim (tło nad całym ekranem, takż
   expect(document.getElementById('panel-filtrow')).not.toBeNull()
   click('Zamknij filtry')
   expect(document.getElementById('panel-filtrow')).toBeNull()
+})
+
+test('arkusz: w niedzielę „W tym tygodniu” da się wybrać, choć to ten sam dzień co „Dziś”', () => {
+  renderAt('/zadania', '2026-10-18')
+  click('Otwórz zadanie Baterie AA do pilota')
+  const sheet = screen.getByRole('dialog', { name: 'Zadanie' })
+  const chip = (name: string) => within(sheet).getByRole('button', { name })
+  fireEvent.click(chip('W tym tygodniu'))
+  expect(chip('W tym tygodniu').getAttribute('aria-pressed')).toBe('true')
+  expect(chip('Dziś').getAttribute('aria-pressed')).toBe('false')
+  fireEvent.click(chip('Dziś'))
+  expect(chip('Dziś').getAttribute('aria-pressed')).toBe('true')
+  expect(chip('W tym tygodniu').getAttribute('aria-pressed')).toBe('false')
 })
