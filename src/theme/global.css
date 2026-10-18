@@ -1,0 +1,61 @@
+/* Style bazowe – wartości z src/theme/tokens.ts i docs/design/ekrany/. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  background: #f6f1e7;
+  color: #1f3d2e;
+  font-family: 'Nunito', sans-serif;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+a {
+  color: #7a5c2c;
+}
+a:hover {
+  color: #5c4420;
+}
+
+button,
+input,
+textarea,
+select {
+  font-family: inherit;
+  font-size: 16px; /* min. 16 px – brak zoomu na iPhonie */
+}
+
+button {
+  cursor: pointer;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 10px 0;
+}
+*::-webkit-scrollbar-thumb {
+  background: rgba(31, 61, 46, 0.22);
+  border-radius: 10px;
+  border: 3px solid transparent;
+  background-clip: padding-box;
+  min-height: 40px;
+}
+*::-webkit-scrollbar-button {
+  display: none;
+}
+@supports (-moz-appearance: none) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(31, 61, 46, 0.25) transparent;
+  }
+}
