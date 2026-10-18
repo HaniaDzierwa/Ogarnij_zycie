@@ -24,6 +24,10 @@ Projekt ekranów zakładał aplikację „bez konta i bez chmury”, z wymianą 
 | 14 | 5c Zaproś domownika – krok 3 | Skanuje kod albo wpisuje 6 cyfr – i gotowe. | Skanuje kod, wpisuje 6 cyfr albo otwiera link – i gotowe. |
 | 15 | 5d Zaproszenie gotowe | Jej telefon jest teraz w Waszym domu. Zmiany będą się wymieniać przez Wi‑Fi – bez chmury. | Jej telefon jest teraz w Waszym domu. Zmiany pojawią się u Was w kilka sekund – także te zrobione bez internetu. |
 | 16 | 5e Dołącz do domu | Kod widać u osoby, która Cię zaprasza: Ustawienia › Domownicy › Zaproś. Oba telefony muszą być w tej samej sieci Wi‑Fi. | Kod widać u osoby, która Cię zaprasza: Ustawienia › Domownicy › Zaproś. Jest ważny 10 minut. |
+| 17 | 5 Ustawienia (Wspólny dom, pod „Domownicy i synchronizacja”) | KRZYŚ · WI‑FI · DZIŚ 13:05 | KRZYŚ · DZIŚ 13:05 |
+| 18 | 5b Zmiany od domownika – nagłówek | PRZED CHWILĄ · WI‑FI | PRZED CHWILĄ |
+
+#17–18 dopisane w etapie 1 (te same zasady co zaakceptowane wyżej – usunięte „Wi‑Fi”).
 
 ## B. Elementy, które przy Firebase tracą sens (do decyzji)
 
