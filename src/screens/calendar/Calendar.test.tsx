@@ -3,6 +3,7 @@ import { createMemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, describe, expect, test } from 'vitest'
 import { routes } from '../../app/router.tsx'
 import { MockStoreProvider } from '../../data/MockStore.tsx'
+import { MemoryAuthProvider } from '../../auth/MemoryAuthProvider.tsx'
 import { customType, monthGrid, weekCountLabel, weekRangeLabel } from './calendarView.ts'
 
 afterEach(cleanup)
@@ -11,9 +12,11 @@ afterEach(cleanup)
 function renderAt(url: string) {
   const router = createMemoryRouter(routes, { initialEntries: [url] })
   render(
-    <MockStoreProvider today="2026-10-09">
-      <RouterProvider router={router} />
-    </MockStoreProvider>,
+    <MemoryAuthProvider>
+      <MockStoreProvider today="2026-10-09">
+        <RouterProvider router={router} />
+      </MockStoreProvider>
+    </MemoryAuthProvider>,
   )
   return router
 }

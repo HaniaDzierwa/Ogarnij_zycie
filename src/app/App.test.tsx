@@ -2,6 +2,7 @@ import { cleanup, render, screen } from '@testing-library/react'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, describe, expect, test } from 'vitest'
 import { MockStoreProvider } from '../data/MockStore.tsx'
+import { MemoryAuthProvider } from '../auth/MemoryAuthProvider.tsx'
 import { routes } from './router.tsx'
 import { screens } from './screens.ts'
 
@@ -10,9 +11,11 @@ afterEach(cleanup)
 function renderAt(url: string) {
   const router = createMemoryRouter(routes, { initialEntries: [url] })
   render(
-    <MockStoreProvider today="2026-10-09">
-      <RouterProvider router={router} />
-    </MockStoreProvider>,
+    <MemoryAuthProvider>
+      <MockStoreProvider today="2026-10-09">
+        <RouterProvider router={router} />
+      </MockStoreProvider>
+    </MemoryAuthProvider>,
   )
   return router
 }

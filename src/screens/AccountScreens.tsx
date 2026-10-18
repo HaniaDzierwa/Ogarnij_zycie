@@ -1,10 +1,11 @@
 // 1b Konto: Zaloguj się, Załóż konto, Nie pamiętam hasła.
 // Nowe ekrany (nie ma ich w docs/design/ekrany/) – w stylu Pierwszego uruchomienia i nagłówków.
-// W mockupie nic nie jest wysyłane; logowanie przez Firebase Authentication dochodzi w etapie 2.
+// Od etapu 2 – Firebase Authentication (e‑mail + hasło) przez useAuth().
 
 import { useState, type FormEvent, type ReactNode } from 'react'
-import { Link, useNavigate } from 'react-router'
+import { Link, useNavigate, useSearchParams } from 'react-router'
 import { paths } from '../app/screens.ts'
+import { AuthError, authErrorMessage, useAuth } from '../auth/auth.ts'
 import { Accent, Header, RIDGE_FAR, RIDGE_NEAR } from '../components/Header.tsx'
 import { Logo } from '../components/Logo.tsx'
 import { Card, Field, PrimaryButton } from '../components/ui.tsx'
@@ -16,21 +17,67 @@ function validEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
 }
 
+type FieldErrors = { email?: string; password?: string }
+
+/** Dokąd po zalogowaniu: `?dalej=/adres` (np. link z zaproszenia) albo podany ekran. */
+function nextPath(params: URLSearchParams, fallback: string): string {
+  const next = params.get('dalej')
+  return next && next.startsWith('/') && !next.startsWith('//') ? next : fallback
+}
+
+/** Błąd konta → komunikat przy polu albo pod formularzem. */
+function showAuthError(
+  err: unknown,
+  setErrors: (e: FieldErrors) => void,
+  setFormError: (m: string | undefined) => void,
+) {
+  const { field, message } = authErrorMessage(err instanceof AuthError ? err.code : 'unknown')
+  if (field) setErrors({ [field]: message })
+  else setFormError(message)
+}
+
+/** Komunikat pod formularzem (np. brak internetu). */
+function FormError({ message }: { message?: string }) {
+  if (!message) return null
+  return (
+    <span
+      role="alert"
+      style={{ padding: '0 4px', fontSize: 14, fontWeight: 700, color: '#8C3D27' }}
+    >
+      {message}
+    </span>
+  )
+}
+
 /** Zaloguj się – pierwszy ekran bez konta (po Ładowaniu). */
 export function LoginScreen() {
   const navigate = useNavigate()
+  const [params] = useSearchParams()
+  const { signIn } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({})
+  const [errors, setErrors] = useState<FieldErrors>({})
+  const [formError, setFormError] = useState<string>()
+  const [busy, setBusy] = useState(false)
 
-  const submit = (e: FormEvent) => {
+  const submit = async (e: FormEvent) => {
     e.preventDefault()
     const next = {
       email: validEmail(email) ? undefined : 'Wpisz poprawny adres e‑mail.',
       password: password ? undefined : 'Wpisz hasło.',
     }
     setErrors(next)
-    if (!next.email && !next.password) navigate(paths.start)
+    setFormError(undefined)
+    if (next.email || next.password) return
+    setBusy(true)
+    try {
+      await signIn(email, password)
+      navigate(nextPath(params, paths.start), { replace: true })
+    } catch (err) {
+      showAuthError(err, setErrors, setFormError)
+    } finally {
+      setBusy(false)
+    }
   }
 
   return (
@@ -85,14 +132,18 @@ export function LoginScreen() {
             Nie pamiętam hasła
           </Link>
         </Card>
-        <PrimaryButton type="submit">
-          Zaloguj się
-          <ArrowIcon />
+        <FormError message={formError} />
+        <PrimaryButton type="submit" disabled={busy}>
+          {busy ? 'Loguję…' : 'Zaloguj się'}
+          {!busy && <ArrowIcon />}
         </PrimaryButton>
       </form>
       <p style={{ margin: 0, textAlign: 'center', fontSize: 15, color: colors.muted }}>
         Nie masz konta?{' '}
-        <Link to={paths.rejestracja} style={{ fontWeight: 800, textDecoration: 'none' }}>
+        <Link
+          to={paths.rejestracja + (params.size ? `?${params}` : '')}
+          style={{ fontWeight: 800, textDecoration: 'none' }}
+        >
           Załóż konto
         </Link>
       </p>
@@ -104,11 +155,15 @@ export function LoginScreen() {
 /** Załóż konto – e‑mail i hasło; dalej Pierwsze uruchomienie (imię, nowy dom / dołącz). */
 export function RegisterScreen() {
   const navigate = useNavigate()
+  const [params] = useSearchParams()
+  const { signUp } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({})
+  const [errors, setErrors] = useState<FieldErrors>({})
+  const [formError, setFormError] = useState<string>()
+  const [busy, setBusy] = useState(false)
 
-  const submit = (e: FormEvent) => {
+  const submit = async (e: FormEvent) => {
     e.preventDefault()
     const next = {
       email: validEmail(email) ? undefined : 'Wpisz poprawny adres e‑mail.',
@@ -118,7 +173,19 @@ export function RegisterScreen() {
           : `Hasło musi mieć co najmniej ${MIN_PASSWORD} znaków.`,
     }
     setErrors(next)
-    if (!next.email && !next.password) navigate(paths.pierwsze)
+    setFormError(undefined)
+    if (next.email || next.password) return
+    setBusy(true)
+    try {
+      await signUp(email, password)
+      // z linku zaproszenia – od razu „Dołącz do domu”, inaczej Pierwsze uruchomienie
+      const next = nextPath(params, paths.pierwsze)
+      navigate(next.startsWith(paths.dolacz) ? next : paths.pierwsze, { replace: true })
+    } catch (err) {
+      showAuthError(err, setErrors, setFormError)
+    } finally {
+      setBusy(false)
+    }
   }
 
   return (
@@ -170,14 +237,18 @@ export function RegisterScreen() {
             hint={`Co najmniej ${MIN_PASSWORD} znaków.`}
           />
         </Card>
-        <PrimaryButton type="submit">
-          Załóż konto
-          <ArrowIcon />
+        <FormError message={formError} />
+        <PrimaryButton type="submit" disabled={busy}>
+          {busy ? 'Zakładam konto…' : 'Załóż konto'}
+          {!busy && <ArrowIcon />}
         </PrimaryButton>
       </form>
       <p style={{ margin: 0, textAlign: 'center', fontSize: 15, color: colors.muted }}>
         Masz już konto?{' '}
-        <Link to={paths.logowanie} style={{ fontWeight: 800, textDecoration: 'none' }}>
+        <Link
+          to={paths.logowanie + (params.size ? `?${params}` : '')}
+          style={{ fontWeight: 800, textDecoration: 'none' }}
+        >
           Zaloguj się
         </Link>
       </p>
@@ -188,18 +259,32 @@ export function RegisterScreen() {
 
 /** Nie pamiętam hasła – link do ustawienia nowego hasła na e‑mail. */
 export function ResetPasswordScreen() {
+  const { resetPassword } = useAuth()
   const [email, setEmail] = useState('')
   const [error, setError] = useState<string>()
+  const [formError, setFormError] = useState<string>()
+  const [busy, setBusy] = useState(false)
   const [sentTo, setSentTo] = useState<string | null>(null)
 
-  const submit = (e: FormEvent) => {
+  const submit = async (e: FormEvent) => {
     e.preventDefault()
     if (!validEmail(email)) {
       setError('Wpisz poprawny adres e‑mail.')
       return
     }
     setError(undefined)
-    setSentTo(email.trim())
+    setFormError(undefined)
+    setBusy(true)
+    try {
+      await resetPassword(email)
+      setSentTo(email.trim())
+    } catch (err) {
+      // nie zdradzamy, czy konto istnieje – „brak konta” wygląda jak wysłany link
+      if (err instanceof AuthError && err.code === 'auth/user-not-found') setSentTo(email.trim())
+      else showAuthError(err, (e) => setError(e.email), setFormError)
+    } finally {
+      setBusy(false)
+    }
   }
 
   return (
@@ -316,7 +401,10 @@ export function ResetPasswordScreen() {
                 error={error}
               />
             </Card>
-            <PrimaryButton type="submit">Wyślij link</PrimaryButton>
+            <FormError message={formError} />
+            <PrimaryButton type="submit" disabled={busy}>
+              {busy ? 'Wysyłam…' : 'Wyślij link'}
+            </PrimaryButton>
           </form>
         </>
       )}

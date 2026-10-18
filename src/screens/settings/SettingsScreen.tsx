@@ -1,11 +1,19 @@
-import type { ReactNode } from 'react'
-import { Link } from 'react-router'
+import { useState, type ReactNode } from 'react'
+import { Link, useNavigate } from 'react-router'
 import { paths } from '../../app/screens.ts'
+import { useAuth } from '../../auth/auth.ts'
 import { Accent, Header } from '../../components/Header.tsx'
 import { ChevronRightIcon, TrashIcon, UsersIcon } from '../../components/icons.tsx'
 import { Logo } from '../../components/Logo.tsx'
 import { TabBar } from '../../components/TabBar.tsx'
-import { Card, Screen, SectionLabel, OfflineBadge, ToggleRow } from '../../components/ui.tsx'
+import {
+  Card,
+  ConfirmDialog,
+  OfflineBadge,
+  Screen,
+  SectionLabel,
+  ToggleRow,
+} from '../../components/ui.tsx'
 import { useStore } from '../../data/MockStore.tsx'
 import { plural } from '../../data/plural.ts'
 import type { CleanupDays, NotificationSettings } from '../../data/types.ts'
@@ -24,6 +32,9 @@ const CLEANUP: { id: CleanupDays; name: string; hint: string }[] = [
  */
 export function SettingsScreen() {
   const store = useStore()
+  const auth = useAuth()
+  const navigate = useNavigate()
+  const [askSignOut, setAskSignOut] = useState(false)
   const { userName, members, currentUid, notifications, cleanupDays, tasks, events, today } = store
   const name = userName.trim()
   const others = members.filter((m) => m.uid !== currentUid)
@@ -247,7 +258,39 @@ export function SettingsScreen() {
         <span style={{ fontSize: 12, color: colors.muted }}>
           Dane w Firebase – widzą je tylko domownicy
         </span>
+        <span style={{ fontSize: 12, color: colors.muted }}>
+          {auth.user?.email}
+          {' · '}
+          <button
+            type="button"
+            onClick={() => setAskSignOut(true)}
+            style={{
+              border: 0,
+              padding: '12px 4px',
+              background: 'transparent',
+              color: colors.brass700,
+              fontSize: 12,
+              fontWeight: 800,
+            }}
+          >
+            Wyloguj
+          </button>
+        </span>
       </div>
+
+      {askSignOut && (
+        <ConfirmDialog
+          title="Wylogować się?"
+          message="Twoje zadania i kalendarz zostają na koncie – wrócą po zalogowaniu."
+          confirmLabel="Wyloguj"
+          onCancel={() => setAskSignOut(false)}
+          onConfirm={async () => {
+            setAskSignOut(false)
+            await auth.signOut()
+            navigate(paths.logowanie, { replace: true })
+          }}
+        />
+      )}
 
       <TabBar active="ustawienia" />
     </Screen>

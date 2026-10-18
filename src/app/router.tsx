@@ -14,6 +14,7 @@ import { MembersScreen } from '../screens/settings/MembersScreen.tsx'
 import { StartScreen } from '../screens/StartScreen.tsx'
 import { TasksRoute } from '../screens/tasks/TasksScreen.tsx'
 import { TrashScreen } from '../screens/tasks/TrashScreen.tsx'
+import { RequireAuth } from '../auth/RequireAuth.tsx'
 import { screens, type ScreenId } from './screens.ts'
 
 /** Gotowe ekrany; pozostałe pokazują PlaceholderScreen do czasu ich zbudowania. */
@@ -33,10 +34,20 @@ const built: Partial<Record<ScreenId, ReactNode>> = {
   dolacz: <JoinScreen />,
 }
 
+/** Ekrany dostępne bez konta; pozostałe tylko po zalogowaniu. */
+const PUBLIC: ScreenId[] = ['ladowanie', 'logowanie', 'rejestracja', 'haslo']
+
+const screenElement = (screen: (typeof screens)[number]) =>
+  built[screen.id] ?? <PlaceholderScreen screen={screen} />
+
 export const routes: RouteObject[] = [
   ...screens.map((screen) => ({
     path: screen.path,
-    element: built[screen.id] ?? <PlaceholderScreen screen={screen} />,
+    element: PUBLIC.includes(screen.id) ? (
+      screenElement(screen)
+    ) : (
+      <RequireAuth>{screenElement(screen)}</RequireAuth>
+    ),
   })),
   { path: '/mapa', element: <MapScreen /> },
   { path: '/elementy', element: <ElementsScreen /> },

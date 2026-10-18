@@ -3,6 +3,7 @@ import { createMemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, expect, test } from 'vitest'
 import { routes } from '../app/router.tsx'
 import { MockStoreProvider } from '../data/MockStore.tsx'
+import { MemoryAuthProvider } from '../auth/MemoryAuthProvider.tsx'
 import { plural } from '../data/plural.ts'
 
 afterEach(cleanup)
@@ -10,9 +11,11 @@ afterEach(cleanup)
 function renderAt(url: string) {
   const router = createMemoryRouter(routes, { initialEntries: [url] })
   render(
-    <MockStoreProvider today="2026-10-09">
-      <RouterProvider router={router} />
-    </MockStoreProvider>,
+    <MemoryAuthProvider>
+      <MockStoreProvider today="2026-10-09">
+        <RouterProvider router={router} />
+      </MockStoreProvider>
+    </MemoryAuthProvider>,
   )
   return router
 }
