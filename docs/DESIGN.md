@@ -18,7 +18,7 @@ Styl „domowy elegancki”: butelkowa zieleń, mosiądz i krem, szeryfowy Fraun
 | --- | --- | --- |
 | 1 Ładowanie | brak – `Powitanie.dc.html` nie ma w eksporcie (`PowitanieDzien`/`PowitanieNoc` to tylko odwołania); zaprojektował Claude w etapie 1 na bazie banera z `Pierwsze.dc.html` i nagłówka Startu (`src/screens/LoadingScreen.tsx`) | Słońce 6:00–18:00, księżyc 18:00–6:00; zaakceptowane 2026-10-18 |
 | 1a Pierwsze uruchomienie | `Pierwsze.dc.html` | Załóż nowy dom / Dołącz do domu |
-| 1b Konto: Zaloguj się, Załóż konto, Nie pamiętam hasła | brak – zaprojektował Claude w etapie 1 (`src/screens/AccountScreens.tsx`) | Ładowanie → Zaloguj się → Start; Załóż konto → Pierwsze uruchomienie; hasło min. 8 znaków; do akceptacji Hani |
+| 1b Konto: Zaloguj się, Załóż konto, Nie pamiętam hasła | brak – zaprojektował Claude w etapie 1 (`src/screens/AccountScreens.tsx`) | Ładowanie → Zaloguj się → Start; Załóż konto → Pierwsze uruchomienie; hasło min. 8 znaków, ikona oka; zaakceptowane 2026-10-18 |
 | 2 Start | `Kategorie.dc.html` (+ `StartDzien`, `StartNoc`) | Kafelki, Ten tydzień, Pilne, Najbliższe wydarzenia |
 | 2b Skróty ze Startu | `ZadaniaPilne`, `ZadaniaOgarniete`, `KalendarzImieniny`, `KalendarzUrodziny` | Zadania/Kalendarz otwarte z filtrem lub dniem |
 | 3 Zadania | `Zadania.dc.html` | Filtry, grupy, podzadania, arkusz „Nowe zadanie” |
