@@ -248,3 +248,15 @@ test('Kosz (z Ustawień): zadania i wydarzenia, chipy, przywracanie z „Cofnij�
   fireEvent.click(within(sheet).getByRole('button', { name: 'Usuń na zawsze' }))
   expect(screen.getByText('Kosz jest pusty')).toBeDefined()
 })
+
+test('panel filtrów zamyka dotknięcie poza nim (tło nad całym ekranem, także nagłówkiem)', () => {
+  renderAt('/zadania')
+  click('Filtry')
+  expect(document.getElementById('panel-filtrow')).not.toBeNull()
+  // wybór w panelu go nie zamyka
+  const panel = document.getElementById('panel-filtrow')!
+  fireEvent.click(within(panel).getByRole('button', { name: 'Pilne' }))
+  expect(document.getElementById('panel-filtrow')).not.toBeNull()
+  click('Zamknij filtry')
+  expect(document.getElementById('panel-filtrow')).toBeNull()
+})

@@ -409,7 +409,8 @@ export function Sheet({
           bottom: 0,
           maxWidth: 480,
           margin: '0 auto',
-          maxHeight: 'calc(100dvh - 44px)',
+          // zawsze zostaje pas przyciemnienia nad arkuszem – dotknięcie go zamyka arkusz
+          maxHeight: 'calc(100dvh - 88px - env(safe-area-inset-top))',
           overflowY: 'auto',
           background: colors.creamLight,
           borderRadius: `${radii.sheet}px ${radii.sheet}px 0 0`,

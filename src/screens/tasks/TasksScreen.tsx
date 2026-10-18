@@ -113,14 +113,6 @@ export function TasksScreen() {
 
   return (
     <div style={{ maxWidth: 480, margin: '0 auto', minHeight: '100dvh' }}>
-      {filtersOpen && (
-        <div
-          aria-hidden="true"
-          onClick={() => setFiltersOpen(false)}
-          style={{ position: 'fixed', inset: 0, zIndex: 5, background: 'rgba(31,61,46,0.04)' }}
-        />
-      )}
-
       <div
         style={{
           position: 'sticky',
@@ -133,6 +125,24 @@ export function TasksScreen() {
           gap: 12,
         }}
       >
+        {filtersOpen && (
+          // Dotknięcie gdziekolwiek poza panelem (też nagłówka) zamyka filtry. Przycisk, nie div –
+          // Safari na iPhonie nie przekazuje dotknięć zwykłym elementom.
+          <button
+            type="button"
+            aria-label="Zamknij filtry"
+            tabIndex={-1}
+            onClick={() => setFiltersOpen(false)}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              zIndex: 1,
+              border: 0,
+              padding: 0,
+              background: 'rgba(31,61,46,0.04)',
+            }}
+          />
+        )}
         <Header
           label={`ZADANIA · ${shortDayLabel(today)}`}
           topRight={<OfflineBadge />}
@@ -210,7 +220,16 @@ export function TasksScreen() {
         </div>
 
         {tab === 'todo' && (
-          <>
+          // Nad tłem zamykającym filtry: wiersz z „Filtry” i sam panel
+          <div
+            style={{
+              position: 'relative',
+              zIndex: 2,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 12,
+            }}
+          >
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <button
                 type="button"
@@ -341,7 +360,7 @@ export function TasksScreen() {
                 }}
               />
             )}
-          </>
+          </div>
         )}
 
         {tab === 'done' && (

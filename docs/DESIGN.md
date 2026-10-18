@@ -139,7 +139,8 @@ Zakupy `#5E8C6A` · Dom `#B8925A` · Zdrowie `#A4492F` · Urzędy `#6E5F8C` · A
 
 ### Pozostałe
 
-- Panel filtrów zamyka kliknięcie w dowolne miejsce poza nim; przycisk „Filtry” ma stałą nazwę i licznik aktywnych filtrów; pod nim chipy aktywnych filtrów z „×”; „Wyczyść” tylko przy 2 filtrach.
+- Arkusze (bottom sheet): nad arkuszem zawsze widać pas przyciemnienia (min. 88 px + pasek stanu) – dotknięcie go zamyka arkusz; dłuższa treść przewija się w arkuszu (ustalone 2026-10-18).
+- Panel filtrów zamyka dotknięcie w dowolne miejsce poza nim, także nagłówka i zakładek; przycisk „Filtry” ma stałą nazwę i licznik aktywnych filtrów; pod nim chipy aktywnych filtrów z „×”; „Wyczyść” tylko przy 2 filtrach.
 - „Zwiń wszystko” ⇄ „Rozwiń wszystko”.
 - Kafelki na Starcie otwierają Zadania/Kalendarz z gotowym filtrem lub dniem.
 - Na Starcie najpierw „Pilne”, potem „Najbliższe wydarzenia” (min. 2).
