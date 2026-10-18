@@ -40,6 +40,7 @@ import {
 } from './calendarView.ts'
 import { SwipeRow } from '../../components/SwipeRow.tsx'
 import { UndoToast } from '../../components/UndoToast.tsx'
+import { useConfirmDelete } from '../../components/useConfirmDelete.tsx'
 import { deleteEvent } from '../../data/eventOps.ts'
 import type { CalendarItem } from '../../data/selectors.ts'
 import type { CalendarEvent, EventType, Task } from '../../data/types.ts'
@@ -111,12 +112,19 @@ export function CalendarScreen() {
   const taskDetail = tasks.find((t) => t.id === taskId && !t.deleted)
   const taskActions = useTaskActions()
 
-  const removeEvent = (e: CalendarEvent) => {
-    if (eventId === e.id) setEventId(null)
-    store.changeEvents(`Przeniesiono do kosza: ${e.title}`, (list) =>
-      list.map((x) => (x.id === e.id ? deleteEvent(x, store.who()) : x)),
-    )
-  }
+  const confirmDelete = useConfirmDelete()
+  const trashTask = (t: Task) =>
+    confirmDelete.ask('zadanie', t.title, () => {
+      if (taskId === t.id) setTaskId(null)
+      taskActions.trash(t)
+    })
+  const removeEvent = (e: CalendarEvent) =>
+    confirmDelete.ask('wydarzenie', e.title, () => {
+      if (eventId === e.id) setEventId(null)
+      store.changeEvents(`Przeniesiono do kosza: ${e.title}`, (list) =>
+        list.map((x) => (x.id === e.id ? deleteEvent(x, store.who()) : x)),
+      )
+    })
   /** „Dodane przez: Hania” / „Ogarnęła Hania” */
   const memberLabel = (t: Task) => {
     const m = members.find((x) => x.uid === (t.done ? t.doneBy : t.createdBy))
@@ -397,7 +405,7 @@ export function CalendarScreen() {
               type={typeOf(e.typeId)}
               onOpen={() => (task ? setTaskId(task.id) : setEventId(e.id))}
               onDone={task && (() => taskActions.toggleDone(task))}
-              onDelete={() => (task ? taskActions.trash(task) : event && removeEvent(event))}
+              onDelete={() => (task ? trashTask(task) : event && removeEvent(event))}
             />
           )
         })}
@@ -557,14 +565,12 @@ export function CalendarScreen() {
           onToggleSub={(sid) => taskActions.toggleSub(taskDetail, sid)}
           onRemoveSub={(sid) => taskActions.removeSub(taskDetail, sid)}
           onAddSub={(title) => taskActions.addSub(taskDetail, title)}
-          onTrash={() => {
-            setTaskId(null)
-            taskActions.trash(taskDetail)
-          }}
+          onTrash={() => trashTask(taskDetail)}
           onClose={() => setTaskId(null)}
         />
       )}
 
+      {confirmDelete.dialog}
       <UndoToast />
       <TabBar active="kalendarz" onAddEvent={() => setSheetOpen(true)} />
     </Screen>

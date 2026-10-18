@@ -66,6 +66,18 @@ test('pasek „Cofnij” znika po ok. 4,5 s', () => {
 test('w lewo = do kosza (przycisk dla czytników), pasek i licznik KOSZ', () => {
   renderAt('/zadania')
   click('Przenieś do kosza: Baterie AA do pilota')
+  const ask = screen.getByRole('alertdialog', { name: 'Usunąć zadanie?' })
+  expect(ask.textContent).toContain(
+    '„Baterie AA do pilota” trafi do kosza. Możesz je przywrócić przez 30 dni.',
+  )
+  fireEvent.click(within(ask).getByText('Anuluj'))
+  expect(screen.getByText('12 otwartych')).toBeDefined()
+  click('Przenieś do kosza: Baterie AA do pilota')
+  fireEvent.click(
+    within(screen.getByRole('alertdialog', { name: 'Usunąć zadanie?' })).getByRole('button', {
+      name: 'Usuń',
+    }),
+  )
   expect(screen.getByRole('status').textContent).toContain(
     'Przeniesiono do kosza: Baterie AA do pilota',
   )
@@ -107,6 +119,11 @@ test('arkusz: „Ogarnij” zamyka i ogarnia; „Usuń” przenosi do kosza', ()
   expect(screen.getByText('11 otwartych')).toBeDefined()
   click('Otwórz zadanie Wymienić filtr w okapie')
   fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Usuń' }))
+  fireEvent.click(
+    within(screen.getByRole('alertdialog', { name: 'Usunąć zadanie?' })).getByRole('button', {
+      name: 'Usuń',
+    }),
+  )
   expect(screen.queryByRole('dialog')).toBeNull()
   expect(screen.getByRole('status').textContent).toContain('Przeniesiono do kosza')
 })

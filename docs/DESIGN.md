@@ -108,13 +108,15 @@ Zakupy `#5E8C6A` · Dom `#B8925A` · Zdrowie `#A4492F` · Urzędy `#6E5F8C` · A
 | Kwadracik po lewej (pole 56 px × wysokość wiersza) | Ogarnięte – najpierw animacja: zielony kwadracik z ptaszkiem, treść blednie, po ~0,35 s zadanie przechodzi do Ogarniętych; w zakładce Ogarnięte – przywróć od razu |
 | Klik w treść zadania | Arkusz zadania (edycja w miejscu, zmiany zapisują się od razu) |
 | Przeciągnięcie w prawo (> ~90 px) | Ogarnij – tło `#1F3D2E`, ptaszek i napis w `#E8C98E`; w zakładce Ogarnięte: Przywróć – tło `#E8C98E` |
-| Przeciągnięcie w lewo (> ~90 px) | Do kosza – tło `#A4492F`, kosz i „Usuń” na biało |
+| Przeciągnięcie w lewo (> ~90 px) | Do kosza – tło `#A4492F`, kosz i „Usuń” na biało; najpierw pytanie „Usunąć zadanie?” (Anuluj / Usuń) |
 | Strzałka „˅” (tylko gdy są kroki) | Rozwija podzadania |
 | Po każdej akcji | Pasek na dole nad menu: „Ogarnięte: … / Przeniesiono do kosza: … · COFNIJ”, znika po ~4,5 s |
 
 - Gest: `touch-action: pan-y`, rozpoznanie poziomego ruchu po 8 px, przewijanie pionowe ma pierwszeństwo; po przeciągnięciu klik nie otwiera arkusza.
 - Pod listą jednozdaniowa podpowiedź o gestach.
 - Na iPhonie gest zaczyna się na wierszu (margines 16 px od krawędzi), żeby nie wywołać „wstecz” w Safari.
+- Usunięcie zadania lub wydarzenia (gest w lewo, „Usuń” w arkuszu) zawsze poprzedza okienko „Usunąć zadanie?” / „Usunąć wydarzenie?” z tekstem „„…” trafi do kosza. Możesz je przywrócić przez 30 dni.” (Anuluj / Usuń); po usunięciu pasek COFNIJ (ustalone 2026-10-18).
+- Kalendarz: wydarzenie jak zadanie – dotknięcie = arkusz z edycją w miejscu, w lewo = do kosza; termin zadania w kalendarzu = wiersz zadania (w prawo ogarnij). Kosz zbiera zadania i wydarzenia (ustalone 2026-10-18).
 - Odhaczenie wszystkich podzadań ogarnia zadanie; odznaczenie kroku w ogarniętym zadaniu przywraca je (ustalone 2026-10-18).
 
 ### Zakładki i kosz

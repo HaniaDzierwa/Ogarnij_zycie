@@ -4,6 +4,7 @@ import { paths } from '../../app/screens.ts'
 import { Accent, Header } from '../../components/Header.tsx'
 import { TabBar } from '../../components/TabBar.tsx'
 import { UndoToast } from '../../components/UndoToast.tsx'
+import { useConfirmDelete } from '../../components/useConfirmDelete.tsx'
 import { Box, Dot, SyncBadge } from '../../components/ui.tsx'
 import { ChevronRightIcon, CloseIcon, SlidersIcon, TrashIcon } from '../../components/icons.tsx'
 import { shortDayLabel, whenLabel } from '../../data/dates.ts'
@@ -84,10 +85,12 @@ export function TasksScreen() {
   // Akcje z paskiem „Cofnij”
   const actions = useTaskActions()
   const toggleDone = actions.toggleDone
-  const trash = (t: Task) => {
-    if (detailId === t.id) setDetailId(null)
-    actions.trash(t)
-  }
+  const confirmDelete = useConfirmDelete()
+  const trash = (t: Task) =>
+    confirmDelete.ask('zadanie', t.title, () => {
+      if (detailId === t.id) setDetailId(null)
+      actions.trash(t)
+    })
 
   const addCategory = (name: string, color: string) => {
     const id = `k${Date.now()}`
@@ -580,6 +583,7 @@ export function TasksScreen() {
         />
       )}
 
+      {confirmDelete.dialog}
       <UndoToast />
       <TabBar active="zadania" onAddTask={() => setSheetOpen(true)} />
     </div>

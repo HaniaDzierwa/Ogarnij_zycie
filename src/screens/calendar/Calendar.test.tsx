@@ -164,6 +164,11 @@ describe('edycja i usuwanie – jak w Zadaniach', () => {
     renderAt('/kalendarz?dzien=2026-10-10')
     fireEvent.click(row('Kino z Krzysiem'))
     fireEvent.click(screen.getByRole('button', { name: 'Usuń' }))
+    fireEvent.click(
+      within(screen.getByRole('alertdialog', { name: 'Usunąć wydarzenie?' })).getByRole('button', {
+        name: 'Usuń',
+      }),
+    )
     expect(screen.queryByRole('dialog')).toBeNull()
     expect(agenda().textContent).not.toContain('Kino z Krzysiem')
     expect(screen.getByRole('status').textContent).toContain(
@@ -176,6 +181,11 @@ describe('edycja i usuwanie – jak w Zadaniach', () => {
   test('przeciągnięcie w lewo usuwa wydarzenie (też ze Startu)', () => {
     renderAt('/kalendarz?dzien=2026-10-10')
     fireEvent.click(screen.getByRole('button', { name: 'Przenieś do kosza: Kino z Krzysiem' }))
+    fireEvent.click(
+      within(screen.getByRole('alertdialog', { name: 'Usunąć wydarzenie?' })).getByRole('button', {
+        name: 'Usuń',
+      }),
+    )
     expect(agenda().textContent).not.toContain('Kino z Krzysiem')
     fireEvent.click(screen.getByRole('link', { name: 'Start' }))
     const section = screen
@@ -197,6 +207,11 @@ describe('edycja i usuwanie – jak w Zadaniach', () => {
     fireEvent.click(screen.getByRole('button', { name: 'COFNIJ' }))
 
     fireEvent.click(screen.getByRole('button', { name: 'Przenieś do kosza: Wykupić receptę' }))
+    fireEvent.click(
+      within(screen.getByRole('alertdialog', { name: 'Usunąć zadanie?' })).getByRole('button', {
+        name: 'Usuń',
+      }),
+    )
     expect(screen.getByRole('status').textContent).toContain(
       'Przeniesiono do kosza: Wykupić receptę',
     )
@@ -205,6 +220,11 @@ describe('edycja i usuwanie – jak w Zadaniach', () => {
   test('usunięte wydarzenie czeka w Koszu i wraca do kalendarza', async () => {
     const router = renderAt('/kalendarz?dzien=2026-10-10')
     fireEvent.click(screen.getByRole('button', { name: 'Przenieś do kosza: Kino z Krzysiem' }))
+    fireEvent.click(
+      within(screen.getByRole('alertdialog', { name: 'Usunąć wydarzenie?' })).getByRole('button', {
+        name: 'Usuń',
+      }),
+    )
     await act(() => router.navigate('/zadania/kosz'))
     expect(screen.getByText('3 zadania · 1 wydarzenie')).toBeDefined()
     expect(screen.getByText(/WYDARZENIE · 10 PAŹ · USUNĘŁA HANIA · DZIŚ/)).toBeDefined()

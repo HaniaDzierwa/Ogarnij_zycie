@@ -52,6 +52,7 @@ Nie zmieniaj stosu bez pytania Hani.
 - Kwadracik po lewej (pole 56 px × cała wysokość wiersza) = ogarnięte / przywróć.
 - Klik w treść zadania = arkusz zadania (edycja w miejscu, na dole „Usuń” i „Ogarnij/Przywróć”).
 - Przeciągnięcie w prawo = ogarnij (w zakładce Ogarnięte: przywróć); w lewo = do kosza. Próg ok. 90 px.
+- Każde usunięcie zadania lub wydarzenia (gest, „Usuń” w arkuszu) najpierw pyta „Usunąć zadanie?” / „Usunąć wydarzenie?” (Anuluj / Usuń). Usunięte trafiają do Kosza.
 - Każda taka akcja pokazuje pasek „… · COFNIJ” (ok. 4,5 s).
 - Strzałka „˅” rozwija podzadania (tylko gdy zadanie je ma).
 - Odhaczenie wszystkich podzadań ogarnia zadanie; odznaczenie kroku przywraca je.
