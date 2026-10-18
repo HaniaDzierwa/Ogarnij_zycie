@@ -1,0 +1,4 @@
+dist
+docs
+.firebase
+package-lock.json

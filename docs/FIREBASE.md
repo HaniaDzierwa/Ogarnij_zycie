@@ -10,8 +10,9 @@ Wszystko w konsoli Firebase robisz Ty; Claude pisze kod i dopisuje tu kolejne kr
 
 ### 1. Narzędzia na komputerze
 1. Zainstaluj Node.js w wersji LTS: https://nodejs.org (instalator, wszystko domyślnie).
-2. W terminalu: `npm install -g firebase-tools`
-3. `firebase login` – otworzy się przeglądarka, zaloguj się tym samym kontem Google, którego użyjesz w konsoli.
+2. Firebase CLI jest zainstalowane **lokalnie w projekcie** (w `package.json`), nie globalnie. Po pobraniu repozytorium wystarczy w jego katalogu `npm install`.
+3. Każdą komendę Firebase poprzedzasz `npx` (działa tylko w katalogu repozytorium).
+4. `npx firebase login` – otworzy się przeglądarka, zaloguj się tym samym kontem Google, którego użyjesz w konsoli. Pytania o Gemini i o zbieranie danych o użyciu: odpowiedz **No**.
 
 ### 2. Projekt Firebase
 1. Wejdź na https://console.firebase.google.com i kliknij **Utwórz projekt** (Create a project).
@@ -27,12 +28,12 @@ Wszystko w konsoli Firebase robisz Ty; Claude pisze kod i dopisuje tu kolejne kr
 
 ### 4. Połączenie repozytorium z projektem
 W katalogu repozytorium, w terminalu:
-1. `firebase use --add` → wybierz projekt `ogarnij-zycie`, alias: `default`.
+1. `npx firebase use --add` → wybierz projekt `ogarnij-zycie`, alias: `default`.
 2. Podaj Claude identyfikator projektu, jeśli o niego poprosi.
 
 ### 5. Pierwsza publikacja testowa (gdy Claude powie, że gotowe)
 1. `npm run build`
-2. `firebase hosting:channel:deploy test` – na końcu pojawi się adres podglądu (`https://ogarnij-zycie--test-….web.app`). Otwórz go na telefonie.
+2. `npx firebase hosting:channel:deploy test` – na końcu pojawi się adres podglądu (`https://ogarnij-zycie--test-….web.app`). Otwórz go na telefonie.
 
 ---
 
@@ -47,11 +48,11 @@ W katalogu repozytorium, w terminalu:
 1. Konsola → **Build → Firestore Database → Create database**.
 2. Edycja: **Standard**. Lokalizacja: **europe-central2 (Warszawa)** – *nie da się jej później zmienić*.
 3. Tryb: **production mode** (reguły i tak wgra Claude).
-4. Gdy Claude przygotuje reguły: `firebase deploy --only firestore:rules,firestore:indexes`
+4. Gdy Claude przygotuje reguły: `npx firebase deploy --only firestore:rules,firestore:indexes`
 
 ### Emulatory (do testów reguł, na Twoim komputerze)
-1. Zainstaluj Javę (JDK 17+), jeśli `firebase emulators:start` o nią poprosi.
-2. `firebase emulators:start` – uruchamia lokalne Auth i Firestore; nic nie trafia do prawdziwej bazy.
+1. Zainstaluj Javę (JDK 17+), jeśli `npx firebase emulators:start` o nią poprosi.
+2. `npx firebase emulators:start` – uruchamia lokalne Auth i Firestore; nic nie trafia do prawdziwej bazy.
 
 ---
 
@@ -63,5 +64,5 @@ W katalogu repozytorium, w terminalu:
 
 ## Etap 9 – publikacja
 
-- `firebase deploy --only hosting` → adres docelowy `https://<projekt>.web.app`.
+- `npx firebase deploy --only hosting` → adres docelowy `https://<projekt>.web.app`.
 - Opcjonalnie własna domena: Hosting → Add custom domain.

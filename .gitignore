@@ -5,3 +5,6 @@ dist/
 *.log
 service-account*.json
 .wrangler/
+*.local
+.vscode/*
+!.vscode/extensions.json

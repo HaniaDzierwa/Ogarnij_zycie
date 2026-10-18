@@ -45,10 +45,14 @@ Nie zmieniaj stosu bez pytania Hani.
 - „Domownik”, „Wspólny dom”, „Zaproś domownika”, „Dołącz do domu”.
 - Filtr „Pokaż”: Wszystkie · Pilne · Ważne · Przy okazji · Ogarnięte (bez „Na dziś”).
 
-## Komendy (uzupełnij w etapie 0)
+## Komendy
 
-- `npm run dev` – serwer deweloperski
-- `npm test` – testy
-- `npm run build` – build produkcyjny
-- `firebase emulators:start` – emulatory (Auth, Firestore)
-- `firebase deploy` – robi Hania albo Ty po jej zgodzie
+Firebase CLI jest zależnością projektu (nie globalną) – komendy Firebase zawsze przez `npx firebase …`.
+
+- `npm run dev` – serwer deweloperski (`npm run dev:telefon` – dostępny w sieci domowej)
+- `npm test` – testy (Vitest, jednorazowo); `npm run test:watch` – w trybie ciągłym
+- `npm run lint` – ESLint; `npm run format` – Prettier
+- `npm run build` – build produkcyjny (`tsc -b` + Vite)
+- `npm run emulators` – emulatory (Auth, Firestore)
+- `npx firebase deploy` – robi Hania albo Ty po jej zgodzie
+- Projekt Firebase: `ogarnij-zycie`
