@@ -21,11 +21,11 @@ Aktualny etap: **2 – Konta i dane w Firestore** (w toku)
 | --- | --- |
 | 1 Firebase SDK w aplikacji: Auth (stałe logowanie), Firestore z pamięcią offline, emulatory w `firebase.json` | zrobione |
 | 2 Model danych w Firestore: ścieżki, typy dokumentów, zamiana na typy aplikacji; `updatedAt`, `updatedBy` | zrobione |
-| 3 Reguły Firestore + testy w emulatorze (obcy nie czyta i nie zapisuje cudzego domu) | testy reguł przeszły u Hani (27/27, 2026-10-20) – do wgrania reguł |
+| 3 Reguły Firestore + testy w emulatorze (obcy nie czyta i nie zapisuje cudzego domu) | zrobione – testy przeszły u Hani (27/27), reguły wgrane 2026-10-20 |
 | 4 Konta: Zaloguj się, Załóż konto, Nie pamiętam hasła z Firebase Auth; Ładowanie kieruje wg stanu konta; „Wyloguj” w stopce Ustawień | zrobione – do sprawdzenia na telefonie |
-| 5 Pierwsze uruchomienie → „Załóż nowy dom” z nazwą domu: dom, domownik, domyślne kategorie i rodzaje wydarzeń | kod zrobiony – na prawdziwej bazie zadziała po wgraniu reguł (krok 3) |
-| 6 Dane z Firestore zamiast przykładowych (zadania, kosz, kategorie, wydarzenia, rodzaje, ustawienia), działanie bez internetu | kod zrobiony – na prawdziwej bazie zadziała po wgraniu reguł (krok 3) |
-| 7 Wdrożenie reguł (Hania), demo na dwóch urządzeniach, odbiór | do zrobienia |
+| 5 Pierwsze uruchomienie → „Załóż nowy dom” z nazwą domu: dom, domownik, domyślne kategorie i rodzaje wydarzeń | zrobione – do sprawdzenia na telefonie |
+| 6 Dane z Firestore zamiast przykładowych (zadania, kosz, kategorie, wydarzenia, rodzaje, ustawienia), działanie bez internetu | zrobione – do sprawdzenia na telefonie |
+| 7 Wdrożenie reguł (Hania), demo na dwóch urządzeniach, odbiór | w toku – reguły wgrane, wersja testowa opublikowana, czeka demo Hani |
 
 „Dołącz do domu” (zaproszenia) zostaje w wersji z mockupu do etapu 8.
 
@@ -143,3 +143,4 @@ Wersja testowa: https://ogarnij-zycie--test-56tdtc0y.web.app (kanał `test`, odn
 - 2026-10-20 · Etap 2 · Poprawka Hani (notatka): pole „NOTATKA (opcjonalnie)” – wspólny `NoteField` (do 500 znaków, rośnie z tekstem) w „Nowe zadanie”, arkuszu zadania, „Nowe wydarzenie” i arkuszu wydarzenia (zapis od razu). Zadanie ma nowe pole `note` (model, zapis do Firestore, reguły: tekst do 500 znaków; starsze zadania bez pola są dozwolone); wydarzenie używa istniejącego `note` (dopisek pod tytułem w agendzie – najwyżej 2 linie z wielokropkiem). Testy: notatka w zadaniu i wydarzeniu, test reguł „notatka do 500 znaków” (27 testów reguł). · Sprawdzenie: dodaj zadanie z notatką → otwórz arkusz; wydarzenie z notatką → widać w agendzie; `npm test` – 153 testy.
 - 2026-10-20 · Etap 2 · Krok 3 – pierwsze uruchomienie testów reguł u Hani (wersja z 26 testami): 25 nie przeszło przez błąd w kodzie testów, nie w regułach – pomocnicze „Załóż dom” brało przy każdym dokumencie nowe połączenie z emulatorem, a paczka zapisu (writeBatch) przyjmuje dokumenty tylko z jednego połączenia („Provided document reference is from a different Firestore instance”). Jedyny test bez tej funkcji („dom bez domownika jest odrzucany”) przeszedł. Poprawka: jedno połączenie na użytkownika w testach. · Sprawdzenie: Hania – ponownie `npm run test:reguly` (27 testów).
 - 2026-10-20 · Etap 2 · Krok 3: Hania uruchomiła `npm run test:reguly` na komputerze z Javą 21 – wszystkie testy reguł przeszły. Następnie: wgranie reguł do prawdziwej bazy (za zgodą Hani), publikacja wersji testowej, demo (krok 7).
+- 2026-10-20 · Etap 2 · Krok 7: za zgodą Hani Claude wgrał reguły i indeksy (`npx firebase deploy --only firestore:rules,firestore:indexes` – „released rules”). Wersja testowa z kontem i danymi w Firestore: https://ogarnij-zycie--test-56tdtc0y.web.app (do 2026-10-27). Czeka demo na telefonie i drugim urządzeniu oraz odbiór etapu 2.
