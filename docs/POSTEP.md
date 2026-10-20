@@ -49,7 +49,7 @@ Wersja testowa: https://ogarnij-zycie--test-56tdtc0y.web.app (kanał `test`, odn
 
 | Data | Etap | Uwaga | Kiedy | Status |
 | --- | --- | --- | --- | --- |
-| 2026-10-20 | 2 | Błąd po ponownym zalogowaniu: „Cannot read properties of undefined (reading dot)”. | teraz | zrobione – do sprawdzenia |
+| 2026-10-20 | 2 | Błąd po ponownym zalogowaniu: „Cannot read properties of undefined (reading dot)”. | teraz | zrobione – Hania: „działa ok” |
 | 2026-10-20 | 2 | Zadania i wydarzenia: „luźna” notatka, którą zawsze można dodać. | teraz | zrobione – do sprawdzenia |
 | 2026-10-20 | 2 | Po otwarciu Zadań wszystkie podzadania mają być zwinięte. | teraz | zrobione |
 | 2026-10-20 | 2 | Start: zadania i wydarzenia mają działać jak w Zadaniach i Kalendarzu (ogarnij, usuń, edytuj). | teraz | zrobione – do sprawdzenia |
@@ -146,3 +146,4 @@ Wersja testowa: https://ogarnij-zycie--test-56tdtc0y.web.app (kanał `test`, odn
 - 2026-10-20 · Etap 2 · Krok 3: Hania uruchomiła `npm run test:reguly` na komputerze z Javą 21 – wszystkie testy reguł przeszły. Następnie: wgranie reguł do prawdziwej bazy (za zgodą Hani), publikacja wersji testowej, demo (krok 7).
 - 2026-10-20 · Etap 2 · Krok 7: za zgodą Hani Claude wgrał reguły i indeksy (`npx firebase deploy --only firestore:rules,firestore:indexes` – „released rules”). Wersja testowa z kontem i danymi w Firestore: https://ogarnij-zycie--test-56tdtc0y.web.app (do 2026-10-27). Czeka demo na telefonie i drugim urządzeniu oraz odbiór etapu 2.
 - 2026-10-20 · Etap 2 · Poprawka (błąd zgłoszony przez Hanię): po ponownym zalogowaniu Start się wywracał („reading dot”) – Firestore oddał zadania i wydarzenia przed listą rodzajów wydarzeń, a kod brał kolor nieistniejącego rodzaju. (1) `eventTypeOf` – rodzaj zawsze znany (z domu, wbudowany o tym id albo „Wydarzenie”) we wszystkich miejscach (Start, Kalendarz, arkusz wydarzenia, Kosz); ikony wbudowanych rodzajów w jednym miejscu (`src/theme`). (2) Ekran ładowania, dopóki nie przyjdą wszystkie części danych domu (`ready` w magazynie; błąd odczytu części nie blokuje w nieskończoność). Testy: Start/Kalendarz/Kosz bez wczytanych rodzajów, ekran ładowania przy niewczytanych danych, `eventTypeOf`. · Sprawdzenie: wyloguj → zaloguj → Start bez błędu; `npm test` – 156 testów.
+- 2026-10-20 · Etap 2 · Hania po poprawce: „działa ok, możemy iść dalej z planem”. Przed zamknięciem etapu – potwierdzenie punktów odbioru i „akceptuję”.
