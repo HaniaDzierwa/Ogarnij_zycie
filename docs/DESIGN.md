@@ -31,8 +31,8 @@ Styl „domowy elegancki”: butelkowa zieleń, mosiądz i krem, szeryfowy Fraun
 | 5 Ustawienia | `Ustawienia.dc.html` | Ty, Wspólny dom, Porządki (sprzątanie ogarniętych 7/30 dni/nigdy, Kosz), Powiadomienia, Wygląd (motyw – ukryty na start) |
 | 5a Domownicy | `Synchronizacja.dc.html` – **tylko** część „Domownicy” (lista + „Zaproś domownika”) i karta „Na razie tylko Ty” (TEKSTY #4–6) | Bez karty synchronizacji, liczników, trybu pracy i ustawień sieci – Firebase synchronizuje sam (decyzja Hani 2026-10-18). Ustawienia → Wspólny dom → „Domownicy” |
 | ~~5b Zmiany od domownika~~ | `Import.dc.html` | **Nie robimy** (decyzja Hani 2026-10-18): zmiany domownika pojawiają się same w kilka sekund; informuje o nich push (etap 6) |
-| 5c–d Zaproś domownika | `Zaproszenie.dc.html`, `ZaproszenieGotowe.dc.html` | Dodać opcję „jednorazowy link” |
-| 5e–f Dołącz do domu | `Dolacz.dc.html`, `DolaczZnaleziono.dc.html` | Skan QR / 6 cyfr / link |
+| 5c–d Zaproś domownika | `Zaproszenie.dc.html`, `ZaproszenieGotowe.dc.html` | Dodać opcję „jednorazowy link”; **bez kodu QR** – zostają 6 cyfr i „Wyślij link wiadomością” (decyzja Hani 2026-10-20) |
+| 5e–f Dołącz do domu | `Dolacz.dc.html`, `DolaczZnaleziono.dc.html` | 6 cyfr / link – **bez skanera QR** (decyzja Hani 2026-10-20: część z ramką aparatu i „Skanuj kod” znika) |
 
 ## Tokeny
 

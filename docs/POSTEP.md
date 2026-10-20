@@ -20,8 +20,8 @@ Kolejność etapów zmieniona 2026-10-20 (decyzja Hani: testować dopiero we dwo
 | Krok | Status |
 | --- | --- |
 | 1 Zaproszenia w bazie: `invites/{kod}` (dom, kto zaprosił, ważne do, zakres, użyte przez), reguły (tylko domownik zaprasza; kod raz, 10 min) | do zrobienia (następny) |
-| 2 Zaproś domownika: prawdziwy kod 6 cyfr i link zapisane w bazie, odliczanie, „Nowy kod”, kod QR z linkiem | do zrobienia |
-| 3 Dołącz do domu: kod / link / QR → „Znaleziono dom” (nazwa domu, domownicy) → „Dołącz jako …”; reguły: dołączenie tylko z ważnym, nieużytym kodem | do zrobienia |
+| 2 Zaproś domownika: prawdziwy kod 6 cyfr i link zapisane w bazie, odliczanie, „Nowy kod”; bez kodu QR | do zrobienia |
+| 3 Dołącz do domu: kod / link (bez skanera) → „Znaleziono dom” (nazwa domu, domownicy) → „Dołącz jako …”; reguły: dołączenie tylko z ważnym, nieużytym kodem | do zrobienia |
 | 4 Domownicy: lista z bazy; arkusz domownika – zakres (Wszystko / Wybrane), „Usuń z domu” (założyciel), „Opuść dom” | do zrobienia |
 | 5 Zakres „Wybrane” w regułach i w aplikacji (domownik widzi tylko wybrane kategorie i/lub kalendarz) | do zrobienia |
 | 6 Testy reguł (Hania – Java 21), wgranie reguł, wersja testowa, demo we dwoje, odbiór | do zrobienia |
@@ -71,6 +71,7 @@ Wersja testowa: https://ogarnij-zycie--test-56tdtc0y.web.app (kanał `test`, odn
 
 | Data | Etap | Uwaga | Kiedy | Status |
 | --- | --- | --- | --- | --- |
+| 2026-10-20 | 4 | Bez kodu QR: na „Zaproś domownika” tylko 6 cyfr i link, na „Dołącz do domu” bez skanera (skoro nie ma QR, nie trzeba go skanować). | teraz | zapisane – ekrany w krokach 2–3 |
 | 2026-10-20 | 2 | Błąd po ponownym zalogowaniu: „Cannot read properties of undefined (reading dot)”. | teraz | zrobione – Hania: „działa ok” |
 | 2026-10-20 | 2 | Zadania i wydarzenia: „luźna” notatka, którą zawsze można dodać. | teraz | zrobione – do sprawdzenia |
 | 2026-10-20 | 2 | Po otwarciu Zadań wszystkie podzadania mają być zwinięte. | teraz | zrobione |

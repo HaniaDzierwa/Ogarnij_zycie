@@ -14,7 +14,7 @@ Budujemy aplikację w 8 etapach (0–7; kolejność zmieniona 2026-10-20 – pat
 | Dane | Cloud Firestore z pamięcią offline w przeglądarce |
 | Wspólny dom | Jeden dokument „dom” w Firestore, domownicy jako jego członkowie |
 | Bezpieczeństwo | Reguły Firestore: dane domu widzą tylko jego domownicy |
-| Zaproszenia | Jednorazowy link, kod QR lub 6 cyfr, ważne 10 min; ważność i jednorazowość sprawdzają reguły Firestore |
+| Zaproszenia | Jednorazowy link lub 6 cyfr, ważne 10 min; ważność i jednorazowość sprawdzają reguły Firestore (bez kodu QR – decyzja Hani 2026-10-20) |
 | Powiadomienia | Web Push (VAPID); wysyła darmowy Cloudflare Worker uruchamiany co minutę |
 | Wygląd | Tylko motyw jasny; tokeny z `docs/DESIGN.md` |
 
@@ -88,8 +88,8 @@ Cel: wszystkie ekrany z projektu w aplikacji, na przykładowych danych (w pamię
 
 ## Etap 4 – Wspólny dom (dawniej 8)
 
-1. **Zaproszenie:** jednorazowy link oraz kod QR i 6 cyfr (ważne 10 min) – zapisane w Firestore (`invites/{kod}`); „Dołącz do domu” realizuje je, reguły Firestore sprawdzają ważność i jednorazowość. Prawdziwy kod QR (z linkiem) i skanowanie aparatem w „Dołącz do domu”.
-2. **Dołączanie:** po kodzie / linku / QR „Znaleziono dom” z nazwą domu i domownikami, imię nowego domownika, „Dołącz jako …” → dom widoczny od razu.
+1. **Zaproszenie:** jednorazowy link i 6 cyfr (ważne 10 min) – zapisane w Firestore (`invites/{kod}`); „Dołącz do domu” realizuje je, reguły Firestore sprawdzają ważność i jednorazowość. **Bez kodu QR i bez skanowania** (decyzja Hani 2026-10-20) – na „Zaproś domownika” znika obrazek QR, na „Dołącz do domu” skaner z ramką aparatu.
+2. **Dołączanie:** po kodzie albo linku „Znaleziono dom” z nazwą domu i domownikami, imię nowego domownika, „Dołącz jako …” → dom widoczny od razu.
 3. **Zakres:** domownik widzi wszystko albo wybrane kategorie i kalendarz; reguły to wymuszają.
    - Ekran Domownicy: dotknięcie domownika → arkusz: zmiana zakresu (Wszystko / Wybrane) i „Usuń z domu” – tylko założyciel domu; każdy domownik może sam „Opuścić dom”; zapraszać może każdy (decyzja Hani 2026-10-18).
 4. **Konflikty:** nowsza zmiana wygrywa; usunięte zawsze można przywrócić z Kosza.
@@ -166,4 +166,4 @@ Blokuje przejście dalej: utrata lub pomieszanie danych, ekran różny od projek
 | Przekroczenie limitów planu Spark | Bez karty usługa się zatrzymuje, nie nalicza opłat; przy 2–3 osobach mało prawdopodobne |
 | Błędne reguły bezpieczeństwa | Reguły od etapu 2, testy w emulatorze przy każdej zmianie |
 | Konflikty offline | Czas i autor przy każdej zmianie; „nowsza wygrywa”; usunięte do Kosza (można przywrócić) |
-| Ograniczenia Safari (pamięć, aparat do QR) | Testy na iPhonie od etapu 1; dołączanie także linkiem lub 6 cyframi |
+| Ograniczenia Safari (pamięć) | Testy na iPhonie od etapu 1; dołączanie linkiem lub 6 cyframi (bez aparatu) |
