@@ -25,7 +25,7 @@ import {
   type DateKey,
 } from '../../data/dates.ts'
 import { useStore } from '../../data/store.ts'
-import { calendarItems, weekDays } from '../../data/selectors.ts'
+import { calendarItems, eventTypeOf, weekDays } from '../../data/selectors.ts'
 import { colors, fonts, priorities, shadows } from '../../theme'
 import {
   agendaFor,
@@ -79,7 +79,7 @@ export function CalendarScreen() {
 
   const categoryName = (id: string | null) =>
     categories.find((c) => c.id === id)?.name ?? 'Bez kategorii'
-  const typeOf = (id: string) => eventTypes.find((t) => t.id === id) ?? eventTypes[0]
+  const typeOf = (id: string) => eventTypeOf(eventTypes, id)
   const items = calendarItems(tasks, events, categoryName, (t) => priorities[t.priority].label)
 
   const pick = (k: DateKey) => {

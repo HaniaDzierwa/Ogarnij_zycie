@@ -108,3 +108,20 @@ test('Najbliższe wydarzenia: w lewo – pytanie i do kosza; na liście pojawia 
   expect(ev[0].textContent).toContain('Zebranie w szkole')
   expect(screen.getByRole('status').textContent).toContain('Przeniesiono do kosza: Kino z Krzysiem')
 })
+
+test('rodzaje wydarzeń jeszcze nie wczytane (zaraz po zalogowaniu) – Start, Kalendarz i Kosz się nie wywracają', () => {
+  renderApp('/?pora=dzien', { noEventTypes: true })
+  expect(section('Najbliższe wydarzenia').textContent).toContain('Kino z Krzysiem')
+  cleanup()
+  renderApp('/kalendarz?dzien=2026-10-10', { noEventTypes: true })
+  expect(screen.getByText('Kino z Krzysiem')).toBeDefined()
+  cleanup()
+  renderApp('/ustawienia/kosz', { noEventTypes: true })
+  expect(screen.getByText('Basen z dziećmi')).toBeDefined()
+})
+
+test('dane domu jeszcze się wczytują – ekran ładowania zamiast pustych list', () => {
+  renderApp('/', { notReady: true })
+  expect(screen.getByRole('button', { name: 'Ogarnij życie – wczytywanie' })).toBeDefined()
+  expect(screen.queryByText('DO ZROBIENIA')).toBeNull()
+})

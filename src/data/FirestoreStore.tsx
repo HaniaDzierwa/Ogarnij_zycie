@@ -42,6 +42,9 @@ const typeOrder = (a: EventType, b: EventType) => {
   return byId(a, b)
 }
 
+/** Części danych domu czytane na żywo: dom, zadania, kategorie, wydarzenia, rodzaje, domownicy. */
+const HOUSE_PARTS = 6
+
 const reportError = (e: unknown) => console.error('Nie udało się zapisać zmian w Firestore', e)
 
 /**
@@ -69,6 +72,8 @@ function HouseData({ children }: { children: ReactNode }) {
   const [houseName, setHouseNameState] = useState('')
   const [userDoc, setUserDoc] = useState<Omit<UserDoc, 'houseId'>>({ ...DEFAULT_USER, name: '' })
   const { toast, show, undo } = useUndoToast()
+  // które części danych domu już przyszły (pierwszy odczyt) – ekrany czekają na komplet
+  const [loaded, setLoaded] = useState<ReadonlySet<string>>(new Set())
 
   // Najnowsze listy – kolejne zmiany w jednym kliknięciu liczą się od wyniku poprzedniej.
   const latest = useRef({ tasks, categories, events, eventTypes })
@@ -90,39 +95,75 @@ function HouseData({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!houseId) return
+    const mark = (part: string) => setLoaded((s) => (s.has(part) ? s : new Set([...s, part])))
+    // błąd odczytu (np. brak dostępu) – nie czekamy w nieskończoność na tę część
+    const failed = (part: string) => (e: unknown) => {
+      console.error(`Nie udało się wczytać: ${part}`, e)
+      mark(part)
+    }
     const subs = [
-      onSnapshot(doc(db, paths.house(houseId)), (snap) =>
-        setHouseNameState((snap.data() as Partial<HouseDoc> | undefined)?.name ?? ''),
+      onSnapshot(
+        doc(db, paths.house(houseId)),
+        (snap) => {
+          setHouseNameState((snap.data() as Partial<HouseDoc> | undefined)?.name ?? '')
+          mark('house')
+        },
+        failed('house'),
       ),
-      onSnapshot(collection(db, paths.tasks(houseId)), (snap) =>
-        setTasksState(snap.docs.map((d) => taskFromDoc(d.id, d.data())).sort(byId)),
+      onSnapshot(
+        collection(db, paths.tasks(houseId)),
+        (snap) => {
+          setTasksState(snap.docs.map((d) => taskFromDoc(d.id, d.data())).sort(byId))
+          mark('tasks')
+        },
+        failed('tasks'),
       ),
-      onSnapshot(collection(db, paths.categories(houseId)), (snap) =>
-        setCategoriesState(
-          snap.docs.map((d) => categoryFromDoc(d.id, d.data())).sort((a, b) => a.order - b.order),
-        ),
+      onSnapshot(
+        collection(db, paths.categories(houseId)),
+        (snap) => {
+          setCategoriesState(
+            snap.docs.map((d) => categoryFromDoc(d.id, d.data())).sort((a, b) => a.order - b.order),
+          )
+          mark('categories')
+        },
+        failed('categories'),
       ),
-      onSnapshot(collection(db, paths.events(houseId)), (snap) =>
-        setEventsState(snap.docs.map((d) => eventFromDoc(d.id, d.data())).sort(byId)),
+      onSnapshot(
+        collection(db, paths.events(houseId)),
+        (snap) => {
+          setEventsState(snap.docs.map((d) => eventFromDoc(d.id, d.data())).sort(byId))
+          mark('events')
+        },
+        failed('events'),
       ),
-      onSnapshot(collection(db, paths.eventTypes(houseId)), (snap) =>
-        setEventTypesState(snap.docs.map((d) => eventTypeFromDoc(d.id, d.data())).sort(typeOrder)),
+      onSnapshot(
+        collection(db, paths.eventTypes(houseId)),
+        (snap) => {
+          setEventTypesState(snap.docs.map((d) => eventTypeFromDoc(d.id, d.data())).sort(typeOrder))
+          mark('eventTypes')
+        },
+        failed('eventTypes'),
       ),
-      onSnapshot(collection(db, paths.members(houseId)), (snap) =>
-        setMembers(
-          snap.docs.map((d) => {
-            const m = d.data() as Partial<MemberDoc>
-            return {
-              uid: d.id,
-              name: m.name ?? '',
-              role: m.role ?? 'member',
-              scope: m.scope ?? { all: true, categoryIds: [], calendar: true },
-              // bez odmiany i bez „ostatnio” (decyzja Hani 2026-10-18; aktywność – etap 8)
-              nameGenitive: m.name ?? '',
-              lastSeen: '',
-            }
-          }),
-        ),
+      onSnapshot(
+        collection(db, paths.members(houseId)),
+        (snap) => {
+          mark('members')
+          setMembers(
+            snap.docs.map((d) => {
+              const m = d.data() as Partial<MemberDoc>
+              return {
+                uid: d.id,
+                name: m.name ?? '',
+                role: m.role ?? 'member',
+                scope: m.scope ?? { all: true, categoryIds: [], calendar: true },
+                // bez odmiany i bez „ostatnio” (decyzja Hani 2026-10-18; aktywność – etap 8)
+                nameGenitive: m.name ?? '',
+                lastSeen: '',
+              }
+            }),
+          )
+        },
+        failed('members'),
       ),
     ]
     return () => subs.forEach((unsub) => unsub())
@@ -199,6 +240,7 @@ function HouseData({ children }: { children: ReactNode }) {
 
   const store = useMemo<Store>(
     () => ({
+      ready: !houseId || loaded.size >= HOUSE_PARTS,
       today: day,
       userName: userDoc.name,
       currentUid: uid,
@@ -237,6 +279,7 @@ function HouseData({ children }: { children: ReactNode }) {
     }),
     [
       day,
+      loaded,
       userDoc,
       uid,
       houseId,

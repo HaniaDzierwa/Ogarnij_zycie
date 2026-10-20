@@ -2,7 +2,20 @@
 
 import { addDays, diffDays, weekStart, type DateKey } from './dates.ts'
 import { remindNote } from './eventOps.ts'
-import type { CalendarEvent, Task } from './types.ts'
+import { builtInEventTypes } from '../theme'
+import type { CalendarEvent, EventType, Task } from './types.ts'
+
+/**
+ * Rodzaj wydarzenia po id – zawsze jakiś: z listy domu, wbudowany o tym id albo „Wydarzenie”.
+ * Lista rodzajów może jeszcze nie przyjść z bazy (albo rodzaj usunięto) – ekran nie może się wywrócić.
+ */
+export function eventTypeOf(types: EventType[], id: string): EventType {
+  const found = types.find((t) => t.id === id)
+  if (found) return found
+  const b =
+    builtInEventTypes.find((t) => t.id === id) ?? builtInEventTypes.find((t) => t.id === 'event')!
+  return { ...b }
+}
 
 /** Zadania poza koszem. */
 export const liveTasks = (tasks: Task[]) => tasks.filter((t) => !t.deleted)

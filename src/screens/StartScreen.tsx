@@ -22,6 +22,7 @@ import { useStore } from '../data/store.ts'
 import { plural } from '../data/plural.ts'
 import {
   calendarItems,
+  eventTypeOf,
   doneOn,
   openTasks,
   upcomingEvents,
@@ -40,7 +41,7 @@ export function StartScreen() {
 
   const categoryName = (id: string | null) =>
     categories.find((c) => c.id === id)?.name ?? 'Bez kategorii'
-  const typeOf = (id: string) => eventTypes.find((t) => t.id === id) ?? eventTypes[0]
+  const typeOf = (id: string) => eventTypeOf(eventTypes, id)
 
   const open = openTasks(tasks)
   const urgent = urgentOpen(tasks)

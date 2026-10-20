@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useConfirmDelete } from '../../components/useConfirmDelete.tsx'
 import { DAYS, MONTHS_GEN, parseKey, whenLabel, type DateKey } from '../../data/dates.ts'
 import { deleteEvent } from '../../data/eventOps.ts'
+import { eventTypeOf } from '../../data/selectors.ts'
 import { useStore } from '../../data/store.ts'
 import type { CalendarEvent, Task } from '../../data/types.ts'
 import { EventDetailSheet } from '../calendar/EventDetailSheet.tsx'
@@ -35,8 +36,7 @@ export function useItemSheets(
 
   const categoryName = (id: string | null) =>
     categories.find((c) => c.id === id)?.name ?? 'Bez kategorii'
-  const typeName = (id: string) =>
-    (eventTypes.find((t) => t.id === id) ?? eventTypes[0])?.name ?? ''
+  const typeName = (id: string) => eventTypeOf(eventTypes, id).name
   const memberName = (uid: string | null) => members.find((m) => m.uid === uid)?.name ?? ''
 
   const trashTask = (t: Task) =>

@@ -18,11 +18,17 @@ export function MockStoreProvider({
   children,
   today,
   noMembers = false,
+  noEventTypes = false,
+  notReady = false,
 }: {
   children: ReactNode
   today?: DateKey
   /** Bez domowników – jak konto, które nie ma jeszcze domu. */
   noMembers?: boolean
+  /** Lista rodzajów wydarzeń jeszcze nie przyszła z bazy (a wydarzenia już tak). */
+  noEventTypes?: boolean
+  /** Dane domu jeszcze się wczytują. */
+  notReady?: boolean
 }) {
   const [day] = useState(() => today ?? getToday())
   const [userName, setUserName] = useState(mockUserName)
@@ -30,7 +36,7 @@ export function MockStoreProvider({
   const [tasks, setTasks] = useState(() => mockTasks(day))
   const [categories, setCategories] = useState(mockCategories)
   const [events, setEvents] = useState(() => mockEvents(day))
-  const [eventTypes, setEventTypes] = useState(mockEventTypes)
+  const [eventTypes, setEventTypes] = useState(() => (noEventTypes ? [] : mockEventTypes))
   const [notifications, setNotifications] = useState(mockNotifications)
   const [cleanupDays, setCleanupDays] = useState<CleanupDays>(30)
   const { toast, show, undo } = useUndoToast()
@@ -57,6 +63,7 @@ export function MockStoreProvider({
 
   const store = useMemo<Store>(
     () => ({
+      ready: !notReady,
       today: day,
       userName,
       currentUid: mockCurrentUid,
@@ -85,6 +92,7 @@ export function MockStoreProvider({
     [
       day,
       noMembers,
+      notReady,
       userName,
       houseName,
       tasks,

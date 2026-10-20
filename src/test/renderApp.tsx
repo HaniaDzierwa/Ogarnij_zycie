@@ -18,6 +18,9 @@ export type RenderOptions = {
   onCreateHouse?: (houseName: string, userName: string) => void
   /** Dane bez domowników (konto bez domu). */
   noMembers?: boolean
+  /** Rodzaje wydarzeń jeszcze nie wczytane; dane domu jeszcze się wczytują. */
+  noEventTypes?: boolean
+  notReady?: boolean
 }
 
 export function renderApp(url: string, opts: RenderOptions = {}) {
@@ -25,7 +28,12 @@ export function renderApp(url: string, opts: RenderOptions = {}) {
   render(
     <MemoryAuthProvider signedOut={opts.signedOut} failWith={opts.failWith}>
       <MemoryHouseProvider noHouse={opts.noHouse} onCreate={opts.onCreateHouse}>
-        <MockStoreProvider today={opts.today ?? '2026-10-09'} noMembers={opts.noMembers}>
+        <MockStoreProvider
+          today={opts.today ?? '2026-10-09'}
+          noMembers={opts.noMembers}
+          noEventTypes={opts.noEventTypes}
+          notReady={opts.notReady}
+        >
           <RouterProvider router={router} />
         </MockStoreProvider>
       </MemoryHouseProvider>

@@ -21,21 +21,13 @@ export const mockCategories: Category[] = defaultCategories.map((c, i) => ({
   order: i,
 }))
 
-const iconByType: Record<string, EventType['icon']> = {
-  task: 'deadline',
-  birthday: 'bday',
-  party: 'party',
-  event: 'event',
-  doctor: 'custom',
-}
-
 export const mockEventTypes: EventType[] = builtInEventTypes.map((t) => ({
   id: t.id,
   name: t.name,
   dot: t.dot,
   bg: t.bg,
   fg: t.fg,
-  icon: iconByType[t.id],
+  icon: t.icon,
   system: t.system,
 }))
 

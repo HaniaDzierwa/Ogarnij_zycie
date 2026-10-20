@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { CheckIcon, EventTypeIcon, TrashIcon } from '../../components/icons.tsx'
 import { Chip, Dot, NoteField, Sheet } from '../../components/ui.tsx'
 import { REMINDS, setAllDay } from '../../data/eventOps.ts'
+import { eventTypeOf } from '../../data/selectors.ts'
 import type { CalendarEvent, EventType } from '../../data/types.ts'
 import { colors, fonts, priorities } from '../../theme'
 import { Group } from './EventSheet.tsx'
@@ -31,7 +32,7 @@ export function EventDetailSheet({
   onClose: () => void
 }) {
   const [originalTitle] = useState(event.title)
-  const type = eventTypes.find((t) => t.id === event.typeId) ?? eventTypes[0]
+  const type = eventTypeOf(eventTypes, event.typeId)
 
   const close = () => {
     // pusta nazwa nie zostaje – wraca poprzednia

@@ -9,6 +9,7 @@ import { DAYS_SHORT, MONTHS_SHORT, parseKey } from '../../data/dates.ts'
 import { restoreEvent } from '../../data/eventOps.ts'
 import { useStore } from '../../data/store.ts'
 import { plural } from '../../data/plural.ts'
+import { eventTypeOf } from '../../data/selectors.ts'
 import { restoreFromTrash } from '../../data/taskOps.ts'
 import { colors, fonts, noCategory, priorities, shadows } from '../../theme'
 import { trashItems, trashWhat, TRASH_DAYS, type TrashItem } from './tasksView.ts'
@@ -65,7 +66,7 @@ export function TrashScreen() {
         meta: `${cat.name.toUpperCase()} · ${who} · ${when}`,
       }
     }
-    const type = eventTypes.find((t) => t.id === i.event.typeId) ?? eventTypes[0]
+    const type = eventTypeOf(eventTypes, i.event.typeId)
     const d = parseKey(i.event.date)
     const date = `${DAYS_SHORT[d.getDay()]} ${d.getDate()} ${MONTHS_SHORT[d.getMonth()]}`
     const time = i.event.from ? ` · ${i.event.from}${i.event.to ? `–${i.event.to}` : ''}` : ''

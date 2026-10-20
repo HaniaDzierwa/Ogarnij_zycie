@@ -4,6 +4,7 @@ import { addDays, dueLabel, longDayLabel, shortDayLabel, weekStart } from './dat
 import { mockCategories, mockEvents, mockTasks } from './mock.ts'
 import {
   calendarItems,
+  eventTypeOf,
   openTasks,
   subtaskProgress,
   upcomingEvents,
@@ -69,5 +70,14 @@ describe('przykładowe dane = liczby z projektu (Start, 9 paź)', () => {
     expect(onDay.map((i) => [i.title, i.typeId, i.note])).toEqual([
       ['Zadzwonić do hydraulika – cieknący kran', 'task', 'Dom · Pilne'],
     ])
+  })
+})
+
+describe('rodzaj wydarzenia', () => {
+  test('zawsze jakiś: z listy, wbudowany o tym id albo „Wydarzenie”', () => {
+    expect(eventTypeOf([], 'birthday').name).toBe('Urodziny')
+    expect(eventTypeOf([], 'r-usuniety').name).toBe('Wydarzenie')
+    const own = { ...eventTypeOf([], 'event'), id: 'r1', name: 'Trening' }
+    expect(eventTypeOf([own], 'r1').name).toBe('Trening')
   })
 })

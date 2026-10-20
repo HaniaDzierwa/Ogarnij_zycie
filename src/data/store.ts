@@ -24,6 +24,8 @@ export const TOAST_MS = 4500
  * co dodać, zmienić albo usunąć.
  */
 export type Store = {
+  /** Wszystkie dane domu już wczytane (z bazy albo z pamięci telefonu) – do tego czasu ekran ładowania. */
+  ready: boolean
   today: DateKey
   userName: string
   currentUid: string

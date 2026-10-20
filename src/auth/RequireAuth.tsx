@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { Navigate, useLocation } from 'react-router'
 import { paths } from '../app/screens.ts'
+import { useStore } from '../data/store.ts'
 import { useHouse } from '../house/house.ts'
 import { LoadingScreen } from '../screens/LoadingScreen.tsx'
 import { useAuth } from './auth.ts'
@@ -34,5 +35,12 @@ function RequireHouse({ children, mode }: { children: ReactNode; mode: 'required
   const hasHouse = !!profile?.houseId
   if (mode === 'required' && !hasHouse) return <Navigate to={paths.pierwsze} replace />
   if (mode === 'firstRun' && hasHouse) return <Navigate to={paths.start} replace />
+  return mode === 'required' ? <WaitForData>{children}</WaitForData> : children
+}
+
+/** Dane domu jeszcze nie przyszły (np. tuż po zalogowaniu) – ekran ładowania zamiast pustych list. */
+function WaitForData({ children }: { children: ReactNode }) {
+  const { ready } = useStore()
+  if (!ready) return <LoadingScreen waiting />
   return children
 }

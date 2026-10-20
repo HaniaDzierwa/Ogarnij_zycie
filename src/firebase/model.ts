@@ -219,15 +219,6 @@ export const DEFAULT_USER: Omit<UserDoc, 'name'> = {
 
 // ── Nowy dom ───────────────────────────────────────────────────────────────
 
-/** Ikony wbudowanych rodzajów wydarzeń (id z src/theme). */
-const BUILT_IN_ICONS: Record<string, EventType['icon']> = {
-  task: 'deadline',
-  birthday: 'bday',
-  party: 'party',
-  event: 'event',
-  doctor: 'custom',
-}
-
 export type NewDoc = { path: string; data: Record<string, unknown> }
 
 /**
@@ -271,7 +262,7 @@ export function newHouseDocs(opts: {
   builtInEventTypes.forEach((t) =>
     docs.push({
       path: `${paths.eventTypes(houseId)}/${t.id}`,
-      data: eventTypeToDoc({ ...t, icon: BUILT_IN_ICONS[t.id] }, uid),
+      data: eventTypeToDoc({ ...t }, uid),
     }),
   )
   return docs
