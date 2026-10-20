@@ -309,3 +309,39 @@ test('„Cofnij” cofa tylko ogarnięcie – późniejsza zmiana innego zadania
     screen.getByRole('button', { name: 'Otwórz zadanie Wymienić filtr w okapie i umyć kratkę' }),
   ).toBeDefined()
 })
+
+test('zadanie z kosza wraca na swoje miejsce: kategoria, priorytet, termin, kroki', async () => {
+  const router = renderAt('/zadania')
+  const row = () =>
+    screen.getByRole('button', { name: 'Otwórz zadanie Prezent dla mamy na imieniny' })
+  const before = row().textContent
+  expect(before).toContain('PILNE')
+  expect(before).toContain('DO 16 PAŹ')
+  expect(before).toContain('2 / 4 KROKI')
+  const group = () => row().closest('section')!.querySelector('button')!.textContent
+
+  expect(group()).toContain('ZAKUPY')
+  click('Przenieś do kosza: Prezent dla mamy na imieniny')
+  fireEvent.click(
+    within(screen.getByRole('alertdialog', { name: 'Usunąć zadanie?' })).getByRole('button', {
+      name: 'Usuń',
+    }),
+  )
+  expect(screen.queryByRole('button', { name: /Otwórz zadanie Prezent/ })).toBeNull()
+
+  await act(() => router.navigate('/ustawienia/kosz'))
+  click('Przywróć: Prezent dla mamy na imieniny')
+  await act(() => router.navigate('/zadania'))
+  expect(row().textContent).toBe(before)
+  expect(group()).toContain('ZAKUPY')
+  fireEvent.click(
+    within(row().parentElement!.parentElement!).getByRole('button', { name: 'Pokaż podzadania' }),
+  )
+  for (const step of [
+    'Wybrać prezent',
+    'Kupić kartkę',
+    'Zapakować',
+    'Odebrać kwiaty w piątek rano',
+  ])
+    expect(screen.getByRole('button', { name: step })).toBeDefined()
+})
