@@ -1,30 +1,18 @@
-import { cleanup, render, screen } from '@testing-library/react'
-import { createMemoryRouter, RouterProvider } from 'react-router'
+import { cleanup, screen } from '@testing-library/react'
 import { afterEach, describe, expect, test } from 'vitest'
-import { MockStoreProvider } from '../data/MockStore.tsx'
-import { MemoryAuthProvider } from '../auth/MemoryAuthProvider.tsx'
-import { routes } from './router.tsx'
+import { renderApp } from '../test/renderApp.tsx'
 import { screens } from './screens.ts'
 
 afterEach(cleanup)
 
-function renderAt(url: string) {
-  const router = createMemoryRouter(routes, { initialEntries: [url] })
-  render(
-    <MemoryAuthProvider>
-      <MockStoreProvider today="2026-10-09">
-        <RouterProvider router={router} />
-      </MockStoreProvider>
-    </MemoryAuthProvider>,
-  )
-  return router
-}
+const renderAt = (url: string) => renderApp(url)
 
 const knownPaths = new Set(screens.map((s) => s.path))
 
 describe('mapa ekranów', () => {
   test.each(screens)('$number $name ($path) ma swój ekran', (s) => {
-    const router = renderAt(s.path)
+    // Pierwsze uruchomienie widzi tylko konto bez domu
+    const router = renderApp(s.path, { noHouse: s.id === 'pierwsze' })
     expect(router.state.location.pathname).toBe(s.path)
     // nie trafia na mapę ekranów (adres awaryjny)
     expect(screen.queryByRole('heading', { name: 'Mapa ekranów' })).toBeNull()

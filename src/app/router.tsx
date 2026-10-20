@@ -37,6 +37,12 @@ const built: Partial<Record<ScreenId, ReactNode>> = {
 /** Ekrany dostępne bez konta; pozostałe tylko po zalogowaniu. */
 const PUBLIC: ScreenId[] = ['ladowanie', 'logowanie', 'rejestracja', 'haslo']
 
+/** Ekrany przed założeniem / dołączeniem do domu; pozostałe wymagają domu. */
+const HOUSE_MODE: Partial<Record<ScreenId, 'firstRun' | 'any'>> = {
+  pierwsze: 'firstRun',
+  dolacz: 'any',
+}
+
 const screenElement = (screen: (typeof screens)[number]) =>
   built[screen.id] ?? <PlaceholderScreen screen={screen} />
 
@@ -46,7 +52,7 @@ export const routes: RouteObject[] = [
     element: PUBLIC.includes(screen.id) ? (
       screenElement(screen)
     ) : (
-      <RequireAuth>{screenElement(screen)}</RequireAuth>
+      <RequireAuth house={HOUSE_MODE[screen.id] ?? 'required'}>{screenElement(screen)}</RequireAuth>
     ),
   })),
   { path: '/mapa', element: <MapScreen /> },

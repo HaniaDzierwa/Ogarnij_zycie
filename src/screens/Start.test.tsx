@@ -1,24 +1,11 @@
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react'
-import { createMemoryRouter, RouterProvider } from 'react-router'
+import { cleanup, fireEvent, screen, within } from '@testing-library/react'
 import { afterEach, expect, test } from 'vitest'
-import { routes } from '../app/router.tsx'
-import { MockStoreProvider } from '../data/MockStore.tsx'
-import { MemoryAuthProvider } from '../auth/MemoryAuthProvider.tsx'
+import { renderApp } from '../test/renderApp.tsx'
 import { plural } from '../data/plural.ts'
 
 afterEach(cleanup)
 
-function renderAt(url: string) {
-  const router = createMemoryRouter(routes, { initialEntries: [url] })
-  render(
-    <MemoryAuthProvider>
-      <MockStoreProvider today="2026-10-09">
-        <RouterProvider router={router} />
-      </MockStoreProvider>
-    </MemoryAuthProvider>,
-  )
-  return router
-}
+const renderAt = (url: string) => renderApp(url)
 
 test('odmiana: 1 wpis, 3 wpisy, 5 wpisów, 22 wpisy, 12 wpisów', () => {
   const f = ['wpis', 'wpisy', 'wpisów'] as [string, string, string]

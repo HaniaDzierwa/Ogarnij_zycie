@@ -5,19 +5,42 @@ import { RIDGE_FAR, RIDGE_NEAR } from '../components/Header.tsx'
 import { Logo } from '../components/Logo.tsx'
 import { ChevronRightIcon } from '../components/icons.tsx'
 import { useStore } from '../data/MockStore.tsx'
+import { DEFAULT_HOUSE_NAME, useHouse } from '../house/house.ts'
 import { colors, fonts, shadows } from '../theme'
 
-/** 1a Pierwsze uruchomienie (Pierwsze.dc.html, teksty #1–2 z docs/TEKSTY.md). */
+/**
+ * 1a Pierwsze uruchomienie (Pierwsze.dc.html, teksty #1–2 z docs/TEKSTY.md).
+ * „Załóż nowy dom”: imię + nazwa domu (decyzja Hani 2026-10-18) → dom w Firestore → Start.
+ */
 export function FirstRunScreen() {
   const store = useStore()
+  const house = useHouse()
   const navigate = useNavigate()
   const [isNew, setIsNew] = useState(true)
-  const [name, setName] = useState(store.userName)
+  const [name, setName] = useState(house.profile?.name ?? '')
+  const [houseName, setHouseName] = useState('')
+  const [nameError, setNameError] = useState<string>()
+  const [formError, setFormError] = useState<string>()
+  const [busy, setBusy] = useState(false)
   const nameShow = name.trim() || 'Ty'
 
-  const start = () => {
-    store.setUserName(name.trim())
-    navigate(paths.start)
+  const start = async () => {
+    if (!name.trim()) {
+      setNameError('Wpisz imię – domownicy zobaczą je przy Twoich zmianach.')
+      return
+    }
+    setNameError(undefined)
+    setFormError(undefined)
+    setBusy(true)
+    try {
+      await house.createHouse(houseName, name)
+      store.setUserName(name.trim())
+      navigate(paths.start, { replace: true })
+    } catch {
+      setFormError('Nie udało się założyć domu. Sprawdź internet i spróbuj jeszcze raz.')
+    } finally {
+      setBusy(false)
+    }
   }
 
   return (
@@ -125,6 +148,55 @@ export function FirstRunScreen() {
               placeholder="np. Hania, Mama, Szefowa"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              aria-invalid={nameError ? true : undefined}
+              aria-describedby={nameError ? 'imie-blad' : undefined}
+              style={{
+                height: 48,
+                border: nameError ? '2px solid #A4492F' : `1px solid ${colors.border}`,
+                borderRadius: 14,
+                padding: '0 14px',
+                fontSize: 17,
+                fontWeight: 700,
+                color: colors.green900,
+                background: colors.white,
+                outlineColor: colors.green900,
+              }}
+            />
+            {nameError ? (
+              <span
+                id="imie-blad"
+                role="alert"
+                style={{ fontSize: 13, fontWeight: 700, color: '#8C3D27' }}
+              >
+                {nameError}
+              </span>
+            ) : (
+              <span style={{ fontSize: 13, color: colors.muted }}>
+                Start przywita Cię:{' '}
+                <em style={{ fontFamily: fonts.serif, fontSize: 15, color: colors.brass700 }}>
+                  „Dzień dobry, {nameShow}”
+                </em>
+              </span>
+            )}
+            <label
+              htmlFor="nazwa-domu"
+              style={{
+                marginTop: 8,
+                fontSize: 11,
+                fontWeight: 800,
+                letterSpacing: '1.4px',
+                color: colors.muted,
+              }}
+            >
+              NAZWA DOMU
+            </label>
+            <input
+              id="nazwa-domu"
+              type="text"
+              maxLength={40}
+              placeholder={`np. Dom na Leśnej, Dzierwowie`}
+              value={houseName}
+              onChange={(e) => setHouseName(e.target.value)}
               style={{
                 height: 48,
                 border: `1px solid ${colors.border}`,
@@ -138,10 +210,8 @@ export function FirstRunScreen() {
               }}
             />
             <span style={{ fontSize: 13, color: colors.muted }}>
-              Start przywita Cię:{' '}
-              <em style={{ fontFamily: fonts.serif, fontSize: 15, color: colors.brass700 }}>
-                „Dzień dobry, {nameShow}”
-              </em>
+              Zobaczą ją domownicy, gdy będą dołączać. Puste pole – „{DEFAULT_HOUSE_NAME}”. Zmienisz
+              ją w Ustawieniach.
             </span>
           </div>
         )}
@@ -226,10 +296,27 @@ export function FirstRunScreen() {
             boxShadow: `0 -1px 0 ${colors.borderSoft}`,
           }}
         >
+          {formError && (
+            <span
+              role="alert"
+              style={{
+                display: 'block',
+                marginBottom: 10,
+                fontSize: 14,
+                fontWeight: 700,
+                color: '#8C3D27',
+                textAlign: 'center',
+              }}
+            >
+              {formError}
+            </span>
+          )}
           <button
             type="button"
             onClick={start}
+            disabled={busy}
             style={{
+              opacity: busy ? 0.6 : 1,
               width: '100%',
               height: 56,
               border: 0,
@@ -244,7 +331,7 @@ export function FirstRunScreen() {
               gap: 10,
             }}
           >
-            Zaczynamy
+            {busy ? 'Zakładam dom…' : 'Zaczynamy'}
             <svg
               width="20"
               height="20"

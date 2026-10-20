@@ -1,23 +1,10 @@
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { createMemoryRouter, RouterProvider } from 'react-router'
+import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react'
 import { afterEach, expect, test } from 'vitest'
-import { routes } from '../app/router.tsx'
-import { MockStoreProvider } from '../data/MockStore.tsx'
-import { MemoryAuthProvider } from '../auth/MemoryAuthProvider.tsx'
+import { renderApp, type RenderOptions } from '../test/renderApp.tsx'
 
 afterEach(cleanup)
 
-function renderAt(url: string, auth: { signedOut?: boolean; failWith?: string } = {}) {
-  const router = createMemoryRouter(routes, { initialEntries: [url] })
-  render(
-    <MemoryAuthProvider {...auth}>
-      <MockStoreProvider today="2026-10-09">
-        <RouterProvider router={router} />
-      </MockStoreProvider>
-    </MemoryAuthProvider>,
-  )
-  return router
-}
+const renderAt = (url: string, auth: RenderOptions = {}) => renderApp(url, auth)
 
 const type = (label: string, value: string) =>
   fireEvent.change(screen.getByLabelText(label), { target: { value } })

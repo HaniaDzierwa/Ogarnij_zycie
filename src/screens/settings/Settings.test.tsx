@@ -1,23 +1,10 @@
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
-import { createMemoryRouter, RouterProvider } from 'react-router'
+import { act, cleanup, fireEvent, screen } from '@testing-library/react'
 import { afterEach, expect, test, vi } from 'vitest'
-import { routes } from '../../app/router.tsx'
-import { MockStoreProvider } from '../../data/MockStore.tsx'
-import { MemoryAuthProvider } from '../../auth/MemoryAuthProvider.tsx'
+import { renderApp } from '../../test/renderApp.tsx'
 
 afterEach(cleanup)
 
-function renderAt(url: string) {
-  const router = createMemoryRouter(routes, { initialEntries: [url] })
-  render(
-    <MemoryAuthProvider>
-      <MockStoreProvider today="2026-10-09">
-        <RouterProvider router={router} />
-      </MockStoreProvider>
-    </MemoryAuthProvider>,
-  )
-  return router
-}
+const renderAt = (url: string) => renderApp(url)
 
 test('Ustawienia: sekcje z projektu, bez Wyglądu (tylko jasny motyw), teksty o Firebase', () => {
   renderAt('/ustawienia')

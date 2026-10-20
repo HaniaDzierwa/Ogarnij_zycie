@@ -1,25 +1,12 @@
-import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react'
-import { createMemoryRouter, RouterProvider } from 'react-router'
+import { act, cleanup, fireEvent, screen, within } from '@testing-library/react'
 import { afterEach, describe, expect, test } from 'vitest'
-import { routes } from '../../app/router.tsx'
-import { MockStoreProvider } from '../../data/MockStore.tsx'
-import { MemoryAuthProvider } from '../../auth/MemoryAuthProvider.tsx'
+import { renderApp } from '../../test/renderApp.tsx'
 import { customType, monthGrid, weekCountLabel, weekRangeLabel } from './calendarView.ts'
 
 afterEach(cleanup)
 
 // Dzień z projektu: piątek 9 października 2026.
-function renderAt(url: string) {
-  const router = createMemoryRouter(routes, { initialEntries: [url] })
-  render(
-    <MemoryAuthProvider>
-      <MockStoreProvider today="2026-10-09">
-        <RouterProvider router={router} />
-      </MockStoreProvider>
-    </MemoryAuthProvider>,
-  )
-  return router
-}
+const renderAt = (url: string) => renderApp(url)
 
 const agenda = () => screen.getByRole('heading', { level: 2, name: /,/ }).closest('section')!
 

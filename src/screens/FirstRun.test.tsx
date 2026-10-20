@@ -1,23 +1,11 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
-import { createMemoryRouter, RouterProvider } from 'react-router'
+import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react'
 import { afterEach, expect, test } from 'vitest'
-import { routes } from '../app/router.tsx'
-import { MockStoreProvider } from '../data/MockStore.tsx'
-import { MemoryAuthProvider } from '../auth/MemoryAuthProvider.tsx'
+import { renderApp } from '../test/renderApp.tsx'
 
 afterEach(cleanup)
 
-function renderAt(url: string) {
-  const router = createMemoryRouter(routes, { initialEntries: [url] })
-  render(
-    <MemoryAuthProvider>
-      <MockStoreProvider today="2026-10-09">
-        <RouterProvider router={router} />
-      </MockStoreProvider>
-    </MemoryAuthProvider>,
-  )
-  return router
-}
+/** Pierwsze uruchomienie – świeże konto bez domu. */
+const renderAt = (url: string) => renderApp(url, { noHouse: true })
 
 test('Ładowanie: dotknięcie prowadzi do logowania', () => {
   const router = renderAt('/ladowanie?pora=noc')
@@ -25,12 +13,43 @@ test('Ładowanie: dotknięcie prowadzi do logowania', () => {
   expect(router.state.location.pathname).toBe('/logowanie')
 })
 
-test('Pierwsze uruchomienie: imię w podglądzie powitania, „Zaczynamy” → Start', () => {
-  const router = renderAt('/witaj')
+test('Pierwsze uruchomienie: imię i nazwa domu → „Zaczynamy” zakłada dom i otwiera Start', async () => {
+  const created: string[][] = []
+  const router = renderApp('/witaj', {
+    noHouse: true,
+    onCreateHouse: (house, name) => created.push([house, name]),
+  })
   fireEvent.change(screen.getByLabelText('JAK MASZ NA IMIĘ?'), { target: { value: 'Ola' } })
   expect(screen.getByText('„Dzień dobry, Ola”')).toBeDefined()
+  fireEvent.change(screen.getByLabelText('NAZWA DOMU'), { target: { value: 'Dom na Leśnej' } })
   fireEvent.click(screen.getByRole('button', { name: /Zaczynamy/ }))
-  expect(router.state.location.pathname).toBe('/')
+  await waitFor(() => expect(router.state.location.pathname).toBe('/'))
+  expect(created).toEqual([['Dom na Leśnej', 'Ola']])
+  expect(screen.getByRole('heading', { level: 1 }).textContent).toContain('Ola')
+})
+
+test('Pierwsze uruchomienie: bez imienia – błąd; pusta nazwa domu – „Nasz dom”', async () => {
+  const created: string[][] = []
+  const router = renderApp('/witaj', {
+    noHouse: true,
+    onCreateHouse: (house, name) => created.push([house, name]),
+  })
+  fireEvent.click(screen.getByRole('button', { name: /Zaczynamy/ }))
+  expect(screen.getByRole('alert').textContent).toContain('Wpisz imię')
+  expect(created).toEqual([])
+  fireEvent.change(screen.getByLabelText('JAK MASZ NA IMIĘ?'), { target: { value: 'Ola' } })
+  fireEvent.click(screen.getByRole('button', { name: /Zaczynamy/ }))
+  await waitFor(() => expect(router.state.location.pathname).toBe('/'))
+  expect(created).toEqual([['Nasz dom', 'Ola']])
+})
+
+test('konto bez domu: ekrany domu prowadzą do Pierwszego uruchomienia; z domem /witaj → Start', () => {
+  expect(renderApp('/zadania', { noHouse: true }).state.location.pathname).toBe('/witaj')
+  cleanup()
+  expect(renderApp('/witaj').state.location.pathname).toBe('/')
+  cleanup()
+  // Dołącz do domu – też bez domu
+  expect(renderApp('/dolacz', { noHouse: true }).state.location.pathname).toBe('/dolacz')
 })
 
 test('Pierwsze uruchomienie: odznaczenie „Załóż nowy dom” chowa imię i „Zaczynamy”', () => {

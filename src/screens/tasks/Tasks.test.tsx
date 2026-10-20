@@ -1,26 +1,13 @@
-import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react'
-import { createMemoryRouter, RouterProvider } from 'react-router'
+import { act, cleanup, fireEvent, screen, within } from '@testing-library/react'
 import { afterEach, expect, test, vi } from 'vitest'
-import { routes } from '../../app/router.tsx'
-import { MockStoreProvider } from '../../data/MockStore.tsx'
-import { MemoryAuthProvider } from '../../auth/MemoryAuthProvider.tsx'
+import { renderApp } from '../../test/renderApp.tsx'
 
 afterEach(() => {
   cleanup()
   vi.useRealTimers()
 })
 
-function renderAt(url: string, today = '2026-10-09') {
-  const router = createMemoryRouter(routes, { initialEntries: [url] })
-  render(
-    <MemoryAuthProvider>
-      <MockStoreProvider today={today}>
-        <RouterProvider router={router} />
-      </MockStoreProvider>
-    </MemoryAuthProvider>,
-  )
-  return router
-}
+const renderAt = (url: string, today = '2026-10-09') => renderApp(url, { today })
 
 const tab = (name: RegExp) => screen.getByRole('tab', { name })
 const click = (name: string | RegExp) => fireEvent.click(screen.getByRole('button', { name }))

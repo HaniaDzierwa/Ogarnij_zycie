@@ -1,25 +1,12 @@
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react'
-import { createMemoryRouter, RouterProvider } from 'react-router'
+import { cleanup, fireEvent, screen, within } from '@testing-library/react'
 import { afterEach, expect, test } from 'vitest'
-import { routes } from '../app/router.tsx'
-import { MockStoreProvider } from '../data/MockStore.tsx'
-import { MemoryAuthProvider } from '../auth/MemoryAuthProvider.tsx'
+import { renderApp } from '../test/renderApp.tsx'
 
 afterEach(cleanup)
 
 const tabBar = () => within(screen.getByRole('navigation', { name: 'Główna nawigacja' }))
 
-function renderAt(url: string) {
-  const router = createMemoryRouter(routes, { initialEntries: [url] })
-  render(
-    <MemoryAuthProvider>
-      <MockStoreProvider today="2026-10-09">
-        <RouterProvider router={router} />
-      </MockStoreProvider>
-    </MemoryAuthProvider>,
-  )
-  return router
-}
+const renderAt = (url: string) => renderApp(url)
 
 test('dolny pasek zaznacza aktywną zakładkę', () => {
   renderAt('/kalendarz')
