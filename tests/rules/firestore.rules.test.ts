@@ -14,7 +14,9 @@ import {
   doc,
   getDoc,
   getDocs,
+  query,
   setDoc,
+  Timestamp,
   updateDoc,
   writeBatch,
   type Firestore,
@@ -27,7 +29,9 @@ import {
   categoryToDoc,
   eventToDoc,
   eventTypeToDoc,
+  joinHouseOps,
   newHouseDocs,
+  newInviteDoc,
   paths,
   taskToDoc,
 } from '../../src/firebase/model.ts'
@@ -294,4 +298,109 @@ describe('poprawność danych', () => {
         admin: true,
       }),
     ))
+})
+
+// ── Zaproszenia i dołączanie (etap 4) ──────────────────────────────────────
+
+const ALL = { all: true, categoryIds: [], calendar: true }
+const CODE = '482913'
+
+/** Hania (domownik dom1) tworzy zaproszenie – tak jak aplikacja. */
+const invite = (code = CODE, as = 'hania', houseId = 'dom1') =>
+  setDoc(
+    doc(db(as), paths.invite(code)),
+    newInviteDoc({ houseId, houseName: 'Dom na Leśnej', uid: as, name: as, scope: ALL }),
+  )
+
+/** „Dołącz jako …” – jedna paczka jak w aplikacji. */
+function join(uid: string, code = CODE, houseId = 'dom1', scope = ALL) {
+  const fs = db(uid)
+  const batch = writeBatch(fs)
+  for (const op of joinHouseOps({
+    code,
+    invite: { houseId, scope },
+    uid,
+    userName: uid,
+    hasProfile: false,
+  }))
+    batch.set(doc(fs, op.path), op.data, { merge: !!op.merge })
+  return batch.commit()
+}
+
+describe('zaproszenia', () => {
+  beforeEach(seed)
+
+  test('domownik tworzy zaproszenie do swojego domu; obcy – nie, do cudzego', async () => {
+    await assertSucceeds(invite())
+    await assertFails(invite('111111', 'obcy', 'dom1'))
+  })
+  test('kod tylko 6 cyfr; zaproszenie „od kogoś innego” – odrzucone', async () => {
+    await assertFails(invite('48291', 'hania'))
+    await assertFails(
+      setDoc(doc(db('hania'), paths.invite('222222')), {
+        ...newInviteDoc({ houseId: 'dom1', houseName: 'Dom', uid: 'krzys', name: 'K', scope: ALL }),
+      }),
+    )
+  })
+  test('znając kod, zalogowany czyta zaproszenie; listy nikt nie przegląda; bez logowania nic', async () => {
+    await invite()
+    await assertSucceeds(getDoc(doc(db('ola'), paths.invite(CODE))))
+    await assertFails(getDocs(query(collection(db('ola'), 'invites'))))
+    await assertFails(getDoc(doc(db(), paths.invite(CODE))))
+  })
+  test('zapraszający usuwa swoje zaproszenie („Nowy kod”); inny – nie', async () => {
+    await invite()
+    await assertFails(deleteDoc(doc(db('obcy'), paths.invite(CODE))))
+    await assertSucceeds(deleteDoc(doc(db('hania'), paths.invite(CODE))))
+  })
+})
+
+describe('dołączanie', () => {
+  beforeEach(seed)
+
+  test('z ważnym kodem: Ola dołącza i widzi zadania domu', async () => {
+    await invite()
+    await assertSucceeds(join('ola'))
+    await assertSucceeds(getDocs(collection(db('ola'), paths.tasks('dom1'))))
+    const me = await getDoc(doc(db('ola'), paths.user('ola')))
+    expect(me.data()?.houseId).toBe('dom1')
+  })
+  test('kod działa raz – drugi raz (inna osoba) odrzucony', async () => {
+    await invite()
+    await join('ola')
+    await assertFails(join('ewa'))
+  })
+  test('przeterminowany kod (ponad 10 min) nie działa', async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      const fs = ctx.firestore() as unknown as Firestore
+      await setDoc(doc(fs, paths.invite(CODE)), {
+        ...newInviteDoc({
+          houseId: 'dom1',
+          houseName: 'Dom',
+          uid: 'hania',
+          name: 'Hania',
+          scope: ALL,
+        }),
+        createdAt: Timestamp.fromMillis(Date.now() - 11 * 60_000),
+      })
+    })
+    await assertFails(join('ola'))
+  })
+  test('bez zaproszenia albo z kodem do innego domu – nie da się dopisać', async () => {
+    await assertFails(join('ola', '999999'))
+    await invite('333333', 'obcy', 'dom2')
+    await assertFails(join('ola', '333333', 'dom1'))
+  })
+  test('zakres musi być taki jak w zaproszeniu; rola tylko „member”', async () => {
+    await invite()
+    await assertFails(join('ola', CODE, 'dom1', { all: true, categoryIds: [], calendar: false }))
+    await join('ola')
+    await assertFails(updateDoc(doc(db('ola'), `${paths.members('dom1')}/ola`), { role: 'owner' }))
+  })
+  test('domownik nie „zużyje” zaproszenia do własnego domu', async () => {
+    await invite()
+    await assertFails(
+      updateDoc(doc(db('hania'), paths.invite(CODE)), { usedBy: 'hania', usedAt: new Date() }),
+    )
+  })
 })

@@ -26,6 +26,8 @@ export const paths = {
   tasks: (houseId: string) => `houses/${houseId}/tasks`,
   eventTypes: (houseId: string) => `houses/${houseId}/eventTypes`,
   events: (houseId: string) => `houses/${houseId}/events`,
+  /** Zaproszenie do domu: kod 6 cyfr. */
+  invite: (code: string) => `invites/${code}`,
 } as const
 
 // ── Limity (te same sprawdzą reguły Firestore) ─────────────────────────────
@@ -82,6 +84,8 @@ export type MemberDoc = {
   role: Member['role']
   scope: Member['scope']
   joinedAt: Timestamp | FieldValue
+  /** Kod zaproszenia, którym domownik dołączył (założyciel – brak). */
+  invite?: string
 }
 
 export type CategoryDoc = Omit<Category, 'id'> & Changed
@@ -266,4 +270,91 @@ export function newHouseDocs(opts: {
     }),
   )
   return docs
+}
+
+// ── Zaproszenia (etap 4) ───────────────────────────────────────────────────
+
+/** Ważność zaproszenia w minutach (reguły liczą ją od czasu serwera przy tworzeniu). */
+export const INVITE_MINUTES = 10
+
+export type InviteDoc = {
+  houseId: string
+  /** Nazwa domu i imię zapraszającego – dla „Znaleziono dom” (nowy domownik nie czyta jeszcze domu). */
+  houseName: string
+  createdBy: string
+  inviterName: string
+  createdAt: Timestamp | FieldValue
+  /** Co zobaczy domownik. */
+  scope: Member['scope']
+  /** Kto użył zaproszenia (raz) i kiedy. */
+  usedBy: string | null
+  usedAt: Timestamp | FieldValue | null
+}
+
+/** Losowy kod 6 cyfr („482913”); w bazie bez spacji, na ekranie „482 913”. */
+export function newInviteCode(random = Math.random): string {
+  return String(Math.floor(100000 + random() * 900000))
+}
+
+export function newInviteDoc(opts: {
+  houseId: string
+  houseName: string
+  uid: string
+  name: string
+  scope: Member['scope']
+}): InviteDoc {
+  return {
+    houseId: opts.houseId,
+    houseName: opts.houseName,
+    createdBy: opts.uid,
+    inviterName: opts.name,
+    createdAt: serverTimestamp(),
+    scope: opts.scope,
+    usedBy: null,
+    usedAt: null,
+  }
+}
+
+/** Ile milisekund zaproszenie jest jeszcze ważne (0 – wygasło). */
+export function inviteLeftMs(createdAt: Timestamp, now = Date.now()): number {
+  return Math.max(0, createdAt.toMillis() + INVITE_MINUTES * 60_000 - now)
+}
+
+export type JoinOp = { path: string; data: Record<string, unknown>; merge?: boolean }
+
+/**
+ * „Dołącz jako …”: jedna paczka – zaproszenie oznaczone jako użyte, nowy domownik (zakres z zaproszenia)
+ * i profil z houseId. `hasProfile` – konto ma już profil (wtedy tylko imię i dom, reszta zostaje).
+ */
+export function joinHouseOps(opts: {
+  code: string
+  invite: Pick<InviteDoc, 'houseId' | 'scope'>
+  uid: string
+  userName: string
+  hasProfile: boolean
+}): JoinOp[] {
+  const { code, invite, uid, userName, hasProfile } = opts
+  return [
+    {
+      path: paths.invite(code),
+      data: { usedBy: uid, usedAt: serverTimestamp() },
+      merge: true,
+    },
+    {
+      path: `${paths.members(invite.houseId)}/${uid}`,
+      data: {
+        name: userName,
+        role: 'member',
+        scope: invite.scope,
+        joinedAt: serverTimestamp(),
+        invite: code,
+      } satisfies MemberDoc,
+    },
+    hasProfile
+      ? { path: paths.user(uid), data: { name: userName, houseId: invite.houseId }, merge: true }
+      : {
+          path: paths.user(uid),
+          data: { ...DEFAULT_USER, name: userName, houseId: invite.houseId } satisfies UserDoc,
+        },
+  ]
 }

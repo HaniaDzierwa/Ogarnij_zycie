@@ -2,7 +2,11 @@ import { Timestamp } from 'firebase/firestore'
 import { describe, expect, test } from 'vitest'
 import { mockEvents, mockTasks } from '../data/mock.ts'
 import {
+  INVITE_MINUTES,
   eventFromDoc,
+  inviteLeftMs,
+  joinHouseOps,
+  newInviteCode,
   eventToDoc,
   newHouseDocs,
   paths,
@@ -110,5 +114,47 @@ describe('nowy dom', () => {
       'doctor',
     ])
     expect(types[0].data).toMatchObject({ name: 'Termin zadania', system: true, icon: 'deadline' })
+  })
+})
+
+describe('zaproszenia', () => {
+  test('kod: zawsze 6 cyfr', () => {
+    for (const r of [0, 0.5, 0.999999]) expect(newInviteCode(() => r)).toMatch(/^[0-9]{6}$/)
+  })
+  test('ważne 10 minut od utworzenia', () => {
+    const t = Timestamp.fromMillis(1_000_000)
+    expect(inviteLeftMs(t, 1_000_000)).toBe(INVITE_MINUTES * 60_000)
+    expect(inviteLeftMs(t, 1_000_000 + 11 * 60_000)).toBe(0)
+  })
+  test('„Dołącz”: zaproszenie użyte, domownik z zakresem z zaproszenia, profil z domem', () => {
+    const scope = { all: false, categoryIds: ['shop'], calendar: true }
+    const ops = joinHouseOps({
+      code: '482913',
+      invite: { houseId: 'dom1', scope },
+      uid: 'ola',
+      userName: 'Ola',
+      hasProfile: false,
+    })
+    expect(ops.map((o) => o.path)).toEqual([
+      'invites/482913',
+      'houses/dom1/members/ola',
+      'users/ola',
+    ])
+    expect(ops[0]).toMatchObject({ data: { usedBy: 'ola' }, merge: true })
+    expect(ops[1].data).toMatchObject({ name: 'Ola', role: 'member', scope, invite: '482913' })
+    expect(ops[2].data).toMatchObject({ name: 'Ola', houseId: 'dom1', cleanupDays: 30 })
+    // konto z profilem – tylko imię i dom
+    const again = joinHouseOps({
+      code: '1',
+      invite: { houseId: 'dom1', scope },
+      uid: 'ola',
+      userName: 'Ola',
+      hasProfile: true,
+    })
+    expect(again[2]).toEqual({
+      path: 'users/ola',
+      data: { name: 'Ola', houseId: 'dom1' },
+      merge: true,
+    })
   })
 })

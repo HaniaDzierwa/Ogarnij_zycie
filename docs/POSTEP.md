@@ -19,8 +19,8 @@ Kolejność etapów zmieniona 2026-10-20 (decyzja Hani: testować dopiero we dwo
 
 | Krok | Status |
 | --- | --- |
-| 1 Zaproszenia w bazie: `invites/{kod}` (dom, kto zaprosił, ważne do, zakres, użyte przez), reguły (tylko domownik zaprasza; kod raz, 10 min) | do zrobienia (następny) |
-| 2 Zaproś domownika: prawdziwy kod 6 cyfr i link zapisane w bazie, odliczanie, „Nowy kod”; bez kodu QR | do zrobienia |
+| 1 Zaproszenia w bazie: `invites/{kod}` (dom, kto zaprosił, ważne do, zakres, użyte przez), reguły (tylko domownik zaprasza; kod raz, 10 min) | zrobione – testy reguł do uruchomienia przez Hanię (37) |
+| 2 Zaproś domownika: prawdziwy kod 6 cyfr i link zapisane w bazie, odliczanie, „Nowy kod”; bez kodu QR | do zrobienia (następny) |
 | 3 Dołącz do domu: kod / link (bez skanera) → „Znaleziono dom” (nazwa domu, domownicy) → „Dołącz jako …”; reguły: dołączenie tylko z ważnym, nieużytym kodem | do zrobienia |
 | 4 Domownicy: lista z bazy; arkusz domownika – zakres (Wszystko / Wybrane), „Usuń z domu” (założyciel), „Opuść dom” | do zrobienia |
 | 5 Zakres „Wybrane” w regułach i w aplikacji (domownik widzi tylko wybrane kategorie i/lub kalendarz) | do zrobienia |
@@ -177,3 +177,4 @@ Wersja testowa: https://ogarnij-zycie--test-56tdtc0y.web.app (kanał `test`, odn
 - 2026-10-20 · Etap 3 · Krok 3: test „Prezent dla mamy” (Zakupy, Pilne, DO 16 PAŹ, 2/4 kroki) → do kosza (z pytaniem) → Kosz → Przywróć → wiersz identyczny jak przed usunięciem, ta sama grupa, wszystkie 4 kroki. Zapis do bazy i z powrotem bez zmian sprawdza też `model.test.ts`. · Sprawdzenie: `npm test` – 163 testy.
 - 2026-10-20 · Etap 3 · Krok 4: wersja testowa opublikowana z ważnością 30 dni (do 2026-11-19) na tydzień prawdziwego używania. Hania prowadzi zadania; uwagi zapisujemy w tabeli „Uwagi Hani”.
 - 2026-10-20 · Plan · Decyzja Hani: testować dopiero, gdy będzie wspólny dom z drugim użytkownikiem. Nowa kolejność: 3 Zadania (kod gotowy, odbiór w 5) → 4 Wspólny dom (dawny 8, bez push) → 5 Kategorie, Kalendarz, Start i wspólne testowanie (dawne 4–6 + odbiór 3) → 6 Ustawienia i push (dawny 7 + push o zmianach domownika) → 7 Testy i publikacja (dawny 9). PLAN.md przebudowany; odwołania do etapów w CLAUDE.md, DESIGN.md, FIREBASE.md, TEKSTY.md, regułach i kodzie przenumerowane. Etap 4 rozpisany na kroki.
+- 2026-10-20 · Etap 4 · Krok 1: zaproszenia – model (`invites/{kod}`: dom, nazwa domu, kto i imię zapraszającego, czas serwera, zakres, użyte przez/kiedy; `newInviteCode`, `newInviteDoc`, `inviteLeftMs`, `joinHouseOps` – jedna paczka „Dołącz”), reguły: zaproszenie tworzy tylko domownik, do swojego domu, kod 6 cyfr; czyta zalogowany znający kod (bez listowania); użycie raz, w ciągu 10 minut od czasu serwera, przez kogoś spoza domu, razem z dopisaniem siebie; nowy domownik tylko z takim zaproszeniem, rola „member”, zakres z zaproszenia; zapraszający usuwa swoje zaproszenie. Testy reguł: 10 nowych (razem 37) – do uruchomienia przez Hanię. · Sprawdzenie: `npm test` – 166; Hania – `npm run test:reguly`.
