@@ -1,6 +1,6 @@
-/// <reference types="vitest/config" />
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
+import { configDefaults } from 'vitest/config'
 import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
@@ -53,5 +53,7 @@ export default defineConfig({
   ],
   test: {
     environment: 'jsdom',
+    // testy reguł Firestore – osobno, w emulatorze (npm run test:reguly)
+    exclude: [...configDefaults.exclude, 'tests/rules/**'],
   },
 })

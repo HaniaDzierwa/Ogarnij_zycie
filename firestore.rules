@@ -1,10 +1,239 @@
 rules_version = '2';
 
-// Reguły Firestore – na start wszystko zamknięte; właściwe reguły w etapie 2, krok 3.
+// Reguły Firestore – „Ogarnij życie” (etap 2). Model danych: docs/DESIGN.md → „Model danych”.
+// Zasady: bez logowania nic; profil widzi tylko właściciel; dane domu – tylko domownicy;
+// dom zakłada się tylko dla siebie; każda zmiana podpisana zalogowanym użytkownikiem (updatedBy)
+// i czasem serwera (updatedAt); poprawne typy i limity (src/firebase/model.ts → LIMITS).
+// Testy: tests/rules/firestore.rules.test.ts (`npm run test:reguly`, emulator – Java 21).
+// Etap 8: zaproszenia, dołączanie, zakres „Wybrane”, usuwanie domowników.
+
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if false;
+
+    // ── Pomocnicze ──────────────────────────────────────────────────────────
+
+    function signedIn() {
+      return request.auth != null;
     }
+
+    function me() {
+      return request.auth.uid;
+    }
+
+    function memberPath(houseId) {
+      return /databases/$(database)/documents/houses/$(houseId)/members/$(request.auth.uid);
+    }
+
+    /** Odczyt: domownik tego domu. */
+    function isMember(houseId) {
+      return signedIn() && exists(memberPath(houseId));
+    }
+
+    /** Zapis: domownik po zapisie (pozwala zapisać dane nowego domu w tej samej paczce). */
+    function isMemberAfter(houseId) {
+      return signedIn() && existsAfter(memberPath(houseId));
+    }
+
+    /** Dom powstaje w tej samej paczce (writeBatch „Załóż nowy dom”). */
+    function houseCreatedNow(houseId) {
+      return !exists(/databases/$(database)/documents/houses/$(houseId))
+        && existsAfter(/databases/$(database)/documents/houses/$(houseId));
+    }
+
+    function str(v, max) {
+      return v is string && v.size() <= max;
+    }
+
+    function text(v, max) {
+      return str(v, max) && v.size() > 0;
+    }
+
+    function strOrNull(v, max) {
+      return v == null || str(v, max);
+    }
+
+    function tsOrNull(v) {
+      return v == null || v is timestamp;
+    }
+
+    function isDay(v) {
+      return v is string && v.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$');
+    }
+
+    function isTime(v) {
+      return v is string && v.matches('^[0-9]{2}:[0-9]{2}$');
+    }
+
+    /** Zmianę podpisuje zalogowany użytkownik, a czas ustawia serwer. */
+    function signed(d) {
+      return d.updatedBy == me() && d.updatedAt == request.time;
+    }
+
+    /** Kto dodał – przy tworzeniu to ja, później bez zmian. */
+    function author(d) {
+      return request.method == 'create' ? d.createdBy == me() : d.createdBy == resource.data.createdBy;
+    }
+
+    // ── Walidacja dokumentów domu ───────────────────────────────────────────
+
+    function validCategory(d) {
+      return d.keys().hasOnly(['name', 'color', 'order', 'updatedAt', 'updatedBy'])
+        && text(d.name, 40)
+        && str(d.color, 30)
+        && d.order is int
+        && signed(d);
+    }
+
+    function validSubtasks(list) {
+      return list is list && list.size() <= 50;
+    }
+
+    function validTask(d) {
+      return d.keys().hasOnly(['title', 'categoryId', 'priority', 'due', 'done', 'subtasks',
+          'createdBy', 'doneAt', 'doneBy', 'deleted', 'deletedAt', 'deletedBy', 'updatedAt', 'updatedBy'])
+        && text(d.title, 200)
+        && strOrNull(d.categoryId, 100)
+        && d.priority in ['high', 'mid', 'low']
+        && (d.due == null || isDay(d.due))
+        && d.done is bool
+        && validSubtasks(d.subtasks)
+        && author(d)
+        && tsOrNull(d.doneAt)
+        && strOrNull(d.doneBy, 128)
+        && d.deleted is bool
+        && tsOrNull(d.deletedAt)
+        && strOrNull(d.deletedBy, 128)
+        && signed(d);
+    }
+
+    function validEventType(d) {
+      return d.keys().hasOnly(['name', 'dot', 'bg', 'fg', 'icon', 'system', 'updatedAt', 'updatedBy'])
+        && text(d.name, 40)
+        && str(d.dot, 30) && str(d.bg, 30) && str(d.fg, 30)
+        && d.icon in ['deadline', 'bday', 'party', 'event', 'custom']
+        && d.system is bool
+        && signed(d);
+    }
+
+    function validEvent(d) {
+      return d.keys().hasOnly(['title', 'date', 'allDay', 'from', 'to', 'typeId', 'remind', 'createdBy',
+          'note', 'deleted', 'deletedAt', 'deletedBy', 'updatedAt', 'updatedBy'])
+        && text(d.title, 200)
+        && isDay(d.date)
+        && d.allDay is bool
+        && (d.from == null || isTime(d.from))
+        && (d.to == null || isTime(d.to))
+        && text(d.typeId, 100)
+        && d.remind in ['none', 'day', 'week']
+        && author(d)
+        && str(d.note, 500)
+        && d.deleted is bool
+        && tsOrNull(d.deletedAt)
+        && strOrNull(d.deletedBy, 128)
+        && signed(d);
+    }
+
+    // ── Profil ──────────────────────────────────────────────────────────────
+
+    function validUser(d) {
+      return d.keys().hasOnly(['name', 'houseId', 'notif', 'cleanupDays', 'taskReminderTime'])
+        && str(d.name, 40)
+        && (d.houseId == null || (d.houseId is string && existsAfter(
+             /databases/$(database)/documents/houses/$(d.houseId)/members/$(request.auth.uid))))
+        && d.notif is map
+        && d.notif.keys().hasOnly(['tasks', 'events', 'morning', 'house'])
+        && d.notif.tasks is bool && d.notif.events is bool
+        && d.notif.morning is bool && d.notif.house is bool
+        && d.cleanupDays in [7, 30, null]
+        && isTime(d.taskReminderTime);
+    }
+
+    match /users/{uid} {
+      allow read: if signedIn() && me() == uid;
+      allow create, update: if signedIn() && me() == uid && validUser(request.resource.data);
+      allow delete: if false; // etap 9 – usuwanie konta
+    }
+
+    // ── Dom ─────────────────────────────────────────────────────────────────
+
+    match /houses/{houseId} {
+      allow read: if isMember(houseId);
+
+      // „Załóż nowy dom” – tylko dla siebie i razem ze sobą jako domownikiem
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['name', 'ownerUid', 'createdAt'])
+        && text(request.resource.data.name, 40)
+        && request.resource.data.ownerUid == me()
+        && request.resource.data.createdAt == request.time
+        && existsAfter(memberPath(houseId));
+
+      // domownicy mogą zmienić tylko nazwę
+      allow update: if isMember(houseId)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name'])
+        && text(request.resource.data.name, 40);
+
+      allow delete: if false; // etap 9
+
+      // ── Domownicy ─────────────────────────────────────────────────────────
+
+      match /members/{uid} {
+        allow read: if isMember(houseId);
+
+        // założyciel – przy zakładaniu domu (dołączanie przez zaproszenie: etap 8)
+        allow create: if signedIn() && uid == me()
+          && houseCreatedNow(houseId)
+          && getAfter(/databases/$(database)/documents/houses/$(houseId)).data.ownerUid == me()
+          && request.resource.data.keys().hasOnly(['name', 'role', 'scope', 'joinedAt'])
+          && str(request.resource.data.name, 40)
+          && request.resource.data.role == 'owner'
+          && request.resource.data.scope == { 'all': true, 'categoryIds': [], 'calendar': true }
+          && request.resource.data.joinedAt == request.time;
+
+        // każdy zmienia tylko swoje imię
+        allow update: if isMember(houseId) && uid == me()
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name'])
+          && str(request.resource.data.name, 40);
+
+        allow delete: if false; // etap 8
+      }
+
+      // ── Kategorie ─────────────────────────────────────────────────────────
+
+      match /categories/{id} {
+        allow read: if isMember(houseId);
+        allow create, update: if isMemberAfter(houseId) && validCategory(request.resource.data);
+        allow delete: if isMember(houseId);
+      }
+
+      // ── Zadania (kosz: deleted = true) ────────────────────────────────────
+
+      match /tasks/{id} {
+        allow read: if isMember(houseId);
+        allow create, update: if isMemberAfter(houseId) && validTask(request.resource.data);
+        // na zawsze – tylko z kosza („Opróżnij kosz”)
+        allow delete: if isMember(houseId) && resource.data.deleted == true;
+      }
+
+      // ── Rodzaje wydarzeń ──────────────────────────────────────────────────
+
+      match /eventTypes/{id} {
+        allow read: if isMember(houseId);
+        allow create: if isMemberAfter(houseId) && validEventType(request.resource.data)
+          // wbudowane systemowe („Termin zadania”) – tylko przy zakładaniu domu
+          && (request.resource.data.system == false || houseCreatedNow(houseId));
+        allow update: if isMember(houseId) && validEventType(request.resource.data)
+          && request.resource.data.system == resource.data.system;
+        allow delete: if isMember(houseId) && resource.data.system == false;
+      }
+
+      // ── Wydarzenia (kosz: deleted = true) ─────────────────────────────────
+
+      match /events/{id} {
+        allow read: if isMember(houseId);
+        allow create, update: if isMemberAfter(houseId) && validEvent(request.resource.data);
+        allow delete: if isMember(houseId) && resource.data.deleted == true;
+      }
+    }
+
   }
 }

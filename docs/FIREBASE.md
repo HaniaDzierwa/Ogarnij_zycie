@@ -51,9 +51,18 @@ W katalogu repozytorium:
 3. Tryb: **production mode** (reguły i tak wgra Claude).
 4. Gdy Claude przygotuje reguły: `npx firebase deploy --only firestore:rules,firestore:indexes`
 
-### Emulatory (do testów reguł, na Twoim komputerze)
-1. Zainstaluj Javę **w wersji 21** (na komputerze jest teraz 8 – za stara dla emulatorów): https://adoptium.net → **Temurin 21 (LTS)** → instalator `.msi` dla Windows x64. W instalatorze zaznacz **Set JAVA_HOME variable** i **Add to PATH**. Potem zamknij i otwórz VS Code, a w terminalu `java -version` powinno pokazać 21.
-2. `npx firebase emulators:start` – uruchamia lokalne Auth i Firestore; nic nie trafia do prawdziwej bazy.
+### Testy reguł – na drugim komputerze (z Javą 21)
+Na głównym komputerze Javy nie aktualizujemy; testy reguł uruchamiasz na komputerze, na którym jest Java 21. Emulator działa na fikcyjnym projekcie `demo-ogarnij-zycie` – **nie łączy się z prawdziwym Firebase** i nie wymaga logowania.
+
+1. **Skopiuj projekt** na drugi komputer: cały folder `Ogarnij_zycie` **bez** podfolderów `node_modules` i `dist` (np. spakuj do zipa i przenieś pendrivem / przez OneDrive). Folder `.git` może zostać – nie przeszkadza.
+2. Na drugim komputerze potrzebne są: **Node.js LTS** (https://nodejs.org) i **Java 21** – sprawdź w terminalu: `node -v` oraz `java -version` (ma pokazać 21).
+3. W terminalu, w katalogu projektu: `npm install` (raz, kilka minut).
+4. `npm run test:reguly` – za pierwszym razem pobierze emulator Firestore (ok. 60 MB), uruchomi go, przeprowadzi testy i sam go wyłączy.
+5. Na końcu pojawi się podsumowanie, np. `Tests  30 passed (30)`. **Skopiuj Claude cały wynik** (zwłaszcza linie z ✗ / ×, jeśli jakiś test nie przejdzie).
+6. Przy każdej zmianie reguł Claude poprosi o powtórzenie kroków 1 (tylko pliki `firestore.rules` i `tests/`, albo cały folder), 4 i 5.
+
+### Wgranie reguł do prawdziwej bazy
+Dopiero gdy wszystkie testy reguł przejdą: na głównym komputerze w katalogu projektu `npx firebase deploy --only firestore:rules` (albo Claude – po Twojej zgodzie). Do tego czasu w bazie są reguły „wszystko zamknięte”.
 
 ---
 

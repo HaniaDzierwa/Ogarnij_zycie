@@ -15,7 +15,8 @@
     "format:check": "prettier --check .",
     "emulators": "firebase emulators:start --only auth,firestore",
     "ikony": "pwa-assets-generator",
-    "dev:emulatory": "vite --mode emulatory"
+    "dev:emulatory": "vite --mode emulatory",
+    "test:reguly": "firebase emulators:exec --only firestore --project demo-ogarnij-zycie \"vitest run --config vitest.rules.config.ts\""
   },
   "dependencies": {
     "firebase": "^13.0.0",
@@ -26,6 +27,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@firebase/rules-unit-testing": "^6.0.0",
     "@testing-library/react": "^16.3.3",
     "@types/node": "^24.13.3",
     "@types/react": "^19.3.0",
