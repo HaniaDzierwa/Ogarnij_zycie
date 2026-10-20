@@ -39,3 +39,10 @@ test('„Dołącz jako Ola” zapisuje imię i otwiera Start', () => {
   expect(router.state.location.pathname).toBe('/')
   expect(screen.getByRole('heading', { level: 1 }).textContent).toContain('Ola')
 })
+
+test('bez domowników (prawdziwe konto przed etapem 8): „Dołączanie w przygotowaniu”, nie udaje domu', () => {
+  renderApp('/dolacz?kod=482913', { noHouse: true, noMembers: true })
+  expect(screen.queryByText('ZNALEZIONO DOM')).toBeNull()
+  expect(screen.getByText(/Dołączanie do domu kodem albo linkiem będzie gotowe/)).toBeDefined()
+  expect(screen.getByRole('link', { name: 'Załóż własny dom' }).getAttribute('href')).toBe('/witaj')
+})

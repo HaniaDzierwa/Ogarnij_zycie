@@ -1,3 +1,4 @@
+import { newId } from '../../data/ids.ts'
 import { useState, type CSSProperties, type ReactNode } from 'react'
 import { useSearchParams } from 'react-router'
 import { Accent, Header } from '../../components/Header.tsx'
@@ -24,7 +25,7 @@ import {
   whenLabel,
   type DateKey,
 } from '../../data/dates.ts'
-import { useStore } from '../../data/MockStore.tsx'
+import { useStore } from '../../data/store.ts'
 import { calendarItems, weekDays } from '../../data/selectors.ts'
 import { colors, fonts, priorities, shadows } from '../../theme'
 import {
@@ -144,7 +145,7 @@ export function CalendarScreen() {
   }
 
   const addType = (name: string, color: string) => {
-    const id = `r${Date.now()}`
+    const id = newId('r')
     store.setEventTypes((list) => [...list, customType(id, name, color)])
     return id
   }
@@ -536,7 +537,7 @@ export function CalendarScreen() {
           onSave={(draft) => {
             store.setEvents((list) => [
               ...list,
-              { ...draft, id: `e${Date.now()}`, createdBy: store.currentUid },
+              { ...draft, id: newId('e'), createdBy: store.currentUid },
             ])
             setSheetOpen(false)
           }}

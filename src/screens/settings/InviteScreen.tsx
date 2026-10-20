@@ -13,7 +13,7 @@ import {
   Screen,
   SectionLabel,
 } from '../../components/ui.tsx'
-import { useStore } from '../../data/MockStore.tsx'
+import { useStore } from '../../data/store.ts'
 import { colors, fonts, shadows } from '../../theme'
 import { QR_PATH } from './qrMock.ts'
 

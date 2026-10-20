@@ -1,3 +1,4 @@
+import { newId } from '../../data/ids.ts'
 import { useState } from 'react'
 import { useSearchParams } from 'react-router'
 import { Accent, Header } from '../../components/Header.tsx'
@@ -7,7 +8,7 @@ import { useConfirmDelete } from '../../components/useConfirmDelete.tsx'
 import { Box, Dot, OfflineBadge } from '../../components/ui.tsx'
 import { CloseIcon, SlidersIcon, TrashIcon } from '../../components/icons.tsx'
 import { shortDayLabel, whenLabel } from '../../data/dates.ts'
-import { useStore } from '../../data/MockStore.tsx'
+import { useStore } from '../../data/store.ts'
 import { plural } from '../../data/plural.ts'
 import { moveToTrash } from '../../data/taskOps.ts'
 import type { Task } from '../../data/types.ts'
@@ -90,7 +91,7 @@ export function TasksScreen() {
     })
 
   const addCategory = (name: string, color: string) => {
-    const id = `k${Date.now()}`
+    const id = newId('k')
     store.setCategories((list) => [...list, { id, name, color, order: list.length }])
     return id
   }
@@ -524,7 +525,7 @@ export function TasksScreen() {
           today={today}
           onAddCategory={addCategory}
           onSave={(draft) => {
-            const id = `t${Date.now()}`
+            const id = newId('t')
             const task: Task = {
               ...draft,
               id,

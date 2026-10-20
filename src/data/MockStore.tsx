@@ -1,12 +1,4 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useMemo,
-  useRef,
-  useState,
-  type ReactNode,
-} from 'react'
+import { useCallback, useMemo, useState, type ReactNode } from 'react'
 import { nowStamp, today as getToday, type DateKey } from './dates.ts'
 import {
   mockCategories,
@@ -18,113 +10,68 @@ import {
   mockTasks,
   mockUserName,
 } from './mock.ts'
-import type { Who } from './taskOps.ts'
-import type {
-  CalendarEvent,
-  CleanupDays,
-  Category,
-  EventType,
-  Member,
-  NotificationSettings,
-  Task,
-} from './types.ts'
+import { StoreContext, useUndoToast, type Store } from './store.ts'
+import type { CalendarEvent, CleanupDays, Task } from './types.ts'
 
-/** Pasek „… · COFNIJ”: tekst + przywrócenie stanu sprzed akcji (zadań albo wydarzeń). */
-export type Toast = { id: number; text: string; restore: () => void }
-
-const TOAST_MS = 4500
-
-/** Dane mockupu (etap 1): w pamięci, znikają po odświeżeniu strony. */
-type Store = {
-  today: DateKey
-  userName: string
-  currentUid: string
-  tasks: Task[]
-  categories: Category[]
-  events: CalendarEvent[]
-  eventTypes: EventType[]
-  members: Member[]
-  notifications: NotificationSettings
-  /** Sprzątanie ogarniętych: po 7 / 30 dniach, null = nigdy. */
-  cleanupDays: CleanupDays
-  toast: Toast | null
-  /** Kto i teraz – do oznaczania zmian. */
-  who: () => Who
-  setUserName: (name: string) => void
-  setTasks: (update: (tasks: Task[]) => Task[]) => void
-  /** Zmiana zadań z paskiem „Cofnij”. */
-  changeTasks: (text: string, update: (tasks: Task[]) => Task[]) => void
-  /** Zmiana wydarzeń z paskiem „Cofnij”. */
-  changeEvents: (text: string, update: (events: CalendarEvent[]) => CalendarEvent[]) => void
-  undo: () => void
-  setCategories: (update: (categories: Category[]) => Category[]) => void
-  setEvents: (update: (events: CalendarEvent[]) => CalendarEvent[]) => void
-  setEventTypes: (update: (types: EventType[]) => EventType[]) => void
-  setNotifications: (update: (n: NotificationSettings) => NotificationSettings) => void
-  setCleanupDays: (days: CleanupDays) => void
-}
-
-const StoreContext = createContext<Store | null>(null)
-
-export function MockStoreProvider({ children, today }: { children: ReactNode; today?: DateKey }) {
+/** Przykładowe dane (testy, podgląd ekranów): w pamięci, znikają po odświeżeniu strony. */
+export function MockStoreProvider({
+  children,
+  today,
+  noMembers = false,
+}: {
+  children: ReactNode
+  today?: DateKey
+  /** Bez domowników – jak konto, które nie ma jeszcze domu. */
+  noMembers?: boolean
+}) {
   const [day] = useState(() => today ?? getToday())
   const [userName, setUserName] = useState(mockUserName)
+  const [houseName, setHouseName] = useState('Dom na Leśnej')
   const [tasks, setTasks] = useState(() => mockTasks(day))
   const [categories, setCategories] = useState(mockCategories)
   const [events, setEvents] = useState(() => mockEvents(day))
   const [eventTypes, setEventTypes] = useState(mockEventTypes)
   const [notifications, setNotifications] = useState(mockNotifications)
   const [cleanupDays, setCleanupDays] = useState<CleanupDays>(30)
-  const [toast, setToast] = useState<Toast | null>(null)
-  const toastId = useRef(0)
+  const { toast, show, undo } = useUndoToast()
 
   const who = useCallback(() => ({ uid: mockCurrentUid, at: nowStamp(day) }), [day])
-
-  const showToast = useCallback((text: string, restore: () => void) => {
-    const id = ++toastId.current
-    setToast({ id, text, restore })
-    setTimeout(() => setToast((t) => (t?.id === id ? null : t)), TOAST_MS)
-  }, [])
 
   const changeTasks = useCallback(
     (text: string, update: (t: Task[]) => Task[]) => {
       const before = tasks
-      showToast(text, () => setTasks(before))
+      show(text, () => setTasks(before))
       setTasks(update(tasks))
     },
-    [tasks, showToast],
+    [tasks, show],
   )
 
   const changeEvents = useCallback(
     (text: string, update: (e: CalendarEvent[]) => CalendarEvent[]) => {
       const before = events
-      showToast(text, () => setEvents(before))
+      show(text, () => setEvents(before))
       setEvents(update(events))
     },
-    [events, showToast],
+    [events, show],
   )
-
-  const undo = useCallback(() => {
-    if (!toast) return
-    toast.restore()
-    setToast(null)
-  }, [toast])
 
   const store = useMemo<Store>(
     () => ({
       today: day,
       userName,
       currentUid: mockCurrentUid,
+      houseName,
       tasks,
       categories,
       events,
       eventTypes,
-      members: mockMembers,
+      members: noMembers ? [] : mockMembers,
       notifications,
       cleanupDays,
       toast,
       who,
       setUserName,
+      setHouseName,
       setTasks,
       changeTasks,
       changeEvents,
@@ -137,7 +84,9 @@ export function MockStoreProvider({ children, today }: { children: ReactNode; to
     }),
     [
       day,
+      noMembers,
       userName,
+      houseName,
       tasks,
       categories,
       events,
@@ -153,11 +102,4 @@ export function MockStoreProvider({ children, today }: { children: ReactNode; to
   )
 
   return <StoreContext.Provider value={store}>{children}</StoreContext.Provider>
-}
-
-// eslint-disable-next-line react-refresh/only-export-components
-export function useStore(): Store {
-  const store = useContext(StoreContext)
-  if (!store) throw new Error('useStore() poza <MockStoreProvider>')
-  return store
 }

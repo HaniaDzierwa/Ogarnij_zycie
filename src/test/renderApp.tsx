@@ -16,6 +16,8 @@ export type RenderOptions = {
   /** Konto bez domu (świeże); podgląd tego, co zapisałby „Załóż nowy dom”. */
   noHouse?: boolean
   onCreateHouse?: (houseName: string, userName: string) => void
+  /** Dane bez domowników (konto bez domu). */
+  noMembers?: boolean
 }
 
 export function renderApp(url: string, opts: RenderOptions = {}) {
@@ -23,7 +25,7 @@ export function renderApp(url: string, opts: RenderOptions = {}) {
   render(
     <MemoryAuthProvider signedOut={opts.signedOut} failWith={opts.failWith}>
       <MemoryHouseProvider noHouse={opts.noHouse} onCreate={opts.onCreateHouse}>
-        <MockStoreProvider today={opts.today ?? '2026-10-09'}>
+        <MockStoreProvider today={opts.today ?? '2026-10-09'} noMembers={opts.noMembers}>
           <RouterProvider router={router} />
         </MockStoreProvider>
       </MemoryHouseProvider>

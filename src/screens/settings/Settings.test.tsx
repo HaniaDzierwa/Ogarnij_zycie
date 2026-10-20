@@ -120,3 +120,14 @@ test('Zaproś: stan „Ola jest z Wami” (podgląd ?etap=dolaczyla), „Gotowe�
   fireEvent.click(screen.getByRole('link', { name: /Gotowe/ }))
   expect(router.state.location.pathname).toBe('/ustawienia/domownicy')
 })
+
+test('Wspólny dom: nazwa domu do zmiany; pusta wraca do „Nasz dom”', () => {
+  renderAt('/ustawienia')
+  const input = screen.getByLabelText('NAZWA DOMU') as HTMLInputElement
+  expect(input.value).toBe('Dom na Leśnej')
+  fireEvent.change(input, { target: { value: 'Dzierwowie' } })
+  expect(input.value).toBe('Dzierwowie')
+  fireEvent.change(input, { target: { value: '  ' } })
+  fireEvent.blur(input)
+  expect(input.value).toBe('Nasz dom')
+})

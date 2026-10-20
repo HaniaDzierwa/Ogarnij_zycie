@@ -1,4 +1,5 @@
-import { useStore } from '../../data/MockStore.tsx'
+import { newId } from '../../data/ids.ts'
+import { useStore } from '../../data/store.ts'
 import {
   addSubtask,
   markDone,
@@ -46,8 +47,6 @@ export function useTaskActions() {
     toggleSub: (t: Task, sid: string) => changeSteps(t, (x) => toggleSubtask(x, sid, store.who())),
     removeSub: (t: Task, sid: string) => changeSteps(t, (x) => removeSubtask(x, sid, store.who())),
     addSub: (t: Task, title: string) =>
-      changeSteps(t, (x) =>
-        addSubtask(x, { id: `${x.id}s${Date.now()}`, title, done: false }, store.who()),
-      ),
+      changeSteps(t, (x) => addSubtask(x, { id: newId('s'), title, done: false }, store.who())),
   }
 }

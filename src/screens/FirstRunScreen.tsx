@@ -4,7 +4,7 @@ import { paths } from '../app/screens.ts'
 import { RIDGE_FAR, RIDGE_NEAR } from '../components/Header.tsx'
 import { Logo } from '../components/Logo.tsx'
 import { ChevronRightIcon } from '../components/icons.tsx'
-import { useStore } from '../data/MockStore.tsx'
+import { useStore } from '../data/store.ts'
 import { DEFAULT_HOUSE_NAME, useHouse } from '../house/house.ts'
 import { colors, fonts, shadows } from '../theme'
 

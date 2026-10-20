@@ -233,7 +233,7 @@ test('Kosz (z Ustawień): zadania i wydarzenia, chipy, przywracanie z „Cofnij�
   click('Opróżnij kosz')
   const sheet = screen.getByRole('dialog', { name: 'Opróżnij kosz' })
   expect(sheet.textContent).toContain(
-    'W koszu jest 5 elementów – zadania i wydarzenia. Tego nie da się cofnąć – znikną też u Krzysia.',
+    'W koszu jest 5 elementów – zadania i wydarzenia. Tego nie da się cofnąć – znikną też u domownika.',
   )
   fireEvent.click(within(sheet).getByRole('button', { name: 'Usuń na zawsze' }))
   expect(screen.getByText('Kosz jest pusty')).toBeDefined()

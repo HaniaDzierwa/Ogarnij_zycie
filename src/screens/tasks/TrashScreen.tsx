@@ -7,7 +7,7 @@ import { Chip, Dot, Screen, Sheet } from '../../components/ui.tsx'
 import { CalendarIcon, TrashIcon, UndoIcon } from '../../components/icons.tsx'
 import { DAYS_SHORT, MONTHS_SHORT, parseKey } from '../../data/dates.ts'
 import { restoreEvent } from '../../data/eventOps.ts'
-import { useStore } from '../../data/MockStore.tsx'
+import { useStore } from '../../data/store.ts'
 import { plural } from '../../data/plural.ts'
 import { restoreFromTrash } from '../../data/taskOps.ts'
 import { colors, fonts, noCategory, priorities, shadows } from '../../theme'
@@ -35,7 +35,7 @@ export function TrashScreen() {
   const others = members.filter((m) => m.uid !== currentUid)
   const alsoFor =
     others.length === 1
-      ? ` – znikną też u ${others[0].nameGenitive}`
+      ? ' – znikną też u domownika'
       : others.length > 1
         ? ' – znikną też u pozostałych domowników'
         : ''

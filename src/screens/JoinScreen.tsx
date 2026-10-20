@@ -4,7 +4,7 @@ import { paths } from '../app/screens.ts'
 import { Accent, Header } from '../components/Header.tsx'
 import { Logo } from '../components/Logo.tsx'
 import { BottomActions, Card, Screen } from '../components/ui.tsx'
-import { useStore } from '../data/MockStore.tsx'
+import { useStore } from '../data/store.ts'
 import { colors, fonts } from '../theme'
 
 const label = {
@@ -34,6 +34,7 @@ export function JoinScreen() {
   const [found, setFound] = useState(fromLink.length === 7)
   const [name, setName] = useState('')
 
+  // w etapie 2 lista domowników pochodzi z przykładowych danych (podgląd); bez nich – „w przygotowaniu”
   const owner = members.find((m) => m.role === 'owner') ?? members[0]
   const names = members.map((m) => m.name)
   const who = names.length > 1 ? `${names.slice(0, -1).join(', ')} i ${names.at(-1)}` : names[0]
@@ -192,6 +193,30 @@ export function JoinScreen() {
             </span>
           </Card>
         </>
+      ) : !owner ? (
+        // Prawdziwe dołączanie (kod w Firestore) – etap 8. Do tego czasu bez udawania „znalezionego domu”.
+        <Card
+          radius={26}
+          style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: '20px 20px' }}
+        >
+          <span
+            style={{
+              fontSize: 11,
+              fontWeight: 800,
+              letterSpacing: '1.6px',
+              color: colors.brass700,
+            }}
+          >
+            JUŻ NIEDŁUGO
+          </span>
+          <span style={{ fontFamily: fonts.serif, fontSize: 22, fontWeight: 500 }}>
+            Dołączanie <em>w przygotowaniu</em>
+          </span>
+          <span style={{ fontSize: 15, lineHeight: 1.45, color: colors.muted2 }}>
+            Dołączanie do domu kodem albo linkiem będzie gotowe w jednym z kolejnych kroków. Na
+            razie załóż własny dom – domowników zaprosisz później.
+          </span>
+        </Card>
       ) : (
         <>
           <Card
@@ -285,7 +310,25 @@ export function JoinScreen() {
       )}
 
       <BottomActions>
-        {found ? (
+        {found && !owner ? (
+          <Link
+            to={paths.pierwsze}
+            style={{
+              height: 56,
+              borderRadius: 28,
+              background: colors.green900,
+              color: colors.cream,
+              fontSize: 17,
+              fontWeight: 800,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              textDecoration: 'none',
+            }}
+          >
+            Załóż własny dom
+          </Link>
+        ) : found ? (
           <>
             <button
               type="button"

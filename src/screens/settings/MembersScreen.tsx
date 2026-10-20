@@ -4,7 +4,7 @@ import { Accent, Header } from '../../components/Header.tsx'
 import { PlusIcon } from '../../components/icons.tsx'
 import { TabBar } from '../../components/TabBar.tsx'
 import { Card, Screen, SectionLabel } from '../../components/ui.tsx'
-import { useStore } from '../../data/MockStore.tsx'
+import { useStore } from '../../data/store.ts'
 import type { Category, Member } from '../../data/types.ts'
 import { colors, fonts } from '../../theme'
 

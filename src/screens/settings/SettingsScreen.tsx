@@ -14,7 +14,8 @@ import {
   SectionLabel,
   ToggleRow,
 } from '../../components/ui.tsx'
-import { useStore } from '../../data/MockStore.tsx'
+import { useStore } from '../../data/store.ts'
+import { DEFAULT_HOUSE_NAME } from '../../house/house.ts'
 import { plural } from '../../data/plural.ts'
 import type { CleanupDays, NotificationSettings } from '../../data/types.ts'
 import { colors, fonts, priorities, shadows } from '../../theme'
@@ -135,19 +136,61 @@ export function SettingsScreen() {
       </Section>
 
       <Section label="WSPÓLNY DOM">
-        <LinkRow
-          to={paths.domownicy}
-          icon={<UsersIcon />}
-          iconBg={colors.successBg}
-          iconFg={colors.green900}
-          title="Domownicy"
-          meta={
-            other
-              ? `${other.name.toUpperCase()} · ${other.lastSeen}`
-              : 'TYLKO TY · ZAPROŚ DOMOWNIKA'
-          }
-          card
-        />
+        <Card radius={22}>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 6,
+              padding: '14px 18px',
+              borderBottom: `1px solid ${colors.line}`,
+            }}
+          >
+            <label
+              htmlFor="nazwa-domu"
+              style={{ fontSize: 11, fontWeight: 800, letterSpacing: '1.4px', color: colors.muted }}
+            >
+              NAZWA DOMU
+            </label>
+            <input
+              id="nazwa-domu"
+              type="text"
+              maxLength={40}
+              placeholder={DEFAULT_HOUSE_NAME}
+              value={store.houseName}
+              onChange={(e) => store.setHouseName(e.target.value)}
+              // pusta nazwa nie zostaje
+              onBlur={(e) => !e.target.value.trim() && store.setHouseName(DEFAULT_HOUSE_NAME)}
+              style={{
+                height: 44,
+                border: `1px solid ${colors.border}`,
+                borderRadius: 14,
+                padding: '0 14px',
+                fontSize: 16,
+                fontWeight: 700,
+                color: colors.green900,
+                background: colors.white,
+                outlineColor: colors.green900,
+                minWidth: 0,
+              }}
+            />
+          </div>
+          <LinkRow
+            to={paths.domownicy}
+            icon={<UsersIcon />}
+            iconBg={colors.successBg}
+            iconFg={colors.green900}
+            title="Domownicy"
+            meta={
+              others.length
+                ? others
+                    .map((m) => (m.lastSeen ? `${m.name} · ${m.lastSeen}` : m.name))
+                    .join(', ')
+                    .toUpperCase()
+                : 'TYLKO TY · ZAPROŚ DOMOWNIKA'
+            }
+          />
+        </Card>
       </Section>
 
       <Section label="PORZĄDKI">

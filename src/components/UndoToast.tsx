@@ -1,4 +1,4 @@
-import { useStore } from '../data/MockStore.tsx'
+import { useStore } from '../data/store.ts'
 import { colors } from '../theme'
 
 /** Pasek „… · COFNIJ” nad dolnym menu (znika po ~4,5 s). */

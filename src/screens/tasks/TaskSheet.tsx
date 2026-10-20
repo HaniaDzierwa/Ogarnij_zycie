@@ -1,3 +1,4 @@
+import { newId } from '../../data/ids.ts'
 import { useState } from 'react'
 import { Box, Chip, Dot, Field, PrimaryButton, Sheet } from '../../components/ui.tsx'
 import { CloseIcon, PlusIcon } from '../../components/icons.tsx'
@@ -48,7 +49,7 @@ export function TaskSheet({ onClose, categories, today, onAddCategory, onSave }:
   const addStep = () => {
     const s = step.trim()
     if (!s) return
-    setSteps((list) => [...list, { id: `k${Date.now()}`, title: s, done: false }])
+    setSteps((list) => [...list, { id: newId('s'), title: s, done: false }])
     setStep('')
   }
   const submit = () => {

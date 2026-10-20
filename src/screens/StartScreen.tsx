@@ -15,7 +15,7 @@ import {
   longDayLabel,
   parseKey,
 } from '../data/dates.ts'
-import { useStore } from '../data/MockStore.tsx'
+import { useStore } from '../data/store.ts'
 import { plural } from '../data/plural.ts'
 import {
   calendarItems,

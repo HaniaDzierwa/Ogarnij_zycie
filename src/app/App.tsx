@@ -1,6 +1,6 @@
 import { createBrowserRouter, RouterProvider } from 'react-router'
 import { FirebaseAuthProvider } from '../auth/FirebaseAuthProvider.tsx'
-import { MockStoreProvider } from '../data/MockStore.tsx'
+import { FirestoreStoreProvider } from '../data/FirestoreStore.tsx'
 import { FirebaseHouseProvider } from '../house/FirebaseHouseProvider.tsx'
 import { routes } from './router.tsx'
 
@@ -10,9 +10,9 @@ export default function App() {
   return (
     <FirebaseAuthProvider>
       <FirebaseHouseProvider>
-        <MockStoreProvider>
+        <FirestoreStoreProvider>
           <RouterProvider router={router} />
-        </MockStoreProvider>
+        </FirestoreStoreProvider>
       </FirebaseHouseProvider>
     </FirebaseAuthProvider>
   )
