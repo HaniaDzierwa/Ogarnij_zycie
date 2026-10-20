@@ -21,6 +21,7 @@ import { syncCollection } from '../firebase/sync.ts'
 import { useHouse } from '../house/house.ts'
 import { builtInEventTypes } from '../theme'
 import { nowStamp, today as getToday } from './dates.ts'
+import { revertChanges } from './listDiff.ts'
 import { StoreContext, useUndoToast, type Store } from './store.ts'
 import type {
   CalendarEvent,
@@ -215,16 +216,19 @@ function HouseData({ children }: { children: ReactNode }) {
   const changeTasks = useCallback(
     (text: string, update: (t: Task[]) => Task[]) => {
       const before = latest.current.tasks
-      show(text, () => setTasks(() => before))
-      setTasks(update)
+      const after = update(before)
+      // „Cofnij” – tylko zadania zmienione tą akcją; zmiany domownika z tych sekund zostają
+      show(text, () => setTasks((cur) => revertChanges(cur, before, after)))
+      setTasks(() => after)
     },
     [setTasks, show],
   )
   const changeEvents = useCallback(
     (text: string, update: (e: CalendarEvent[]) => CalendarEvent[]) => {
       const before = latest.current.events
-      show(text, () => setEvents(() => before))
-      setEvents(update)
+      const after = update(before)
+      show(text, () => setEvents((cur) => revertChanges(cur, before, after)))
+      setEvents(() => after)
     },
     [setEvents, show],
   )

@@ -15,6 +15,17 @@ Aktualny etap: **3 – Zadania** (w toku)
 | 8 Wspólny dom | – | – |
 | 9 Testy i publikacja | – | – |
 
+## Etap 3 – kroki
+
+Funkcje z planu (dodawanie, edycja, kwadracik, zakładki, gesty, Cofnij, Kosz, Wyczyść, kroki z %, terminy, priorytety) są w aplikacji od etapów 1–2. W etapie 3: uszczelnienie na prawdziwych danych i odbiór.
+
+| Krok | Status |
+| --- | --- |
+| 1 „Cofnij” cofa tylko zadania zmienione tą akcją (nie kasuje zmian domownika / drugiego urządzenia z tych sekund) | zrobione |
+| 2 Edycja w arkuszu: teksty (nazwa, notatka) zapisywane po chwili przerwy w pisaniu – mniej zapisów do bazy | w toku |
+| 3 Test: zadanie z kosza wraca na swoje miejsce (kategoria, priorytet, kroki) | do zrobienia |
+| 4 Tydzień prawdziwego używania (Hania), gesty na telefonie, uwagi, odbiór | do zrobienia |
+
 ## Etap 2 – kroki
 
 | Krok | Status |
@@ -148,3 +159,5 @@ Wersja testowa: https://ogarnij-zycie--test-56tdtc0y.web.app (kanał `test`, odn
 - 2026-10-20 · Etap 2 · Poprawka (błąd zgłoszony przez Hanię): po ponownym zalogowaniu Start się wywracał („reading dot”) – Firestore oddał zadania i wydarzenia przed listą rodzajów wydarzeń, a kod brał kolor nieistniejącego rodzaju. (1) `eventTypeOf` – rodzaj zawsze znany (z domu, wbudowany o tym id albo „Wydarzenie”) we wszystkich miejscach (Start, Kalendarz, arkusz wydarzenia, Kosz); ikony wbudowanych rodzajów w jednym miejscu (`src/theme`). (2) Ekran ładowania, dopóki nie przyjdą wszystkie części danych domu (`ready` w magazynie; błąd odczytu części nie blokuje w nieskończoność). Testy: Start/Kalendarz/Kosz bez wczytanych rodzajów, ekran ładowania przy niewczytanych danych, `eventTypeOf`. · Sprawdzenie: wyloguj → zaloguj → Start bez błędu; `npm test` – 156 testów.
 - 2026-10-20 · Etap 2 · Hania po poprawce: „działa ok, możemy iść dalej z planem”. Przed zamknięciem etapu – potwierdzenie punktów odbioru i „akceptuję”.
 - 2026-10-20 · Etap 2 · Odbiór: dane przetrwają zamknięcie przeglądarki, działają bez internetu i wracają na innym urządzeniu; testy reguł 27/27. Hania: „akceptuję”. Etap 2 zakończony.
+- 2026-10-20 · Etap 3 · Start etapu: funkcje z planu są od etapów 1–2; kroki uszczelnienia w tabeli „Etap 3 – kroki”.
+- 2026-10-20 · Etap 3 · Krok 1: „Cofnij” przywraca tylko to, co zmieniła akcja (`revertChanges` w `src/data/listDiff.ts`, razem z `diffById`) – zmiany innych zadań/wydarzeń z tych 4,5 s (drugi telefon, domownik, edycja w arkuszu) zostają. Oba magazyny (Firestore i przykładowy). Testy: cofnięcie ogarnięcia przy jednoczesnej zmianie innego zadania, cofnięcie dodania i usunięcia. · Sprawdzenie: `npm test` – 159 testów.

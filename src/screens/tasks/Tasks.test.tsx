@@ -289,3 +289,23 @@ test('notatka: przy nowym zadaniu i w arkuszu zadania (zapis od razu)', () => {
     (within(screen.getByRole('dialog')).getByLabelText(/NOTATKA/) as HTMLTextAreaElement).value,
   ).toBe('Kod 4821 – ważny do piątku')
 })
+
+test('„Cofnij” cofa tylko ogarnięcie – późniejsza zmiana innego zadania zostaje', () => {
+  vi.useFakeTimers()
+  renderAt('/zadania')
+  click('Oznacz jako ogarnięte: Baterie AA do pilota')
+  // animacja ptaszka (~0,35 s), potem zadanie przechodzi do Ogarniętych
+  act(() => vi.advanceTimersByTime(400))
+  expect(screen.getByRole('status').textContent).toContain('Ogarnięte: Baterie AA do pilota')
+  // w ciągu 4,5 s zmiana innego zadania (np. z drugiego telefonu albo w arkuszu)
+  click('Otwórz zadanie Wymienić filtr w okapie')
+  fireEvent.change(within(screen.getByRole('dialog')).getByLabelText('Nazwa zadania'), {
+    target: { value: 'Wymienić filtr w okapie i umyć kratkę' },
+  })
+  fireEvent.click(within(screen.getByRole('dialog')).getAllByRole('button', { name: 'Gotowe' })[0])
+  click('COFNIJ')
+  expect(screen.getByRole('button', { name: 'Otwórz zadanie Baterie AA do pilota' })).toBeDefined()
+  expect(
+    screen.getByRole('button', { name: 'Otwórz zadanie Wymienić filtr w okapie i umyć kratkę' }),
+  ).toBeDefined()
+})

@@ -10,6 +10,7 @@ import {
   mockTasks,
   mockUserName,
 } from './mock.ts'
+import { revertChanges } from './listDiff.ts'
 import { StoreContext, useUndoToast, type Store } from './store.ts'
 import type { CalendarEvent, CleanupDays, Task } from './types.ts'
 
@@ -46,8 +47,10 @@ export function MockStoreProvider({
   const changeTasks = useCallback(
     (text: string, update: (t: Task[]) => Task[]) => {
       const before = tasks
-      show(text, () => setTasks(before))
-      setTasks(update(tasks))
+      const after = update(tasks)
+      // „Cofnij” – tylko zadania zmienione tą akcją
+      show(text, () => setTasks((cur) => revertChanges(cur, before, after)))
+      setTasks(after)
     },
     [tasks, show],
   )
@@ -55,8 +58,9 @@ export function MockStoreProvider({
   const changeEvents = useCallback(
     (text: string, update: (e: CalendarEvent[]) => CalendarEvent[]) => {
       const before = events
-      show(text, () => setEvents(before))
-      setEvents(update(events))
+      const after = update(events)
+      show(text, () => setEvents((cur) => revertChanges(cur, before, after)))
+      setEvents(after)
     },
     [events, show],
   )

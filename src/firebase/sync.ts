@@ -1,23 +1,9 @@
 // Zapis zmian list do Firestore: ekrany podają nową wersję listy, a my wysyłamy tylko różnice.
 
 import { doc, writeBatch, type Firestore } from 'firebase/firestore'
+import { diffById } from '../data/listDiff.ts'
 
 type WithId = { id: string }
-
-/** Co zapisać (nowe i zmienione) i co usunąć na zawsze (zniknęło z listy). */
-export function diffById<T extends WithId>(
-  prev: T[],
-  next: T[],
-): { upserts: T[]; deletes: string[] } {
-  const before = new Map(prev.map((x) => [x.id, x]))
-  const upserts: T[] = []
-  for (const x of next) {
-    const old = before.get(x.id)
-    if (!old || JSON.stringify(old) !== JSON.stringify(x)) upserts.push(x)
-    before.delete(x.id)
-  }
-  return { upserts, deletes: [...before.keys()] }
-}
 
 /**
  * Zapisuje różnice jednym zapisem (writeBatch). Nie czeka na serwer: Firestore pokazuje zmianę od razu
