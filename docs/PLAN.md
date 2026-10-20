@@ -1,6 +1,6 @@
 # Ogarnij życie – plan implementacji
 
-Budujemy aplikację w 10 etapach: najpierw klikalny mockup w przeglądarce, potem funkcje jedna po drugiej. Każdy etap kończy się demem, checklistą „Odbiór” i akceptacją Hani. Kolejny etap zaczynamy dopiero po słowie „akceptuję”.
+Budujemy aplikację w 8 etapach (0–7; kolejność zmieniona 2026-10-20 – patrz etap 3): najpierw klikalny mockup w przeglądarce, potem funkcje jedna po drugiej. Każdy etap kończy się demem, checklistą „Odbiór” i akceptacją Hani. Kolejny etap zaczynamy dopiero po słowie „akceptuję”.
 
 ## Decyzje
 
@@ -70,69 +70,30 @@ Cel: wszystkie ekrany z projektu w aplikacji, na przykładowych danych (w pamię
 - [x] Dane przetrwają zamknięcie przeglądarki, działają bez internetu i wracają po zalogowaniu na innym urządzeniu
 - [x] Testy reguł: obcy użytkownik nie czyta ani nie zapisuje danych cudzego domu
 
+> **Zmiana kolejności (decyzja Hani 2026-10-20):** Wspólny dom przesunięty zaraz po Zadaniach, żeby testować we dwoje. Odbiory Zadań, Kategorii i filtrów, Kalendarza i Startu – razem, we dwoje, w etapie 5. Push (także „domownik coś dodał”) – etap 6. Dawna numeracja: 4 Kategorie → 5, 5 Kalendarz → 5, 6 Start → 5, 7 Push → 6, 8 Wspólny dom → 4, 9 Publikacja → 7.
+
 ## Etap 3 – Zadania
 
 - Dodawanie (arkusz „Nowe zadanie”), edycja w arkuszu zadania (klik w treść), odhaczanie kwadracikiem.
 - Zakładki „Do zrobienia” / „Ogarnięte”; ogarnięte pogrupowane po dacie, z informacją kto i kiedy.
-- Gesty: przeciągnięcie w prawo = ogarnij / przywróć, w lewo = do kosza; pasek „Cofnij” po każdej akcji.
-- Wspólny Kosz (wejście z Ustawień → Porządki): miękkie usuwanie (`deleted`, `deletedAt`, `deletedBy`), przywracanie, „Opróżnij kosz” z potwierdzeniem, licznik „zniknie za N dni”, chipy Wszystko / Zadania / Wydarzenia (wydarzenia dochodzą w etapie 5).
+- Gesty: przeciągnięcie w prawo = ogarnij / przywróć, w lewo = do kosza; pasek „Cofnij” po każdej akcji (cofa tylko zmiany z tej akcji).
+- Wspólny Kosz (wejście z Ustawień → Porządki): miękkie usuwanie (`deleted`, `deletedAt`, `deletedBy`), przywracanie, „Opróżnij kosz” z potwierdzeniem, licznik „zniknie za N dni”, chipy Wszystko / Zadania / Wydarzenia.
 - „Wyczyść” w zakładce Ogarnięte: starsze niż 7 dni / 30 dni / wszystkie → do kosza.
-- Podzadania z % postępu, termin (czerwona plakietka „DZIŚ”), priorytet Pilne/Ważne/Przy okazji.
+- Podzadania z % postępu, termin (czerwona plakietka „DZIŚ”), priorytet Pilne/Ważne/Przy okazji, notatka.
 
-**Odbiór:**
+**Status:** kod gotowy (2026-10-20). **Odbiór przeniesiony do etapu 5** (testy we dwoje):
 - [ ] Przez tydzień Hania prowadzi w aplikacji prawdziwe zadania i nic nie znika
 - [ ] Gesty działają na telefonie i nie przeszkadzają w przewijaniu; „Cofnij” przywraca dokładnie poprzedni stan
 - [ ] Zadanie z kosza wraca na swoje miejsce (kategoria, priorytet, kroki)
 
-## Etap 4 – Kategorie i filtry
+## Etap 4 – Wspólny dom (dawniej 8)
 
-- Własne kategorie z kolorem; usuwanie z przeniesieniem zadań do „Bez kategorii”.
-- Panel filtrów: Pokaż (Wszystkie, Pilne, Ważne, Przy okazji) + kategoria; chipy aktywnych filtrów z „×”; licznik na przycisku „Filtry”; zamykanie kliknięciem obok.
-- Grupowanie po kategorii lub priorytecie, zwijanie grup, „Zwiń/Rozwiń wszystko”.
-
-**Odbiór:** każda kombinacja filtrów daje poprawną listę, liczniki się zgadzają.
-
-## Etap 5 – Kalendarz
-
-- Wydarzenia: rodzaj (wbudowane + własne), cały dzień lub od–do, przypomnienie (zapisane, wysyłka w etapie 7).
-- Widok tygodnia i miesiąca, agenda dnia, „Później”, „Dziś”; terminy zadań widoczne w kalendarzu.
-- Edycja wydarzenia (klik w agendzie i w „Później”), usuwanie z arkusza i przeciągnięciem w lewo (z pytaniem) → wspólny Kosz, pasek „Cofnij”. Terminy zadań w kalendarzu działają jak wiersz zadania.
-
-**Odbiór:**
-- [ ] Wydarzenia zapisują się poprawnie i są widoczne u wszystkich domowników
-- [ ] Usunięte wydarzenie jest w Koszu i po „Przywróć” wraca na swój dzień
-
-## Etap 6 – Start
-
-- Kafelki liczone z danych: do zrobienia, pilne, w tym tygodniu, ogarnięte dziś. „Ogarnięte dziś X / Y”: Y = ogarnięte dziś + niezrobione z terminem na dziś lub po terminie (decyzja Hani 2026-10-18, już w mockupie).
-- Skróty: kafelek otwiera Zadania z filtrem (np. Pilne), zakładkę Ogarnięte albo Kalendarz z zaznaczonym dniem.
-- Powitanie z imieniem; wersja dzienna/nocna zależnie od godziny.
-
-**Odbiór:** liczby na Starcie zawsze zgadzają się z listą zadań.
-
-## Etap 7 – Ustawienia i powiadomienia push
-
-- Profil (imię lub pseudonim), cztery przełączniki powiadomień zapisane w Firestore.
-- Porządki: „Sprzątanie ogarniętych” (7 / 30 dni / nigdy) i wejście do Kosza. Automatyczne sprzątanie i trwałe usuwanie z kosza po 30 dniach wykonuje Worker raz dziennie (zapasowo: aplikacja przy uruchomieniu).
-- Web Push: zgoda w przeglądarce, subskrypcja zapisana przy użytkowniku, instrukcja „Dodaj do ekranu głównego” na iPhonie.
-- Prośba o zgodę na powiadomienia: po Pierwszym uruchomieniu (karta „Włączyć przypomnienia?”) **i** przy włączaniu przełącznika w Ustawieniach (decyzja Hani 2026-10-18).
-- „Terminy zadań”: godzina przypomnienia dzień przed terminem do wyboru w Ustawieniach (pod przełącznikiem; domyślnie 18:00 – do potwierdzenia przy etapie 7).
-- Poranne podsumowanie o 8:00 tylko wtedy, gdy jest coś pilnego, termin na dziś albo wydarzenie dziś – inaczej nie wysyłamy (decyzja Hani 2026-10-18).
-- Cloudflare Worker (darmowy plan, cron co minutę): sprawdza, co jest do wysłania (terminy, wydarzenia, poranne podsumowanie o 8:00), wysyła push. Instrukcja dla Hani: konto Cloudflare, klucze VAPID, konto serwisowe Firebase jako sekret Workera.
-- Motyw: tylko jasny, wybór ukryty.
-
-**Odbiór:**
-- [ ] Przypomnienie przychodzi przy zamkniętej stronie z opóźnieniem najwyżej 1 min
-- [ ] Wyłączone powiadomienie nie przychodzi
-- [ ] Działa na Androidzie (Chrome) i na iPhonie (strona dodana do ekranu głównego)
-
-## Etap 8 – Wspólny dom
-
-1. **Zaproszenie:** jednorazowy link oraz kod QR i 6 cyfr (ważne 10 min); „Dołącz do domu” realizuje je, reguły Firestore sprawdzają ważność i jednorazowość.
-2. **Zakres:** domownik widzi wszystko albo wybrane kategorie i kalendarz; reguły to wymuszają.
+1. **Zaproszenie:** jednorazowy link oraz kod QR i 6 cyfr (ważne 10 min) – zapisane w Firestore (`invites/{kod}`); „Dołącz do domu” realizuje je, reguły Firestore sprawdzają ważność i jednorazowość. Prawdziwy kod QR (z linkiem) i skanowanie aparatem w „Dołącz do domu”.
+2. **Dołączanie:** po kodzie / linku / QR „Znaleziono dom” z nazwą domu i domownikami, imię nowego domownika, „Dołącz jako …” → dom widoczny od razu.
+3. **Zakres:** domownik widzi wszystko albo wybrane kategorie i kalendarz; reguły to wymuszają.
    - Ekran Domownicy: dotknięcie domownika → arkusz: zmiana zakresu (Wszystko / Wybrane) i „Usuń z domu” – tylko założyciel domu; każdy domownik może sam „Opuścić dom”; zapraszać może każdy (decyzja Hani 2026-10-18).
-3. **Zmiany od domowników:** push, gdy ktoś doda lub ogarnie zadanie (bez osobnego ekranu – zmiany widać od razu na listach).
 4. **Konflikty:** nowsza zmiana wygrywa; usunięte zawsze można przywrócić z Kosza.
+5. Reguły + testy reguł w emulatorze (Hania uruchamia na komputerze z Javą 21), wgranie reguł, publikacja wersji testowej.
 
 **Odbiór:**
 - [ ] Zadanie dodane na jednym telefonie pojawia się na drugim w kilka sekund
@@ -140,7 +101,40 @@ Cel: wszystkie ekrany z projektu w aplikacji, na przykładowych danych (w pamię
 - [ ] Osoba spoza domu nie widzi danych, nawet znając identyfikator
 - [ ] Zużyty albo przeterminowany kod nie działa
 
-## Etap 9 – Testy i publikacja
+## Etap 5 – Kategorie, Kalendarz, Start i wspólne testowanie (dawniej 4, 5, 6)
+
+Funkcje są w aplikacji od etapów 1–2; w tym etapie poprawki z testów we dwoje i odbiory.
+
+- **Kategorie i filtry:** własne kategorie z kolorem; usuwanie z przeniesieniem zadań do „Bez kategorii”; panel filtrów (Pokaż + kategoria), chipy z „×”, licznik na „Filtry”, zamykanie kliknięciem obok; grupowanie po kategorii / priorytecie, zwijanie, „Zwiń/Rozwiń wszystko”.
+- **Kalendarz:** rodzaje (wbudowane + własne), cały dzień / od–do, przypomnienie (zapisane, wysyłka w etapie 6); tydzień, miesiąc, agenda, „Później”, „Dziś”; terminy zadań w kalendarzu; edycja, usuwanie (z pytaniem) → Kosz, „Cofnij”.
+- **Start:** kafelki z danych („Ogarnięte dziś X / Y”: Y = ogarnięte dziś + niezrobione z terminem na dziś lub po terminie), skróty do Zadań / Kalendarza, powitanie dzień/noc; zadania i wydarzenia na Starcie działają jak w Zadaniach i Kalendarzu.
+- **Tydzień używania we dwoje** (Hania + domownik), lista uwag, poprawki.
+
+**Odbiór (w tym przeniesiony z etapu 3):**
+- [ ] Zadania: przez tydzień prawdziwe zadania i nic nie znika; gesty działają i nie przeszkadzają w przewijaniu; „Cofnij” przywraca dokładnie poprzedni stan; zadanie z kosza wraca na swoje miejsce
+- [ ] Każda kombinacja filtrów daje poprawną listę, liczniki się zgadzają
+- [ ] Wydarzenia zapisują się poprawnie i są widoczne u wszystkich domowników; usunięte wydarzenie jest w Koszu i po „Przywróć” wraca na swój dzień
+- [ ] Liczby na Starcie zawsze zgadzają się z listą zadań
+
+## Etap 6 – Ustawienia i powiadomienia push (dawniej 7)
+
+- Profil (imię lub pseudonim), cztery przełączniki powiadomień zapisane w Firestore.
+- Porządki: „Sprzątanie ogarniętych” (7 / 30 dni / nigdy) i wejście do Kosza. Automatyczne sprzątanie i trwałe usuwanie z kosza po 30 dniach wykonuje Worker raz dziennie (zapasowo: aplikacja przy uruchomieniu).
+- Web Push: zgoda w przeglądarce, subskrypcja zapisana przy użytkowniku, instrukcja „Dodaj do ekranu głównego” na iPhonie.
+- Prośba o zgodę na powiadomienia: po Pierwszym uruchomieniu (karta „Włączyć przypomnienia?”) **i** przy włączaniu przełącznika w Ustawieniach (decyzja Hani 2026-10-18).
+- „Terminy zadań”: godzina przypomnienia dzień przed terminem do wyboru w Ustawieniach (pod przełącznikiem; domyślnie 18:00 – do potwierdzenia).
+- Poranne podsumowanie o 8:00 tylko wtedy, gdy jest coś pilnego, termin na dziś albo wydarzenie dziś – inaczej nie wysyłamy (decyzja Hani 2026-10-18).
+- **Zmiany od domowników** (z dawnego etapu 8): push, gdy domownik doda lub ogarnie zadanie (bez osobnego ekranu – zmiany widać od razu na listach).
+- Cloudflare Worker (darmowy plan, cron co minutę): sprawdza, co jest do wysłania (terminy, wydarzenia, poranne podsumowanie o 8:00, zmiany domowników), wysyła push. Instrukcja dla Hani: konto Cloudflare, klucze VAPID, konto serwisowe Firebase jako sekret Workera.
+- Motyw: tylko jasny, wybór ukryty.
+
+**Odbiór:**
+- [ ] Przypomnienie przychodzi przy zamkniętej stronie z opóźnieniem najwyżej 1 min
+- [ ] Wyłączone powiadomienie nie przychodzi
+- [ ] Domownik dostaje push, gdy ktoś inny doda lub ogarnie zadanie
+- [ ] Działa na Androidzie (Chrome) i na iPhonie (strona dodana do ekranu głównego)
+
+## Etap 7 – Testy i publikacja (dawniej 9)
 
 - Testy automatyczne (filtry, liczniki, reguły) i ręczne w Chrome na Androidzie i Safari na iPhonie.
 - Dwa tygodnie codziennego używania w domu, lista poprawek.

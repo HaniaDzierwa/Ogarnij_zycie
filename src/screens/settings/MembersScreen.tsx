@@ -149,7 +149,7 @@ export function MembersScreen() {
   )
 }
 
-/** „WSZYSTKIE KATEGORIE I KALENDARZ” albo wybrane kategorie (zakres – etap 8). */
+/** „WSZYSTKIE KATEGORIE I KALENDARZ” albo wybrane kategorie (zakres – etap 4). */
 function scopeLabel(m: Member, categories: Category[]): string {
   const cats = m.scope.all
     ? 'WSZYSTKIE KATEGORIE'

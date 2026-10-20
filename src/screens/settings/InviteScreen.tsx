@@ -19,7 +19,7 @@ import { QR_PATH } from './qrMock.ts'
 
 const VALID_MS = 10 * 60 * 1000
 
-/** Jednorazowy kod: 6 cyfr („482 913”). Etap 1 – losowy; etap 8 – zapisany w Firestore. */
+/** Jednorazowy kod: 6 cyfr („482 913”). Etap 1 – losowy; etap 4 – zapisany w Firestore. */
 function newCode(): string {
   const n = String(Math.floor(100000 + Math.random() * 900000))
   return `${n.slice(0, 3)} ${n.slice(3)}`

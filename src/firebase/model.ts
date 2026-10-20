@@ -67,7 +67,7 @@ export type UserDoc = {
   houseId: string | null
   notif: NotificationSettings
   cleanupDays: CleanupDays
-  /** Godzina przypomnienia o terminach zadań dzień wcześniej (etap 7). */
+  /** Godzina przypomnienia o terminach zadań dzień wcześniej (etap 6). */
   taskReminderTime: string
 }
 

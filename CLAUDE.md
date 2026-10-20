@@ -15,7 +15,7 @@ Ten plik czytasz na początku każdej sesji w tym repozytorium.
 
 - React + TypeScript, Vite, PWA (manifest + service worker).
 - Firebase JS SDK (modułowe API): Authentication (e‑mail + hasło), Cloud Firestore z pamięcią offline (persistentLocalCache), Hosting.
-- Plan Firebase **Spark** (darmowy): **bez Cloud Functions**, bez Firebase Storage. Wszystko, co wymaga serwera, rozwiązujemy regułami Firestore albo (tylko powiadomienia push, etap 7) darmowym Cloudflare Workerem z harmonogramem co minutę.
+- Plan Firebase **Spark** (darmowy): **bez Cloud Functions**, bez Firebase Storage. Wszystko, co wymaga serwera, rozwiązujemy regułami Firestore albo (tylko powiadomienia push, etap 6) darmowym Cloudflare Workerem z harmonogramem co minutę.
 - Powiadomienia: Web Push (Push API + VAPID). Na iPhonie działa tylko po dodaniu strony do ekranu głównego.
 - Testy: Vitest (logika), Firebase Emulator Suite (reguły Firestore), ręczne demo na telefonie.
 - Na start **tylko motyw jasny**. Wybór motywu w Ustawieniach ukryty.

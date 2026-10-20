@@ -23,7 +23,7 @@ function formatCode(v: string): string {
 /**
  * 5e–f Dołącz do domu (Dolacz.dc.html, DolaczZnaleziono.dc.html) z tekstami z TEKSTY.md (#16, B6).
  * Etap 1: „Skanuj kod” i 6 cyfr od razu „znajdują” dom; link z zaproszenia: `?kod=123456`.
- * Prawdziwy aparat i sprawdzanie kodu w Firestore – etap 8.
+ * Prawdziwy aparat i sprawdzanie kodu w Firestore – etap 4.
  */
 export function JoinScreen() {
   const { members, setUserName } = useStore()
@@ -194,7 +194,7 @@ export function JoinScreen() {
           </Card>
         </>
       ) : !owner ? (
-        // Prawdziwe dołączanie (kod w Firestore) – etap 8. Do tego czasu bez udawania „znalezionego domu”.
+        // Prawdziwe dołączanie (kod w Firestore) – etap 4. Do tego czasu bez udawania „znalezionego domu”.
         <Card
           radius={26}
           style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: '20px 20px' }}

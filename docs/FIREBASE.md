@@ -27,7 +27,7 @@ Wszystko w konsoli Firebase robisz Ty; Claude pisze kod i dopisuje tu kolejne kr
 4. Kolejne kroki kreatora (instalacja SDK, CLI, deploy) możesz przeklikać „Dalej” – zrobi to Claude w repozytorium.
 
 ### 4. Połączenie repozytorium z projektem
-Zrobione w repozytorium: plik `.firebaserc` wskazuje projekt `ogarnij-zycie` (zamiast `npx firebase use --add`). Hosting jest włączony – strona `ogarnij-zycie`, adres docelowy `https://ogarnij-zycie.web.app` (na razie pusty; publikujemy tam dopiero w etapie 9).
+Zrobione w repozytorium: plik `.firebaserc` wskazuje projekt `ogarnij-zycie` (zamiast `npx firebase use --add`). Hosting jest włączony – strona `ogarnij-zycie`, adres docelowy `https://ogarnij-zycie.web.app` (na razie pusty; publikujemy tam dopiero w etapie 7).
 
 ### 5. Publikacja testowa (kanał podglądu)
 W katalogu repozytorium:
@@ -66,13 +66,13 @@ Dopiero gdy wszystkie testy reguł przejdą: na głównym komputerze w katalogu 
 
 ---
 
-## Etap 7 – powiadomienia push (Claude dopisze szczegóły)
+## Etap 6 – powiadomienia push (Claude dopisze szczegóły)
 
 - Klucze VAPID (Claude wygeneruje parę; klucz prywatny trzymasz tylko w sekretach Cloudflare).
 - Konto serwisowe Firebase (Project settings → Service accounts → Generate new private key) – plik JSON **nigdy** nie trafia do repozytorium ani na czat; tylko jako sekret Workera.
 - Darmowe konto Cloudflare + `npx wrangler login`.
 
-## Etap 9 – publikacja
+## Etap 7 – publikacja
 
 - `npx firebase deploy --only hosting` → adres docelowy `https://<projekt>.web.app`.
 - Opcjonalnie własna domena: Hosting → Add custom domain.

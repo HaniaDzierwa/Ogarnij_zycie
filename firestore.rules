@@ -5,7 +5,7 @@ rules_version = '2';
 // dom zakłada się tylko dla siebie; każda zmiana podpisana zalogowanym użytkownikiem (updatedBy)
 // i czasem serwera (updatedAt); poprawne typy i limity (src/firebase/model.ts → LIMITS).
 // Testy: tests/rules/firestore.rules.test.ts (`npm run test:reguly`, emulator – Java 21).
-// Etap 8: zaproszenia, dołączanie, zakres „Wybrane”, usuwanie domowników.
+// Etap 4: zaproszenia, dołączanie, zakres „Wybrane”, usuwanie domowników.
 
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -153,7 +153,7 @@ service cloud.firestore {
     match /users/{uid} {
       allow read: if signedIn() && me() == uid;
       allow create, update: if signedIn() && me() == uid && validUser(request.resource.data);
-      allow delete: if false; // etap 9 – usuwanie konta
+      allow delete: if false; // etap 7 – usuwanie konta
     }
 
     // ── Dom ─────────────────────────────────────────────────────────────────
@@ -174,14 +174,14 @@ service cloud.firestore {
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name'])
         && text(request.resource.data.name, 40);
 
-      allow delete: if false; // etap 9
+      allow delete: if false; // etap 7
 
       // ── Domownicy ─────────────────────────────────────────────────────────
 
       match /members/{uid} {
         allow read: if isMember(houseId);
 
-        // założyciel – przy zakładaniu domu (dołączanie przez zaproszenie: etap 8)
+        // założyciel – przy zakładaniu domu (dołączanie przez zaproszenie: etap 4)
         allow create: if signedIn() && uid == me()
           && houseCreatedNow(houseId)
           && getAfter(/databases/$(database)/documents/houses/$(houseId)).data.ownerUid == me()
@@ -196,7 +196,7 @@ service cloud.firestore {
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name'])
           && str(request.resource.data.name, 40);
 
-        allow delete: if false; // etap 8
+        allow delete: if false; // etap 4
       }
 
       // ── Kategorie ─────────────────────────────────────────────────────────

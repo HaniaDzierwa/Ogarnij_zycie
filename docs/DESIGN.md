@@ -30,7 +30,7 @@ Styl „domowy elegancki”: butelkowa zieleń, mosiądz i krem, szeryfowy Fraun
 | 4 Kalendarz | `Kalendarz.dc.html` | Tydzień/miesiąc, agenda, arkusz nowego i edytowanego wydarzenia, przeciąganie w lewo, pasek „Cofnij”; wariant `demo` |
 | 5 Ustawienia | `Ustawienia.dc.html` | Ty, Wspólny dom, Porządki (sprzątanie ogarniętych 7/30 dni/nigdy, Kosz), Powiadomienia, Wygląd (motyw – ukryty na start) |
 | 5a Domownicy | `Synchronizacja.dc.html` – **tylko** część „Domownicy” (lista + „Zaproś domownika”) i karta „Na razie tylko Ty” (TEKSTY #4–6) | Bez karty synchronizacji, liczników, trybu pracy i ustawień sieci – Firebase synchronizuje sam (decyzja Hani 2026-10-18). Ustawienia → Wspólny dom → „Domownicy” |
-| ~~5b Zmiany od domownika~~ | `Import.dc.html` | **Nie robimy** (decyzja Hani 2026-10-18): zmiany domownika pojawiają się same w kilka sekund; informuje o nich push (etap 8) |
+| ~~5b Zmiany od domownika~~ | `Import.dc.html` | **Nie robimy** (decyzja Hani 2026-10-18): zmiany domownika pojawiają się same w kilka sekund; informuje o nich push (etap 6) |
 | 5c–d Zaproś domownika | `Zaproszenie.dc.html`, `ZaproszenieGotowe.dc.html` | Dodać opcję „jednorazowy link” |
 | 5e–f Dołącz do domu | `Dolacz.dc.html`, `DolaczZnaleziono.dc.html` | Skan QR / 6 cyfr / link |
 
@@ -156,7 +156,7 @@ Zakupy `#5E8C6A` · Dom `#B8925A` · Zdrowie `#A4492F` · Urzędy `#6E5F8C` · A
 
 ```
 users/{uid}                         name, houseId|null, notif{tasks,events,morning,house}, cleanupDays(7|30|null),
-                                    taskReminderTime('18:00'), pushSubscriptions[] (etap 7)
+                                    taskReminderTime('18:00'), pushSubscriptions[] (etap 6)
 houses/{houseId}                    name (wpisuje założyciel), ownerUid, createdAt
 houses/{houseId}/members/{uid}      name, role(owner|member), scope{all, categoryIds[], calendar}, joinedAt
 houses/{houseId}/categories/{id}    name, color, order, updatedAt, updatedBy
@@ -167,7 +167,7 @@ houses/{houseId}/eventTypes/{id}    name, dot, bg, fg, icon, system, updatedAt, 
                                     (wbudowane id: task, birthday, party, event, doctor)
 houses/{houseId}/events/{id}        title, date('RRRR-MM-DD'), allDay, from|null, to|null, typeId, remind(none|day|week),
                                     note, createdBy, deleted, deletedAt(Timestamp|null), deletedBy, updatedAt, updatedBy
-invites/{code}                      houseId, createdBy, expiresAt, usedBy|null, scope   (etap 8)
+invites/{code}                      houseId, createdBy, expiresAt, usedBy|null, scope   (etap 4)
 ```
 
 - `updatedAt` ustawia serwer (`serverTimestamp`), `updatedBy` – zalogowany użytkownik (reguły sprawdzą, że to on).

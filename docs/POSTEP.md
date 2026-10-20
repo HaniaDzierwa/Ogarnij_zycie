@@ -1,19 +1,30 @@
 # Postęp prac
 
-Aktualny etap: **3 – Zadania** (w toku)
+Aktualny etap: **4 – Wspólny dom** (w toku)
 
 | Etap | Status | Akceptacja |
 | --- | --- | --- |
 | 0 Przygotowanie | zakończony | 2026-10-18 |
 | 1 Klikalny mockup | zakończony | 2026-10-18 |
 | 2 Konta i dane | zakończony | 2026-10-20 |
-| 3 Zadania | w toku | – |
-| 4 Kategorie i filtry | – | – |
-| 5 Kalendarz | – | – |
-| 6 Start | – | – |
-| 7 Ustawienia i push | – | – |
-| 8 Wspólny dom | – | – |
-| 9 Testy i publikacja | – | – |
+| 3 Zadania | kod zakończony 2026-10-20 – odbiór w etapie 5 (we dwoje) | – |
+| 4 Wspólny dom (dawniej 8) | w toku | – |
+| 5 Kategorie, Kalendarz, Start i wspólne testowanie (dawniej 4–6 + odbiór 3) | – | – |
+| 6 Ustawienia i push (dawniej 7) | – | – |
+| 7 Testy i publikacja (dawniej 9) | – | – |
+
+Kolejność etapów zmieniona 2026-10-20 (decyzja Hani: testować dopiero we dwoje) – szczegóły w PLAN.md. Wpisy w dzienniku sprzed tej daty używają dawnej numeracji.
+
+## Etap 4 – kroki (Wspólny dom)
+
+| Krok | Status |
+| --- | --- |
+| 1 Zaproszenia w bazie: `invites/{kod}` (dom, kto zaprosił, ważne do, zakres, użyte przez), reguły (tylko domownik zaprasza; kod raz, 10 min) | do zrobienia (następny) |
+| 2 Zaproś domownika: prawdziwy kod 6 cyfr i link zapisane w bazie, odliczanie, „Nowy kod”, kod QR z linkiem | do zrobienia |
+| 3 Dołącz do domu: kod / link / QR → „Znaleziono dom” (nazwa domu, domownicy) → „Dołącz jako …”; reguły: dołączenie tylko z ważnym, nieużytym kodem | do zrobienia |
+| 4 Domownicy: lista z bazy; arkusz domownika – zakres (Wszystko / Wybrane), „Usuń z domu” (założyciel), „Opuść dom” | do zrobienia |
+| 5 Zakres „Wybrane” w regułach i w aplikacji (domownik widzi tylko wybrane kategorie i/lub kalendarz) | do zrobienia |
+| 6 Testy reguł (Hania – Java 21), wgranie reguł, wersja testowa, demo we dwoje, odbiór | do zrobienia |
 
 ## Etap 3 – kroki
 
@@ -24,7 +35,7 @@ Funkcje z planu (dodawanie, edycja, kwadracik, zakładki, gesty, Cofnij, Kosz, W
 | 1 „Cofnij” cofa tylko zadania zmienione tą akcją (nie kasuje zmian domownika / drugiego urządzenia z tych sekund) | zrobione |
 | 2 Edycja w arkuszu: teksty (nazwa, notatka) zapisywane po chwili przerwy w pisaniu – mniej zapisów do bazy | zrobione |
 | 3 Test: zadanie z kosza wraca na swoje miejsce (kategoria, priorytet, kroki) | zrobione |
-| 4 Tydzień prawdziwego używania (Hania), gesty na telefonie, uwagi, odbiór | w toku – od 2026-10-20 |
+| 4 Tydzień prawdziwego używania, gesty na telefonie, uwagi, odbiór | przeniesiony do etapu 5 (testy we dwoje) |
 
 ## Etap 2 – kroki
 
@@ -164,3 +175,4 @@ Wersja testowa: https://ogarnij-zycie--test-56tdtc0y.web.app (kanał `test`, odn
 - 2026-10-20 · Etap 3 · Krok 2: `useBufferedText` – teksty na ekranie od razu, do bazy po 0,5 s przerwy w pisaniu (zamiast zapisu po każdej literze), najpóźniej przy zamknięciu arkusza, wyjściu z ekranu albo schowaniu aplikacji. Użyte w arkuszu zadania i wydarzenia (nazwa, notatka) oraz w Ustawieniach (imię, nazwa domu). Przed „Ogarnij” / „Usuń” w arkuszu teksty zapisywane od razu (Cofnij nic nie gubi), pasek pokazuje właśnie wpisaną nazwę. Gdy nic nie piszesz, pole pokazuje zmianę z drugiego telefonu. · Sprawdzenie: `npm test` – 162 testy.
 - 2026-10-20 · Etap 3 · Krok 3: test „Prezent dla mamy” (Zakupy, Pilne, DO 16 PAŹ, 2/4 kroki) → do kosza (z pytaniem) → Kosz → Przywróć → wiersz identyczny jak przed usunięciem, ta sama grupa, wszystkie 4 kroki. Zapis do bazy i z powrotem bez zmian sprawdza też `model.test.ts`. · Sprawdzenie: `npm test` – 163 testy.
 - 2026-10-20 · Etap 3 · Krok 4: wersja testowa opublikowana z ważnością 30 dni (do 2026-11-19) na tydzień prawdziwego używania. Hania prowadzi zadania; uwagi zapisujemy w tabeli „Uwagi Hani”.
+- 2026-10-20 · Plan · Decyzja Hani: testować dopiero, gdy będzie wspólny dom z drugim użytkownikiem. Nowa kolejność: 3 Zadania (kod gotowy, odbiór w 5) → 4 Wspólny dom (dawny 8, bez push) → 5 Kategorie, Kalendarz, Start i wspólne testowanie (dawne 4–6 + odbiór 3) → 6 Ustawienia i push (dawny 7 + push o zmianach domownika) → 7 Testy i publikacja (dawny 9). PLAN.md przebudowany; odwołania do etapów w CLAUDE.md, DESIGN.md, FIREBASE.md, TEKSTY.md, regułach i kodzie przenumerowane. Etap 4 rozpisany na kroki.

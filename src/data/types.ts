@@ -39,7 +39,7 @@ export type EventType = {
   system: boolean
 }
 
-/** Przypomnienie o wydarzeniu (wysyłka – etap 7). */
+/** Przypomnienie o wydarzeniu (wysyłka – etap 6). */
 export type Remind = 'none' | 'day' | 'week'
 
 export type CalendarEvent = {

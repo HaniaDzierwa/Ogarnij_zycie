@@ -157,7 +157,7 @@ function HouseData({ children }: { children: ReactNode }) {
                 name: m.name ?? '',
                 role: m.role ?? 'member',
                 scope: m.scope ?? { all: true, categoryIds: [], calendar: true },
-                // bez odmiany i bez „ostatnio” (decyzja Hani 2026-10-18; aktywność – etap 8)
+                // bez odmiany i bez „ostatnio” (decyzja Hani 2026-10-18; aktywność – etap 4)
                 nameGenitive: m.name ?? '',
                 lastSeen: '',
               }
