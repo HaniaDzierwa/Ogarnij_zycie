@@ -42,7 +42,7 @@ Funkcje z planu (dodawanie, edycja, kwadracik, zakładki, gesty, Cofnij, Kosz, W
 
 ## Etap 1 – kroki
 
-Wersja testowa: https://ogarnij-zycie--test-56tdtc0y.web.app (kanał `test`, odnawiany przy każdej publikacji).
+Wersja testowa: https://ogarnij-zycie--test-56tdtc0y.web.app (kanał `test`, odnawiany przy każdej publikacji; od 2026-10-20 ważny 30 dni – `--expires 30d`).
 
 | Krok (PLAN.md) | Status |
 | --- | --- |
@@ -163,3 +163,4 @@ Wersja testowa: https://ogarnij-zycie--test-56tdtc0y.web.app (kanał `test`, odn
 - 2026-10-20 · Etap 3 · Krok 1: „Cofnij” przywraca tylko to, co zmieniła akcja (`revertChanges` w `src/data/listDiff.ts`, razem z `diffById`) – zmiany innych zadań/wydarzeń z tych 4,5 s (drugi telefon, domownik, edycja w arkuszu) zostają. Oba magazyny (Firestore i przykładowy). Testy: cofnięcie ogarnięcia przy jednoczesnej zmianie innego zadania, cofnięcie dodania i usunięcia. · Sprawdzenie: `npm test` – 159 testów.
 - 2026-10-20 · Etap 3 · Krok 2: `useBufferedText` – teksty na ekranie od razu, do bazy po 0,5 s przerwy w pisaniu (zamiast zapisu po każdej literze), najpóźniej przy zamknięciu arkusza, wyjściu z ekranu albo schowaniu aplikacji. Użyte w arkuszu zadania i wydarzenia (nazwa, notatka) oraz w Ustawieniach (imię, nazwa domu). Przed „Ogarnij” / „Usuń” w arkuszu teksty zapisywane od razu (Cofnij nic nie gubi), pasek pokazuje właśnie wpisaną nazwę. Gdy nic nie piszesz, pole pokazuje zmianę z drugiego telefonu. · Sprawdzenie: `npm test` – 162 testy.
 - 2026-10-20 · Etap 3 · Krok 3: test „Prezent dla mamy” (Zakupy, Pilne, DO 16 PAŹ, 2/4 kroki) → do kosza (z pytaniem) → Kosz → Przywróć → wiersz identyczny jak przed usunięciem, ta sama grupa, wszystkie 4 kroki. Zapis do bazy i z powrotem bez zmian sprawdza też `model.test.ts`. · Sprawdzenie: `npm test` – 163 testy.
+- 2026-10-20 · Etap 3 · Krok 4: wersja testowa opublikowana z ważnością 30 dni (do 2026-11-19) na tydzień prawdziwego używania. Hania prowadzi zadania; uwagi zapisujemy w tabeli „Uwagi Hani”.

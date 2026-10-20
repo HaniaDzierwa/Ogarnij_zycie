@@ -33,7 +33,7 @@ Zrobione w repozytorium: plik `.firebaserc` wskazuje projekt `ogarnij-zycie` (za
 W katalogu repozytorium:
 1. `npm run build`
 2. `npx firebase hosting:channel:deploy test` – na końcu pojawi się adres podglądu (`https://ogarnij-zycie--test-….web.app`). Otwórz go na telefonie.
-3. Adres podglądu wygasa po 7 dniach; kolejne uruchomienie tej komendy odświeża go i przedłuża.
+3. Adres podglądu wygasa po 7 dniach; kolejne uruchomienie tej komendy odświeża go i przedłuża. Na dłużej: `npx firebase hosting:channel:deploy test --expires 30d`.
 
 ---
 
