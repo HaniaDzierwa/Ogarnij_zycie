@@ -58,7 +58,7 @@ Na głównym komputerze Javy nie aktualizujemy; testy reguł uruchamiasz na komp
 2. Na drugim komputerze potrzebne są: **Node.js LTS** (https://nodejs.org) i **Java 21** – sprawdź w terminalu: `node -v` oraz `java -version` (ma pokazać 21).
 3. W terminalu, w katalogu projektu: `npm install` (raz, kilka minut).
 4. `npm run test:reguly` – za pierwszym razem pobierze emulator Firestore (ok. 60 MB), uruchomi go, przeprowadzi testy i sam go wyłączy.
-5. Na końcu pojawi się podsumowanie, np. `Tests  30 passed (30)`. **Skopiuj Claude cały wynik** (zwłaszcza linie z ✗ / ×, jeśli jakiś test nie przejdzie).
+5. Na końcu pojawi się podsumowanie, np. `Tests  26 passed (26)`. **Skopiuj Claude cały wynik** (zwłaszcza linie z ✗ / ×, jeśli jakiś test nie przejdzie).
 6. Przy każdej zmianie reguł Claude poprosi o powtórzenie kroków 1 (tylko pliki `firestore.rules` i `tests/`, albo cały folder), 4 i 5.
 
 ### Wgranie reguł do prawdziwej bazy
