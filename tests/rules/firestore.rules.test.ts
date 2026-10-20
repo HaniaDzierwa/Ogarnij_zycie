@@ -40,20 +40,36 @@ beforeAll(async () => {
     firestore: { rules: readFileSync('firestore.rules', 'utf8'), host: '127.0.0.1', port: 8080 },
   })
 })
-afterAll(() => env.cleanup())
+afterAll(async () => {
+  connections.clear()
+  await env.cleanup()
+})
 beforeEach(() => env.clearFirestore())
 
-/** Baza widziana przez użytkownika (albo niezalogowanego). */
-const db = (uid?: string): Firestore =>
-  (uid
-    ? env.authenticatedContext(uid)
-    : env.unauthenticatedContext()
-  ).firestore() as unknown as Firestore
+/**
+ * Baza widziana przez użytkownika (albo niezalogowanego) – jedno połączenie na użytkownika.
+ * Każde `authenticatedContext().firestore()` to osobna instancja, a paczka zapisu (writeBatch)
+ * przyjmuje tylko dokumenty z tej samej instancji.
+ */
+const connections = new Map<string, Firestore>()
+const db = (uid?: string): Firestore => {
+  const key = uid ?? ''
+  let fs = connections.get(key)
+  if (!fs) {
+    fs = (uid
+      ? env.authenticatedContext(uid)
+      : env.unauthenticatedContext()
+    ).firestore() as unknown as Firestore
+    connections.set(key, fs)
+  }
+  return fs
+}
 
 /** „Załóż nowy dom” dokładnie tak jak aplikacja (newHouseDocs w jednej paczce). */
 async function createHouse(uid: string, houseId: string, as = uid) {
   let n = 0
-  const batch = writeBatch(db(as))
+  const fs = db(as)
+  const batch = writeBatch(fs)
   for (const d of newHouseDocs({
     houseId,
     houseName: `Dom ${uid}`,
@@ -61,7 +77,7 @@ async function createHouse(uid: string, houseId: string, as = uid) {
     userName: uid,
     newId: () => `${houseId}-k${++n}`,
   }))
-    batch.set(doc(db(as), d.path), d.data)
+    batch.set(doc(fs, d.path), d.data)
   return batch.commit()
 }
 
