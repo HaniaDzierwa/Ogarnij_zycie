@@ -134,9 +134,13 @@ test('arkusz: termin spoza chipów = chip z datą + kalendarz', () => {
 
 test('podzadania: „˅” tylko przy krokach; odhaczenie ostatnich kroków ogarnia zadanie', () => {
   renderAt('/zadania')
-  expect(screen.getAllByRole('button', { name: /Pokaż podzadania|Zwiń podzadania/ })).toHaveLength(
-    3,
-  )
+  // po otwarciu wszystkie podzadania zwinięte
+  const toggles = screen.getAllByRole('button', { name: /Pokaż podzadania|Zwiń podzadania/ })
+  expect(toggles).toHaveLength(3)
+  expect(toggles.every((b) => b.getAttribute('aria-expanded') === 'false')).toBe(true)
+  expect(screen.queryByRole('button', { name: 'Zapakować' })).toBeNull()
+  fireEvent.click(toggles[0])
+  expect(toggles[0].getAttribute('aria-expanded')).toBe('true')
   click('Zapakować')
   click('Odebrać kwiaty w piątek rano')
   expect(screen.getByRole('status').textContent).toContain(

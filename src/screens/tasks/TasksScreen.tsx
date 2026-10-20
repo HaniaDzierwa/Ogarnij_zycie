@@ -50,7 +50,8 @@ export function TasksScreen() {
   const [groupBy, setGroupBy] = useState<GroupBy>('cat')
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({})
-  const [expanded, setExpanded] = useState<string | null>(() => tasks[0]?.id ?? null)
+  // po otwarciu wszystkie podzadania zwinięte (uwaga Hani 2026-10-20)
+  const [expanded, setExpanded] = useState<string | null>(null)
   const [detailId, setDetailId] = useState<string | null>(null)
   const [clearOpen, setClearOpen] = useState(false)
 
