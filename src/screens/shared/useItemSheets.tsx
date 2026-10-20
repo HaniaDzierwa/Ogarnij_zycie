@@ -64,7 +64,7 @@ export function useItemSheets(
           onChange={(fn) =>
             store.setEvents((list) => list.map((x) => (x.id === eventDetail.id ? fn(x) : x)))
           }
-          onDelete={() => removeEvent(eventDetail)}
+          onDelete={(title) => removeEvent({ ...eventDetail, title })}
           onClose={() => {
             setEventId(null)
             opts.onCloseEvent?.(eventDetail)
@@ -92,7 +92,7 @@ export function useItemSheets(
           onToggleSub={(sid) => taskActions.toggleSub(taskDetail, sid)}
           onRemoveSub={(sid) => taskActions.removeSub(taskDetail, sid)}
           onAddSub={(title) => taskActions.addSub(taskDetail, title)}
-          onTrash={() => trashTask(taskDetail)}
+          onTrash={(title) => trashTask({ ...taskDetail, title })}
           onClose={() => {
             setTaskId(null)
             opts.onCloseTask?.(taskDetail)

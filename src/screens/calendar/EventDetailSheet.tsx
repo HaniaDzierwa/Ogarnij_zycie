@@ -7,6 +7,7 @@ import type { CalendarEvent, EventType } from '../../data/types.ts'
 import { colors, fonts, priorities } from '../../theme'
 import { Group } from './EventSheet.tsx'
 import { label, timeInput } from './formStyles.ts'
+import { useBufferedText } from '../../components/useBufferedText.ts'
 
 /**
  * Arkusz wydarzenia – jak arkusz zadania: edycja w miejscu (zmiany zapisują się od razu),
@@ -28,15 +29,29 @@ export function EventDetailSheet({
   /** „Dodane: Hania” */
   meta: string
   onChange: (update: (e: CalendarEvent) => CalendarEvent) => void
-  onDelete: () => void
+  /** Usuń – z bieżącą nazwą (także tą właśnie wpisaną). */
+  onDelete: (title: string) => void
   onClose: () => void
 }) {
   const [originalTitle] = useState(event.title)
   const type = eventTypeOf(eventTypes, event.typeId)
 
+  // nazwa i notatka – zapis po chwili przerwy w pisaniu (nie po każdej literze)
+  const title = useBufferedText(event.title, (v) => onChange((e) => ({ ...e, title: v })))
+  const note = useBufferedText(event.note, (v) => onChange((e) => ({ ...e, note: v })))
+  const remove = () => {
+    title.flush()
+    note.flush()
+    onDelete(title.text.trim() || event.title)
+  }
+
   const close = () => {
     // pusta nazwa nie zostaje – wraca poprzednia
-    if (!event.title.trim()) onChange((e) => ({ ...e, title: originalTitle }))
+    if (!title.text.trim()) {
+      title.discard()
+      if (!event.title.trim()) onChange((e) => ({ ...e, title: originalTitle }))
+    } else title.flush()
+    note.flush()
     onClose()
   }
 
@@ -94,8 +109,8 @@ export function EventDetailSheet({
         <input
           id="wyd-nazwa"
           type="text"
-          value={event.title}
-          onChange={(e) => onChange((x) => ({ ...x, title: e.target.value }))}
+          value={title.text}
+          onChange={(e) => title.change(e.target.value)}
           style={{
             flex: 1,
             minWidth: 0,
@@ -215,16 +230,12 @@ export function EventDetailSheet({
         </div>
       </Group>
 
-      <NoteField
-        id="wyd-notatka"
-        value={event.note}
-        onChange={(note) => onChange((e) => ({ ...e, note }))}
-      />
+      <NoteField id="wyd-notatka" value={note.text} onChange={note.change} />
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: 8, marginTop: 2 }}>
         <button
           type="button"
-          onClick={onDelete}
+          onClick={remove}
           style={{
             height: 54,
             border: '1px solid #E7B8A8',

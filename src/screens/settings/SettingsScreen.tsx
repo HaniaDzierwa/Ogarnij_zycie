@@ -15,6 +15,7 @@ import {
   ToggleRow,
 } from '../../components/ui.tsx'
 import { useStore } from '../../data/store.ts'
+import { useBufferedText } from '../../components/useBufferedText.ts'
 import { DEFAULT_HOUSE_NAME } from '../../house/house.ts'
 import { plural } from '../../data/plural.ts'
 import type { CleanupDays, NotificationSettings } from '../../data/types.ts'
@@ -37,7 +38,10 @@ export function SettingsScreen() {
   const navigate = useNavigate()
   const [askSignOut, setAskSignOut] = useState(false)
   const { userName, members, currentUid, notifications, cleanupDays, tasks, events, today } = store
-  const name = userName.trim()
+  // imię i nazwa domu – zapis po chwili przerwy w pisaniu (nie po każdej literze)
+  const nick = useBufferedText(userName, store.setUserName)
+  const house = useBufferedText(store.houseName, store.setHouseName)
+  const name = nick.text.trim()
   const others = members.filter((m) => m.uid !== currentUid)
   const other = others[0]
   const trash = trashItems(tasks, events, today)
@@ -108,8 +112,9 @@ export function SettingsScreen() {
                 type="text"
                 maxLength={20}
                 placeholder="np. Hania, Mama, Szefowa"
-                value={userName}
-                onChange={(e) => store.setUserName(e.target.value)}
+                value={nick.text}
+                onChange={(e) => nick.change(e.target.value)}
+                onBlur={nick.flush}
                 style={{
                   height: 44,
                   border: `1px solid ${colors.border}`,
@@ -157,10 +162,16 @@ export function SettingsScreen() {
               type="text"
               maxLength={40}
               placeholder={DEFAULT_HOUSE_NAME}
-              value={store.houseName}
-              onChange={(e) => store.setHouseName(e.target.value)}
+              value={house.text}
+              onChange={(e) => house.change(e.target.value)}
               // pusta nazwa nie zostaje
-              onBlur={(e) => !e.target.value.trim() && store.setHouseName(DEFAULT_HOUSE_NAME)}
+              onBlur={(e) => {
+                if (e.target.value.trim()) house.flush()
+                else {
+                  house.discard()
+                  store.setHouseName(DEFAULT_HOUSE_NAME)
+                }
+              }}
               style={{
                 height: 44,
                 border: `1px solid ${colors.border}`,

@@ -567,7 +567,7 @@ export function TasksScreen() {
           onToggleSub={(sid) => actions.toggleSub(detail, sid)}
           onRemoveSub={(sid) => actions.removeSub(detail, sid)}
           onAddSub={(title) => actions.addSub(detail, title)}
-          onTrash={() => trash(detail)}
+          onTrash={(title) => trash({ ...detail, title })}
           onClose={() => setDetailId(null)}
         />
       )}

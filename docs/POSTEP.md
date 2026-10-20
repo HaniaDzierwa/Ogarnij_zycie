@@ -22,8 +22,8 @@ Funkcje z planu (dodawanie, edycja, kwadracik, zakładki, gesty, Cofnij, Kosz, W
 | Krok | Status |
 | --- | --- |
 | 1 „Cofnij” cofa tylko zadania zmienione tą akcją (nie kasuje zmian domownika / drugiego urządzenia z tych sekund) | zrobione |
-| 2 Edycja w arkuszu: teksty (nazwa, notatka) zapisywane po chwili przerwy w pisaniu – mniej zapisów do bazy | w toku |
-| 3 Test: zadanie z kosza wraca na swoje miejsce (kategoria, priorytet, kroki) | do zrobienia |
+| 2 Edycja w arkuszu: teksty (nazwa, notatka) zapisywane po chwili przerwy w pisaniu – mniej zapisów do bazy | zrobione |
+| 3 Test: zadanie z kosza wraca na swoje miejsce (kategoria, priorytet, kroki) | w toku |
 | 4 Tydzień prawdziwego używania (Hania), gesty na telefonie, uwagi, odbiór | do zrobienia |
 
 ## Etap 2 – kroki
@@ -161,3 +161,4 @@ Wersja testowa: https://ogarnij-zycie--test-56tdtc0y.web.app (kanał `test`, odn
 - 2026-10-20 · Etap 2 · Odbiór: dane przetrwają zamknięcie przeglądarki, działają bez internetu i wracają na innym urządzeniu; testy reguł 27/27. Hania: „akceptuję”. Etap 2 zakończony.
 - 2026-10-20 · Etap 3 · Start etapu: funkcje z planu są od etapów 1–2; kroki uszczelnienia w tabeli „Etap 3 – kroki”.
 - 2026-10-20 · Etap 3 · Krok 1: „Cofnij” przywraca tylko to, co zmieniła akcja (`revertChanges` w `src/data/listDiff.ts`, razem z `diffById`) – zmiany innych zadań/wydarzeń z tych 4,5 s (drugi telefon, domownik, edycja w arkuszu) zostają. Oba magazyny (Firestore i przykładowy). Testy: cofnięcie ogarnięcia przy jednoczesnej zmianie innego zadania, cofnięcie dodania i usunięcia. · Sprawdzenie: `npm test` – 159 testów.
+- 2026-10-20 · Etap 3 · Krok 2: `useBufferedText` – teksty na ekranie od razu, do bazy po 0,5 s przerwy w pisaniu (zamiast zapisu po każdej literze), najpóźniej przy zamknięciu arkusza, wyjściu z ekranu albo schowaniu aplikacji. Użyte w arkuszu zadania i wydarzenia (nazwa, notatka) oraz w Ustawieniach (imię, nazwa domu). Przed „Ogarnij” / „Usuń” w arkuszu teksty zapisywane od razu (Cofnij nic nie gubi), pasek pokazuje właśnie wpisaną nazwę. Gdy nic nie piszesz, pole pokazuje zmianę z drugiego telefonu. · Sprawdzenie: `npm test` – 162 testy.

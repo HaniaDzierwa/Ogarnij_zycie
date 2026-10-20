@@ -4,6 +4,7 @@ import { CheckIcon, CloseIcon, PlusIcon, TrashIcon, UndoIcon } from '../../compo
 import { addDays, dueLabel, weekStart, type DateKey } from '../../data/dates.ts'
 import type { Category, Task } from '../../data/types.ts'
 import { colors, fonts, priorities } from '../../theme'
+import { useBufferedText } from '../../components/useBufferedText.ts'
 import { DoneBox, SubtaskToggle } from './TaskRow.tsx'
 
 const PRESETS = ['Bez terminu', 'Dziś', 'Jutro', 'W tym tygodniu'] as const
@@ -30,7 +31,8 @@ type Props = {
   onToggleSub: (subId: string) => void
   onRemoveSub: (subId: string) => void
   onAddSub: (title: string) => void
-  onTrash: () => void
+  /** Do kosza – z bieżącą nazwą (także tą właśnie wpisaną). */
+  onTrash: (title: string) => void
   onClose: () => void
 }
 
@@ -62,9 +64,30 @@ export function TaskDetailSheet({
   const showCustom = customOpen || (!preset && task.due !== null)
   const subDone = task.subtasks.filter((s) => s.done).length
 
+  // nazwa i notatka – zapis po chwili przerwy w pisaniu (nie po każdej literze)
+  const title = useBufferedText(task.title, (v) => onChange((t) => ({ ...t, title: v })))
+  const note = useBufferedText(task.note, (v) => onChange((t) => ({ ...t, note: v })))
+  const flushTexts = () => {
+    title.flush()
+    note.flush()
+  }
+  // przed „Ogarnij” / „Usuń” teksty zapisane od razu – „Cofnij” po akcji niczego nie zgubi
+  const toggleDone = () => {
+    flushTexts()
+    onToggleDone()
+  }
+  const trash = () => {
+    flushTexts()
+    onTrash(title.text.trim() || task.title)
+  }
+
   const close = () => {
     // pusta nazwa nie zostaje – wraca poprzednia
-    if (!task.title.trim()) onChange((t) => ({ ...t, title: originalTitle }))
+    if (!title.text.trim()) {
+      title.discard()
+      if (!task.title.trim()) onChange((t) => ({ ...t, title: originalTitle }))
+    } else title.flush()
+    note.flush()
     onClose()
   }
   const addStep = () => {
@@ -110,7 +133,7 @@ export function TaskDetailSheet({
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
         <button
           type="button"
-          onClick={onToggleDone}
+          onClick={toggleDone}
           aria-label={task.done ? 'Przywróć do „Do zrobienia”' : 'Oznacz jako ogarnięte'}
           style={{
             width: 44,
@@ -136,8 +159,8 @@ export function TaskDetailSheet({
         <input
           id="det-tytul"
           type="text"
-          value={task.title}
-          onChange={(e) => onChange((t) => ({ ...t, title: e.target.value }))}
+          value={title.text}
+          onChange={(e) => title.change(e.target.value)}
           style={{
             flex: 1,
             minWidth: 0,
@@ -357,16 +380,12 @@ export function TaskDetailSheet({
         </div>
       </div>
 
-      <NoteField
-        id="det-notatka"
-        value={task.note}
-        onChange={(note) => onChange((t) => ({ ...t, note }))}
-      />
+      <NoteField id="det-notatka" value={note.text} onChange={note.change} />
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: 8, marginTop: 2 }}>
         <button
           type="button"
-          onClick={onTrash}
+          onClick={trash}
           style={{
             height: 54,
             border: '1px solid #E7B8A8',
@@ -388,7 +407,7 @@ export function TaskDetailSheet({
           type="button"
           onClick={() => {
             onClose()
-            onToggleDone()
+            toggleDone()
           }}
           style={{
             height: 54,
