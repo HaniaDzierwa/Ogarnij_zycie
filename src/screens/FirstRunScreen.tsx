@@ -249,7 +249,7 @@ export function FirstRunScreen() {
           <span style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 3 }}>
             <span style={{ fontSize: 17, fontWeight: 800 }}>Dołącz do domu</span>
             <span style={{ fontSize: 13, lineHeight: 1.4, color: colors.muted }}>
-              Ktoś Cię zaprosił – zeskanujesz kod albo otworzysz link.
+              Ktoś Cię zaprosił – wpiszesz kod albo otworzysz link.
             </span>
           </span>
           <span style={{ color: colors.brass500, display: 'flex' }}>

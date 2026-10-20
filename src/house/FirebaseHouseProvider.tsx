@@ -1,11 +1,56 @@
-import { collection, doc, onSnapshot, writeBatch } from 'firebase/firestore'
+import { FirebaseError } from 'firebase/app'
+import {
+  Timestamp,
+  collection,
+  deleteDoc,
+  doc,
+  getDocFromServer,
+  onSnapshot,
+  setDoc,
+  writeBatch,
+} from 'firebase/firestore'
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useAuth } from '../auth/auth.ts'
 import { db } from '../firebase/app.ts'
-import { newHouseDocs, paths, type UserDoc } from '../firebase/model.ts'
-import { DEFAULT_HOUSE_NAME, HouseContext, type HouseApi, type Profile } from './house.ts'
+import {
+  inviteLeftMs,
+  joinHouseOps,
+  newHouseDocs,
+  newInviteCode,
+  newInviteDoc,
+  paths,
+  type InviteDoc,
+  type UserDoc,
+} from '../firebase/model.ts'
+import {
+  DEFAULT_HOUSE_NAME,
+  HouseContext,
+  JoinError,
+  type HouseApi,
+  type Profile,
+} from './house.ts'
 
-/** Profil z `users/{uid}` (na żywo) i zakładanie domu jednym zapisem (writeBatch). */
+/**
+ * Zaproszenie z serwera (nie z pamięci telefonu – liczy się aktualny stan): brak → 'not-found',
+ * użyte → 'used', po 10 minutach → 'expired'. Bez internetu → 'offline'.
+ */
+async function readInvite(code: string): Promise<InviteDoc & { createdAt: Timestamp }> {
+  if (!navigator.onLine) throw new JoinError('offline')
+  let snap
+  try {
+    snap = await getDocFromServer(doc(db, paths.invite(code)))
+  } catch (e) {
+    if (e instanceof FirebaseError && e.code === 'unavailable') throw new JoinError('offline')
+    throw new JoinError('unknown')
+  }
+  if (!snap.exists()) throw new JoinError('not-found')
+  const d = snap.data() as InviteDoc & { createdAt: Timestamp }
+  if (d.usedBy) throw new JoinError('used')
+  if (inviteLeftMs(d.createdAt) === 0) throw new JoinError('expired')
+  return d
+}
+
+/** Profil z `users/{uid}` (na żywo), zakładanie domu, zaproszenia i dołączanie. */
 export function FirebaseHouseProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth()
   const uid = user?.uid ?? null
@@ -49,6 +94,79 @@ export function FirebaseHouseProvider({ children }: { children: ReactNode }) {
         // odrzucenie po czasie (np. reguły) cofa zapis w telefonie – profil wraca do „bez domu”
         committed.catch(() => {})
         await Promise.race([committed, new Promise((r) => setTimeout(r, 1500))])
+      },
+
+      createInvite: async ({ scope, houseName, memberNames }) => {
+        const houseId = current?.profile?.houseId
+        if (!uid || !houseId) throw new Error('createInvite() bez domu')
+        if (!navigator.onLine) throw new JoinError('offline')
+        // kod już zajęty (rzadko) – reguły odrzucą zapis; próbujemy innego
+        for (let attempt = 0; attempt < 3; attempt++) {
+          const code = newInviteCode()
+          try {
+            await setDoc(
+              doc(db, paths.invite(code)),
+              newInviteDoc({
+                houseId,
+                houseName,
+                uid,
+                name: current?.profile?.name ?? '',
+                memberNames,
+                scope,
+              }),
+            )
+            return code
+          } catch (e) {
+            if (!(e instanceof FirebaseError && e.code === 'permission-denied')) throw e
+          }
+        }
+        throw new JoinError('unknown')
+      },
+
+      watchInvite: (code, onChange) =>
+        onSnapshot(doc(db, paths.invite(code)), (snap) => {
+          if (!snap.exists()) return onChange(null)
+          // czas serwera, zanim przyjdzie – przybliżony z telefonu
+          const d = snap.data({ serverTimestamps: 'estimate' }) as Partial<InviteDoc>
+          const createdAt = d.createdAt instanceof Timestamp ? d.createdAt.toMillis() : Date.now()
+          onChange({ code, createdAt, usedBy: d.usedBy ?? null })
+        }),
+
+      cancelInvite: (code) => deleteDoc(doc(db, paths.invite(code))),
+
+      findInvite: async (code) => {
+        const d = await readInvite(code)
+        return {
+          code,
+          houseName: d.houseName,
+          inviterName: d.inviterName,
+          memberNames: d.memberNames ?? [d.inviterName],
+          scope: d.scope,
+        }
+      },
+
+      joinHouse: async (code, userName) => {
+        if (!uid) throw new Error('joinHouse() bez zalogowania')
+        const d = await readInvite(code)
+        const batch = writeBatch(db)
+        for (const op of joinHouseOps({
+          code,
+          invite: { houseId: d.houseId, scope: d.scope },
+          uid,
+          userName: userName.trim(),
+          hasProfile: !!current?.profile,
+        }))
+          batch.set(doc(db, op.path), op.data, { merge: !!op.merge })
+        try {
+          await batch.commit()
+        } catch (e) {
+          // ktoś był szybszy albo kod właśnie wygasł – reguły odrzuciły
+          if (e instanceof FirebaseError && e.code === 'permission-denied') {
+            const again = await readInvite(code)
+            throw new JoinError(again.usedBy ? 'used' : 'unknown')
+          }
+          throw e
+        }
       },
     }),
     [current, uid],

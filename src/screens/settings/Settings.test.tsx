@@ -1,4 +1,4 @@
-import { act, cleanup, fireEvent, screen } from '@testing-library/react'
+import { act, cleanup, fireEvent, screen, waitFor } from '@testing-library/react'
 import { afterEach, expect, test, vi } from 'vitest'
 import { renderApp } from '../../test/renderApp.tsx'
 
@@ -83,42 +83,68 @@ test('plakietka OFFLINE tylko bez internetu; online – nic', () => {
   spy.mockRestore()
 })
 
-test('Zaproś: kod 6 cyfr, ważność 10 min, teksty o Firebase, zakres „Wybrane”', () => {
+const codeShown = () => screen.getByTestId('kod').textContent!
+const waitForCode = () => waitFor(() => expect(codeShown()).toMatch(/^\d{3} \d{3}$/))
+
+test('Zaproś: kod 6 cyfr (bez QR), ważność 10 min, zakres „Wybrane” daje nowy kod', async () => {
   renderAt('/ustawienia/domownicy/zapros')
   expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Zaproś domownika')
   expect(screen.getByText('JEDNORAZOWY KOD')).toBeDefined()
-  const code = screen.getByTestId('kod').textContent!
-  expect(code).toMatch(/^\d{3} \d{3}$/)
+  await waitForCode()
+  expect(screen.queryByRole('img', { name: /QR/ })).toBeNull()
+  expect(screen.getByText('WPISZ NA DRUGIM TELEFONIE')).toBeDefined()
   expect(screen.getByText('10:00')).toBeDefined()
   expect(screen.getByText(/Kod działa raz i wygasa po 10 minutach/)).toBeDefined()
-  expect(screen.getByText(/otwiera link – i gotowe/)).toBeDefined()
-  expect(screen.queryByText(/Wi‑Fi/)).toBeNull()
+  expect(screen.getByText('Wpisuje 6 cyfr albo otwiera link – i gotowe.')).toBeDefined()
+  expect(screen.queryByText(/Skanuje/)).toBeNull()
   expect(screen.getByRole('button', { name: /Wyślij link wiadomością/ })).toBeDefined()
 
+  const first = codeShown()
   fireEvent.click(screen.getByRole('radio', { name: 'Wybrane' }))
   expect(screen.getByRole('button', { name: 'Kalendarz' }).getAttribute('aria-pressed')).toBe(
     'true',
   )
   fireEvent.click(screen.getByRole('button', { name: 'Zdrowie' }))
   expect(screen.getByRole('button', { name: 'Zdrowie' }).getAttribute('aria-pressed')).toBe('true')
+  await waitFor(() => expect(codeShown()).not.toBe(first), { timeout: 3000 })
+  await waitForCode()
 })
 
-test('Zaproś: po 10 minutach kod wygasa, „Nowy kod” daje kolejne 10 minut', () => {
+test('Zaproś: po 10 minutach kod wygasa, „Nowy kod” daje kolejne 10 minut', async () => {
   vi.useFakeTimers({ toFake: ['Date', 'setInterval', 'clearInterval'] })
   renderAt('/ustawienia/domownicy/zapros')
+  await waitForCode()
+  const first = codeShown()
   act(() => vi.advanceTimersByTime(10 * 60 * 1000 + 1000))
   expect(screen.getByText('Kod wygasł')).toBeDefined()
   fireEvent.click(screen.getByRole('button', { name: 'NOWY KOD' }))
-  expect(screen.getByText('10:00')).toBeDefined()
+  expect(await screen.findByText('10:00')).toBeDefined()
+  expect(codeShown()).not.toBe(first)
   vi.useRealTimers()
 })
 
-test('Zaproś: stan „Ola jest z Wami” (podgląd ?etap=dolaczyla), „Gotowe” → Domownicy', () => {
-  const router = renderAt('/ustawienia/domownicy/zapros?etap=dolaczyla')
-  expect(screen.getByText(/Zmiany pojawią się u Was w kilka sekund/)).toBeDefined()
+test('Zaproś: gdy domownik użyje kodu – „Krzyś jest z Wami”, „Gotowe” → Domownicy', async () => {
+  const router = renderApp('/ustawienia/domownicy/zapros', { inviteUsedBy: 'krzys' })
+  expect(await screen.findByText(/Zmiany pojawią się u Was w kilka sekund/)).toBeDefined()
+  expect(screen.getByText('jest z Wami').parentElement!.textContent).toBe('Krzyś jest z Wami')
   expect(screen.getByText('WSZYSTKIE KATEGORIE I KALENDARZ')).toBeDefined()
   fireEvent.click(screen.getByRole('link', { name: /Gotowe/ }))
   expect(router.state.location.pathname).toBe('/ustawienia/domownicy')
+})
+
+test('Zaproś: „Anuluj zaproszenie” wraca do Domowników; bez internetu – komunikat', async () => {
+  const router = renderAt('/ustawienia/domownicy/zapros')
+  await waitForCode()
+  fireEvent.click(screen.getByRole('button', { name: 'ANULUJ ZAPROSZENIE' }))
+  expect(router.state.location.pathname).toBe('/ustawienia/domownicy')
+  cleanup()
+  const spy = vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false)
+  renderAt('/ustawienia/domownicy/zapros')
+  expect(await screen.findByText(/Brak internetu – zaproszenie wymaga połączenia/)).toBeDefined()
+  expect(
+    (screen.getByRole('button', { name: /Wyślij link wiadomością/ }) as HTMLButtonElement).disabled,
+  ).toBe(true)
+  spy.mockRestore()
 })
 
 test('Wspólny dom: nazwa domu do zmiany; pusta wraca do „Nasz dom”', () => {

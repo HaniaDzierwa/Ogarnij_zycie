@@ -1,10 +1,16 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router'
 import { paths } from '../app/screens.ts'
 import { Accent, Header } from '../components/Header.tsx'
 import { Logo } from '../components/Logo.tsx'
 import { BottomActions, Card, Screen } from '../components/ui.tsx'
-import { useStore } from '../data/store.ts'
+import {
+  JoinError,
+  joinErrorMessage,
+  useHouse,
+  type InvitePreview,
+  type Scope,
+} from '../house/house.ts'
 import { colors, fonts } from '../theme'
 
 const label = {
@@ -20,25 +26,73 @@ function formatCode(v: string): string {
   return d.length > 3 ? `${d.slice(0, 3)} ${d.slice(3)}` : d
 }
 
+/** Co zobaczy domownik – z zaproszenia (nazw kategorii dołączający jeszcze nie zna). */
+function scopeText(scope: Scope): string {
+  if (scope.all) return 'wszystkie kategorie i kalendarz'
+  const cats = scope.categoryIds.length
+  if (!cats) return 'tylko kalendarz'
+  const what = cats === 1 ? '1 kategoria' : `${cats} ${cats < 5 ? 'kategorie' : 'kategorii'}`
+  return scope.calendar ? `${what} i kalendarz` : what
+}
+
+const messageOf = (e: unknown) => joinErrorMessage(e instanceof JoinError ? e.code : 'unknown')
+
 /**
- * 5e–f Dołącz do domu (Dolacz.dc.html, DolaczZnaleziono.dc.html) z tekstami z TEKSTY.md (#16, B6).
- * Etap 1: „Skanuj kod” i 6 cyfr od razu „znajdują” dom; link z zaproszenia: `?kod=123456`.
- * Prawdziwy aparat i sprawdzanie kodu w Firestore – etap 4.
+ * 5e–f Dołącz do domu (Dolacz.dc.html, DolaczZnaleziono.dc.html) z tekstami z TEKSTY.md (#16, B6),
+ * bez skanera QR. 6 cyfr albo link z zaproszenia (`?kod=123456`) → zaproszenie z Firestore
+ * („Znaleziono dom”) → „Dołącz jako …” zapisuje domownika i otwiera Start.
  */
 export function JoinScreen() {
-  const { members, setUserName } = useStore()
+  const house = useHouse()
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const fromLink = formatCode(params.get('kod') ?? '')
   const [code, setCode] = useState(fromLink)
-  const [found, setFound] = useState(fromLink.length === 7)
-  const [name, setName] = useState('')
+  const [found, setFound] = useState<InvitePreview | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [busy, setBusy] = useState(false)
+  const [name, setName] = useState(house.profile?.name ?? '')
 
-  // w etapie 2 lista domowników pochodzi z przykładowych danych (podgląd); bez nich – „w przygotowaniu”
-  const owner = members.find((m) => m.role === 'owner') ?? members[0]
-  const names = members.map((m) => m.name)
+  const find = async (formatted: string) => {
+    setBusy(true)
+    setError(null)
+    try {
+      setFound(await house.findInvite(formatted.replace(' ', '')))
+    } catch (e) {
+      setError(messageOf(e))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  // link z zaproszenia – od razu szukamy domu
+  const fromLinkDone = useRef(false)
+  useEffect(() => {
+    if (fromLinkDone.current || fromLink.length !== 7) return
+    fromLinkDone.current = true
+    void find(fromLink)
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- tylko raz, po otwarciu linku
+  }, [])
+
+  const join = async () => {
+    if (!found || !name.trim()) return
+    setBusy(true)
+    setError(null)
+    try {
+      await house.joinHouse(found.code, name.trim())
+      navigate(paths.start)
+    } catch (e) {
+      setError(messageOf(e))
+      setBusy(false)
+    }
+  }
+
+  const names = found?.memberNames ?? []
   const who = names.length > 1 ? `${names.slice(0, -1).join(', ')} i ${names.at(-1)}` : names[0]
   const shown = name.trim() || 'domownik'
+  // „Dom na Leśnej” → Dom *na Leśnej*
+  const [head, ...rest] = (found?.houseName ?? '').split(' ')
+  const tail = rest.join(' ')
 
   return (
     <Screen withTabBar={false} gap={18}>
@@ -53,109 +107,9 @@ export function JoinScreen() {
 
       {!found ? (
         <>
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: 14,
-              padding: '20px 18px',
-              borderRadius: 26,
-              background: colors.green900,
-              color: colors.cream,
-            }}
-          >
-            <span
-              style={{
-                position: 'relative',
-                width: 200,
-                height: 200,
-                borderRadius: 22,
-                background: colors.green800,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                overflow: 'hidden',
-              }}
-            >
-              <svg
-                width="200"
-                height="200"
-                viewBox="0 0 200 200"
-                fill="none"
-                stroke={colors.brass300}
-                strokeWidth="5"
-                strokeLinecap="round"
-                aria-hidden="true"
-                style={{ position: 'absolute', left: 0, top: 0 }}
-              >
-                <path d="M24 64V36a12 12 0 0 1 12-12h28" />
-                <path d="M136 24h28a12 12 0 0 1 12 12v28" />
-                <path d="M176 136v28a12 12 0 0 1-12 12h-28" />
-                <path d="M64 176H36a12 12 0 0 1-12-12v-28" />
-              </svg>
-              <span
-                style={{
-                  position: 'absolute',
-                  left: 30,
-                  right: 30,
-                  top: 98,
-                  height: 2,
-                  background: 'rgba(232,201,142,0.8)',
-                  boxShadow: '0 0 12px rgba(232,201,142,0.9)',
-                }}
-              />
-              <span
-                style={{
-                  fontSize: 13,
-                  fontWeight: 700,
-                  color: colors.onDarkMuted,
-                  textAlign: 'center',
-                  padding: '0 40px',
-                  marginTop: 70,
-                }}
-              >
-                Skieruj aparat na kod z telefonu domownika
-              </span>
-            </span>
-            <button
-              type="button"
-              onClick={() => setFound(true)}
-              style={{
-                height: 48,
-                padding: '0 22px',
-                border: 0,
-                borderRadius: 24,
-                background: colors.brass300,
-                color: colors.green900,
-                fontSize: 15,
-                fontWeight: 800,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-              }}
-            >
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2" />
-                <path d="M4 12h16" />
-              </svg>
-              Skanuj kod
-            </button>
-          </div>
-
           <Card style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: '16px 18px' }}>
             <label htmlFor="kod" style={label}>
-              ALBO WPISZ 6 CYFR
+              WPISZ 6 CYFR
             </label>
             <input
               id="kod"
@@ -165,10 +119,12 @@ export function JoinScreen() {
               maxLength={7}
               placeholder="000 000"
               value={code}
+              disabled={busy}
               onChange={(e) => {
                 const v = formatCode(e.target.value)
                 setCode(v)
-                if (v.length === 7) setFound(true)
+                setError(null)
+                if (v.length === 7) find(v)
               }}
               style={{
                 height: 56,
@@ -184,6 +140,19 @@ export function JoinScreen() {
                 outlineColor: colors.green900,
               }}
             />
+            {(busy || error) && (
+              <span
+                role={error ? 'alert' : 'status'}
+                style={{
+                  fontSize: 14,
+                  fontWeight: 700,
+                  lineHeight: 1.4,
+                  color: error ? '#A4492F' : colors.green900,
+                }}
+              >
+                {error ?? 'Szukam domu…'}
+              </span>
+            )}
             <span style={{ fontSize: 13, lineHeight: 1.45, color: colors.muted }}>
               Kod widać u osoby, która Cię zaprasza: Ustawienia › Domownicy › Zaproś. Jest ważny 10
               minut.
@@ -193,30 +162,6 @@ export function JoinScreen() {
             </span>
           </Card>
         </>
-      ) : !owner ? (
-        // Prawdziwe dołączanie (kod w Firestore) – etap 4. Do tego czasu bez udawania „znalezionego domu”.
-        <Card
-          radius={26}
-          style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: '20px 20px' }}
-        >
-          <span
-            style={{
-              fontSize: 11,
-              fontWeight: 800,
-              letterSpacing: '1.6px',
-              color: colors.brass700,
-            }}
-          >
-            JUŻ NIEDŁUGO
-          </span>
-          <span style={{ fontFamily: fonts.serif, fontSize: 22, fontWeight: 500 }}>
-            Dołączanie <em>w przygotowaniu</em>
-          </span>
-          <span style={{ fontSize: 15, lineHeight: 1.45, color: colors.muted2 }}>
-            Dołączanie do domu kodem albo linkiem będzie gotowe w jednym z kolejnych kroków. Na
-            razie załóż własny dom – domowników zaprosisz później.
-          </span>
-        </Card>
       ) : (
         <>
           <Card
@@ -244,7 +189,7 @@ export function JoinScreen() {
             <span
               style={{ fontFamily: fonts.serif, fontSize: 28, fontWeight: 500, lineHeight: 1.1 }}
             >
-              Dom <em style={{ color: colors.brass700 }}>{owner.nameGenitive}</em>
+              {head} {tail && <em style={{ color: colors.brass700 }}>{tail}</em>}
             </span>
             <span
               style={{
@@ -256,9 +201,9 @@ export function JoinScreen() {
               }}
             >
               <span style={{ display: 'flex' }}>
-                {members.map((m, i) => (
+                {found.memberNames.map((n, i) => (
                   <span
-                    key={m.uid}
+                    key={i}
                     style={{
                       width: 26,
                       height: 26,
@@ -275,11 +220,11 @@ export function JoinScreen() {
                       border: `2px solid ${colors.white}`,
                     }}
                   >
-                    {m.name.charAt(0)}
+                    {n.charAt(0)}
                   </span>
                 ))}
               </span>
-              {who} · wszystkie kategorie i kalendarz
+              {who} · {scopeText(found.scope)}
             </span>
           </Card>
           <Card style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '16px 18px' }}>
@@ -292,6 +237,7 @@ export function JoinScreen() {
               maxLength={20}
               placeholder="np. Ola"
               value={name}
+              disabled={busy}
               onChange={(e) => setName(e.target.value)}
               style={{
                 height: 48,
@@ -305,38 +251,27 @@ export function JoinScreen() {
                 outlineColor: colors.green900,
               }}
             />
+            {error && (
+              <span
+                role="alert"
+                style={{ fontSize: 14, fontWeight: 700, lineHeight: 1.4, color: '#A4492F' }}
+              >
+                {error}
+              </span>
+            )}
           </Card>
         </>
       )}
 
       <BottomActions>
-        {found && !owner ? (
-          <Link
-            to={paths.pierwsze}
-            style={{
-              height: 56,
-              borderRadius: 28,
-              background: colors.green900,
-              color: colors.cream,
-              fontSize: 17,
-              fontWeight: 800,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              textDecoration: 'none',
-            }}
-          >
-            Załóż własny dom
-          </Link>
-        ) : found ? (
+        {found ? (
           <>
             <button
               type="button"
-              onClick={() => {
-                if (name.trim()) setUserName(name.trim())
-                navigate(paths.start)
-              }}
+              onClick={join}
+              disabled={busy || !name.trim()}
               style={{
+                opacity: busy || !name.trim() ? 0.5 : 1,
                 height: 56,
                 border: 0,
                 borderRadius: 28,
@@ -350,7 +285,7 @@ export function JoinScreen() {
                 gap: 10,
               }}
             >
-              Dołącz jako {shown}
+              {busy ? 'Dołączam…' : `Dołącz jako ${shown}`}
               <svg
                 width="20"
                 height="20"
@@ -368,7 +303,8 @@ export function JoinScreen() {
             <button
               type="button"
               onClick={() => {
-                setFound(false)
+                setFound(null)
+                setError(null)
                 setCode('')
               }}
               style={{

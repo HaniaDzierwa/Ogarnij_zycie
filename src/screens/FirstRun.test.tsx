@@ -62,5 +62,5 @@ test('Pierwsze uruchomienie: odznaczenie „Załóż nowy dom” chowa imię i �
 test('Pierwsze uruchomienie: teksty z TEKSTY.md (#1, #2)', () => {
   renderAt('/witaj')
   expect(screen.getByText('Dane Waszego domu widzą tylko domownicy.')).toBeDefined()
-  expect(screen.getByText('Ktoś Cię zaprosił – zeskanujesz kod albo otworzysz link.')).toBeDefined()
+  expect(screen.getByText('Ktoś Cię zaprosił – wpiszesz kod albo otworzysz link.')).toBeDefined()
 })

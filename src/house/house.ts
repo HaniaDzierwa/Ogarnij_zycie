@@ -1,9 +1,41 @@
-// Profil zalogowanego użytkownika i jego dom: czy ma już dom, zakładanie nowego domu.
+// Profil zalogowanego użytkownika i jego dom: czy ma już dom, zakładanie domu, zaproszenia, dołączanie.
 // W aplikacji dostarcza je FirebaseHouseProvider (Firestore); w testach MemoryHouseProvider.
 
 import { createContext, useContext } from 'react'
+import type { Member } from '../data/types.ts'
 
 export type Profile = { name: string; houseId: string | null }
+
+export type Scope = Member['scope']
+
+/** Zaproszenie widziane przez zapraszającego (na żywo). */
+export type InviteState = {
+  code: string
+  /** Kiedy utworzone (ms) – liczymy od tego 10 minut ważności. */
+  createdAt: number
+  /** Kto użył (uid) – wtedy „… jest z Wami”. */
+  usedBy: string | null
+}
+
+/** Zaproszenie widziane przez dołączającego („Znaleziono dom”). */
+export type InvitePreview = {
+  code: string
+  houseName: string
+  inviterName: string
+  memberNames: string[]
+  scope: Scope
+}
+
+/** Dlaczego nie da się dołączyć – komunikat dobiera ekran. */
+export type JoinErrorCode = 'not-found' | 'expired' | 'used' | 'offline' | 'unknown'
+
+export class JoinError extends Error {
+  code: JoinErrorCode
+  constructor(code: JoinErrorCode) {
+    super(code)
+    this.code = code
+  }
+}
 
 export type HouseApi = {
   /** Profil już wczytany (pierwszy odczyt z Firestore albo z pamięci telefonu). */
@@ -12,10 +44,40 @@ export type HouseApi = {
   profile: Profile | null
   /** „Załóż nowy dom”: dom, założyciel, profil, domyślne kategorie i rodzaje wydarzeń. */
   createHouse: (houseName: string, userName: string) => Promise<void>
+  /** „Zaproś domownika”: nowe zaproszenie (kod 6 cyfr) do mojego domu. Wymaga internetu. */
+  createInvite: (opts: {
+    scope: Scope
+    houseName: string
+    memberNames: string[]
+  }) => Promise<string>
+  /** Zaproszenie na żywo (odliczanie, „… jest z Wami”); zwraca funkcję kończącą obserwację. */
+  watchInvite: (code: string, onChange: (s: InviteState | null) => void) => () => void
+  /** „Nowy kod” / „Anuluj zaproszenie”. */
+  cancelInvite: (code: string) => Promise<void>
+  /** „Dołącz do domu”: zaproszenie po kodzie – rzuca JoinError, gdy nie da się dołączyć. */
+  findInvite: (code: string) => Promise<InvitePreview>
+  /** „Dołącz jako …” – rzuca JoinError. */
+  joinHouse: (code: string, userName: string) => Promise<void>
 }
 
 /** Nazwa domu, gdy pole zostanie puste. */
 export const DEFAULT_HOUSE_NAME = 'Nasz dom'
+
+/** Komunikat po polsku dla błędu dołączania. */
+export function joinErrorMessage(code: JoinErrorCode): string {
+  switch (code) {
+    case 'not-found':
+      return 'Nie ma takiego kodu. Sprawdź cyfry albo poproś o nowy kod.'
+    case 'expired':
+      return 'Ten kod już wygasł (ważny 10 minut). Poproś o nowy kod.'
+    case 'used':
+      return 'Ten kod został już użyty. Poproś o nowy kod.'
+    case 'offline':
+      return 'Brak internetu – dołączanie wymaga połączenia.'
+    default:
+      return 'Nie udało się dołączyć. Spróbuj jeszcze raz.'
+  }
+}
 
 export const HouseContext = createContext<HouseApi | null>(null)
 

@@ -283,6 +283,8 @@ export type InviteDoc = {
   houseName: string
   createdBy: string
   inviterName: string
+  /** Imiona obecnych domowników – „Hania i Krzyś” na „Znaleziono dom”. */
+  memberNames: string[]
   createdAt: Timestamp | FieldValue
   /** Co zobaczy domownik. */
   scope: Member['scope']
@@ -301,6 +303,7 @@ export function newInviteDoc(opts: {
   houseName: string
   uid: string
   name: string
+  memberNames?: string[]
   scope: Member['scope']
 }): InviteDoc {
   return {
@@ -308,6 +311,7 @@ export function newInviteDoc(opts: {
     houseName: opts.houseName,
     createdBy: opts.uid,
     inviterName: opts.name,
+    memberNames: (opts.memberNames ?? [opts.name]).slice(0, 20),
     createdAt: serverTimestamp(),
     scope: opts.scope,
     usedBy: null,

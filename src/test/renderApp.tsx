@@ -16,6 +16,9 @@ export type RenderOptions = {
   /** Konto bez domu (świeże); podgląd tego, co zapisałby „Załóż nowy dom”. */
   noHouse?: boolean
   onCreateHouse?: (houseName: string, userName: string) => void
+  /** Zaproszenia: ten domownik (uid) „dołącza” chwilę po utworzeniu kodu; podgląd „Dołącz jako …”. */
+  inviteUsedBy?: string
+  onJoin?: (code: string, userName: string) => void
   /** Dane bez domowników (konto bez domu). */
   noMembers?: boolean
   /** Rodzaje wydarzeń jeszcze nie wczytane; dane domu jeszcze się wczytują. */
@@ -27,7 +30,12 @@ export function renderApp(url: string, opts: RenderOptions = {}) {
   const router = createMemoryRouter(routes, { initialEntries: [url] })
   render(
     <MemoryAuthProvider signedOut={opts.signedOut} failWith={opts.failWith}>
-      <MemoryHouseProvider noHouse={opts.noHouse} onCreate={opts.onCreateHouse}>
+      <MemoryHouseProvider
+        noHouse={opts.noHouse}
+        onCreate={opts.onCreateHouse}
+        inviteUsedBy={opts.inviteUsedBy}
+        onJoin={opts.onJoin}
+      >
         <MockStoreProvider
           today={opts.today ?? '2026-10-09'}
           noMembers={opts.noMembers}

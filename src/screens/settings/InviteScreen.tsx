@@ -1,9 +1,8 @@
-import { useEffect, useState, type ReactNode } from 'react'
-import { Link, useSearchParams } from 'react-router'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { Link, useNavigate } from 'react-router'
 import { paths } from '../../app/screens.ts'
 import { Accent, Header } from '../../components/Header.tsx'
 import { CheckIcon } from '../../components/icons.tsx'
-import { Logo } from '../../components/Logo.tsx'
 import {
   BottomActions,
   Card,
@@ -14,16 +13,14 @@ import {
   SectionLabel,
 } from '../../components/ui.tsx'
 import { useStore } from '../../data/store.ts'
+import { INVITE_MINUTES } from '../../firebase/model.ts'
+import { JoinError, useHouse, type InviteState, type Scope } from '../../house/house.ts'
 import { colors, fonts, shadows } from '../../theme'
-import { QR_PATH } from './qrMock.ts'
 
-const VALID_MS = 10 * 60 * 1000
+const VALID_MS = INVITE_MINUTES * 60 * 1000
 
-/** Jednorazowy kod: 6 cyfr („482 913”). Etap 1 – losowy; etap 4 – zapisany w Firestore. */
-function newCode(): string {
-  const n = String(Math.floor(100000 + Math.random() * 900000))
-  return `${n.slice(0, 3)} ${n.slice(3)}`
-}
+/** Zmiana zakresu tworzy nowe zaproszenie – chwilę czekamy, aż skończysz klikać. */
+const SCOPE_SETTLE_MS = 700
 
 const CALENDAR = { id: 'cal', name: 'Kalendarz', color: colors.brass300 }
 
@@ -31,19 +28,26 @@ const CALENDAR = { id: 'cal', name: 'Kalendarz', color: colors.brass300 }
  * 5c–d Zaproś domownika (Zaproszenie.dc.html, ZaproszenieGotowe.dc.html) z tekstami z TEKSTY.md
  * (#10–15) i jednorazowym linkiem. Podgląd stanu „jest z Wami”: `?etap=dolaczyla`.
  */
+/**
+ * 5c–d Zaproś domownika (Zaproszenie.dc.html, ZaproszenieGotowe.dc.html) z tekstami z TEKSTY.md
+ * (#10–15), bez kodu QR. Zaproszenie (6 cyfr + link) zapisane w Firestore; gdy ktoś go użyje –
+ * „… jest z Wami”. „Nowy kod” i zmiana zakresu zastępują stare zaproszenie nowym.
+ */
 export function InviteScreen() {
-  const { categories, members } = useStore()
-  const [params] = useSearchParams()
-  const [joined, setJoined] = useState(params.get('etap') === 'dolaczyla')
-  const [code, setCode] = useState(newCode)
-  const [expiresAt, setExpiresAt] = useState(() => Date.now() + VALID_MS)
+  const { categories, members, houseName } = useStore()
+  const house = useHouse()
+  const navigate = useNavigate()
+  const [invite, setInvite] = useState<InviteState | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  /** Każda zmiana = nowe zaproszenie („Nowy kod”, „Zaproś kolejną osobę”). */
+  const [round, setRound] = useState(0)
   const [now, setNow] = useState(() => Date.now())
   const [scopeAll, setScopeAll] = useState(true)
-  const [picked, setPicked] = useState<Record<string, boolean>>({
-    shop: true,
-    home: true,
+  // domyślnie przy „Wybrane”: dwie pierwsze kategorie (Zakupy, Dom) i Kalendarz
+  const [picked, setPicked] = useState<Record<string, boolean>>(() => ({
+    ...Object.fromEntries(categories.slice(0, 2).map((c) => [c.id, true])),
     cal: true,
-  })
+  }))
   const [copied, setCopied] = useState(false)
 
   useEffect(() => {
@@ -51,24 +55,91 @@ export function InviteScreen() {
     return () => clearInterval(t)
   }, [])
 
-  const left = Math.max(0, expiresAt - now)
-  const expired = left === 0
-  const mmss = `${Math.floor(left / 60000)}:${String(Math.floor((left % 60000) / 1000)).padStart(2, '0')}`
-
-  const refresh = () => {
-    setCode(newCode())
-    setExpiresAt(Date.now() + VALID_MS)
-    setNow(Date.now())
-    setCopied(false)
-  }
-
   const options = [...categories.map((c) => ({ id: c.id, name: c.name, color: c.color })), CALENDAR]
   const chosen = options.filter((o) => picked[o.id])
+  const scope: Scope = scopeAll
+    ? { all: true, categoryIds: [], calendar: true }
+    : {
+        all: false,
+        categoryIds: chosen.filter((o) => o.id !== CALENDAR.id).map((o) => o.id),
+        calendar: !!picked[CALENDAR.id],
+      }
+  const noScope = !scopeAll && chosen.length === 0
+  const scopeKey = noScope ? '' : JSON.stringify(scope)
   const scopeShort = scopeAll
     ? 'WSZYSTKIE KATEGORIE I KALENDARZ'
     : chosen.map((o) => o.name.toUpperCase()).join(' · ')
 
-  const link = `${window.location.origin}${paths.dolacz}?kod=${code.replace(' ', '')}`
+  // aktualne wartości dla zapisu zaproszenia (bez tworzenia nowego przy każdej zmianie imion)
+  const latest = useRef({ houseName, memberNames: members.map((m) => m.name) })
+  useEffect(() => {
+    latest.current = { houseName, memberNames: members.map((m) => m.name) }
+  }, [houseName, members])
+  /** Kod, który trzeba usunąć, gdy powstaje nowy (niewykorzystany). */
+  const open = useRef<string | null>(null)
+  /** Zakres przy poprzednim kodzie – po jego zmianie nowy kod po chwili, „Nowy kod” od razu. */
+  const lastScope = useRef<string | null>(null)
+
+  useEffect(() => {
+    if (!scopeKey) return
+    let alive = true
+    let unwatch = () => {}
+    const settle = lastScope.current !== null && lastScope.current !== scopeKey
+    lastScope.current = scopeKey
+    const start = setTimeout(
+      async () => {
+        const old = open.current
+        open.current = null
+        if (old) house.cancelInvite(old).catch(() => {})
+        setInvite(null)
+        setError(null)
+        setCopied(false)
+        try {
+          const code = await house.createInvite({ scope: JSON.parse(scopeKey), ...latest.current })
+          // w międzyczasie zmieniony zakres – ten kod już niepotrzebny
+          if (!alive) return void house.cancelInvite(code).catch(() => {})
+          open.current = code
+          unwatch = house.watchInvite(code, (s) => {
+            if (!alive) return
+            if (s?.usedBy) open.current = null
+            setInvite(s)
+            setNow(Date.now())
+          })
+        } catch (e) {
+          if (alive)
+            setError(
+              e instanceof JoinError && e.code === 'offline'
+                ? 'Brak internetu – zaproszenie wymaga połączenia'
+                : 'Nie udało się utworzyć kodu',
+            )
+        }
+      },
+      settle ? SCOPE_SETTLE_MS : 0,
+    )
+    return () => {
+      alive = false
+      clearTimeout(start)
+      unwatch()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- nowy kod tylko przy zmianie zakresu lub „Nowy kod”
+  }, [scopeKey, round, house.createInvite])
+
+  const left = invite ? Math.max(0, invite.createdAt + VALID_MS - now) : VALID_MS
+  const expired = !!invite && left === 0
+  const mmss = `${Math.floor(left / 60000)}:${String(Math.floor((left % 60000) / 1000)).padStart(2, '0')}`
+  const joinedUid = invite?.usedBy ?? null
+  const joined = !!joinedUid
+  const joinedName = members.find((m) => m.uid === joinedUid)?.name ?? 'Nowy domownik'
+  const code = invite?.code ?? ''
+  const shownCode = code ? `${code.slice(0, 3)} ${code.slice(3)}` : '––– –––'
+
+  const cancel = () => {
+    if (open.current) house.cancelInvite(open.current).catch(() => {})
+    open.current = null
+    navigate(paths.domownicy)
+  }
+
+  const link = `${window.location.origin}${paths.dolacz}?kod=${code}`
   const sendLink = async () => {
     const text = `Dołącz do naszego domu w Ogarnij życie: ${link}`
     try {
@@ -117,51 +188,8 @@ export function InviteScreen() {
               padding: '20px 18px 18px',
             }}
           >
-            <SectionLabel>ZESKANUJ NA DRUGIM TELEFONIE</SectionLabel>
-            <span
-              style={{
-                position: 'relative',
-                display: 'block',
-                width: 200,
-                height: 200,
-                padding: 12,
-                borderRadius: 22,
-                background: colors.white,
-                boxShadow: `inset 0 0 0 1px ${colors.borderSoft}`,
-                boxSizing: 'content-box',
-                opacity: expired ? 0.25 : 1,
-              }}
-            >
-              <svg
-                width="200"
-                height="200"
-                viewBox="0 0 25 25"
-                shapeRendering="crispEdges"
-                role="img"
-                aria-label="Kod QR zaproszenia"
-              >
-                <path d={QR_PATH} fill={colors.green900} />
-              </svg>
-              <span
-                style={{
-                  position: 'absolute',
-                  left: '50%',
-                  top: '50%',
-                  width: 52,
-                  height: 52,
-                  margin: '-26px 0 0 -26px',
-                  borderRadius: 14,
-                  background: colors.white,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <Logo size={38} color={colors.green900} check={colors.brass500} />
-              </span>
-            </span>
+            <SectionLabel>WPISZ NA DRUGIM TELEFONIE</SectionLabel>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-              <span style={{ fontSize: 12, color: colors.muted }}>albo wpisz kod</span>
               <span
                 data-testid="kod"
                 style={{
@@ -174,7 +202,7 @@ export function InviteScreen() {
                   color: expired ? colors.muted : colors.green900,
                 }}
               >
-                {code}
+                {shownCode}
               </span>
             </div>
             <div
@@ -188,7 +216,15 @@ export function InviteScreen() {
               }}
             >
               <span style={{ fontSize: 13, color: colors.muted }}>
-                {expired ? (
+                {error ? (
+                  <strong style={{ color: '#A4492F' }}>{error}</strong>
+                ) : !invite ? (
+                  noScope ? (
+                    'Zaznacz, co zobaczy domownik'
+                  ) : (
+                    'Tworzę kod…'
+                  )
+                ) : expired ? (
                   <strong style={{ color: '#A4492F' }}>Kod wygasł</strong>
                 ) : (
                   <>
@@ -198,7 +234,8 @@ export function InviteScreen() {
               </span>
               <button
                 type="button"
-                onClick={refresh}
+                onClick={() => setRound((r) => r + 1)}
+                disabled={noScope}
                 style={{
                   height: 36,
                   padding: '0 8px',
@@ -313,7 +350,7 @@ export function InviteScreen() {
               {[
                 'Domownik otwiera Ogarnij życie w przeglądarce telefonu i zakłada konto.',
                 'Przy pierwszym uruchomieniu wybiera „Dołącz do domu”.',
-                'Skanuje kod, wpisuje 6 cyfr albo otwiera link – i gotowe.',
+                'Wpisuje 6 cyfr albo otwiera link – i gotowe.',
               ].map((text, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
                   <span
@@ -370,7 +407,7 @@ export function InviteScreen() {
                 fontSize: 38,
               }}
             >
-              O
+              {joinedName.charAt(0)}
               <span
                 style={{
                   position: 'absolute',
@@ -393,7 +430,7 @@ export function InviteScreen() {
             <span
               style={{ fontFamily: fonts.serif, fontSize: 28, fontWeight: 500, lineHeight: 1.1 }}
             >
-              Ola <em style={{ color: colors.brass700 }}>jest z Wami</em>
+              {joinedName} <em style={{ color: colors.brass700 }}>jest z Wami</em>
             </span>
             <span style={{ fontSize: 15, lineHeight: 1.45, color: colors.muted2 }}>
               Nowy domownik jest teraz w Waszym domu. Zmiany pojawią się u Was w kilka sekund –
@@ -416,11 +453,14 @@ export function InviteScreen() {
             </Row>
             <Row label="Domownicy" last>
               <span style={{ display: 'flex', gap: 4 }}>
-                {[...members.map((m) => m.name), 'Ola'].map((n, i, all) => {
+                {[
+                  ...members.filter((m) => m.uid !== joinedUid),
+                  { uid: joinedUid, name: joinedName },
+                ].map((m, i, all) => {
                   const isNew = i === all.length - 1
                   return (
                     <span
-                      key={n}
+                      key={m.uid}
                       style={{
                         width: 28,
                         height: 28,
@@ -435,7 +475,7 @@ export function InviteScreen() {
                         justifyContent: 'center',
                       }}
                     >
-                      {n.charAt(0)}
+                      {m.name.charAt(0)}
                     </span>
                   )
                 })}
@@ -448,7 +488,7 @@ export function InviteScreen() {
       <BottomActions>
         {!joined ? (
           <>
-            <PrimaryButton onClick={sendLink} disabled={expired}>
+            <PrimaryButton onClick={sendLink} disabled={!invite || expired}>
               <svg
                 width="20"
                 height="20"
@@ -465,7 +505,9 @@ export function InviteScreen() {
               </svg>
               {copied ? 'Link skopiowany' : 'Wyślij link wiadomością'}
             </PrimaryButton>
-            <BottomLink to={paths.domownicy}>ANULUJ ZAPROSZENIE</BottomLink>
+            <button type="button" onClick={cancel} style={bottomLink}>
+              ANULUJ ZAPROSZENIE
+            </button>
           </>
         ) : (
           <>
@@ -493,10 +535,7 @@ export function InviteScreen() {
             </Link>
             <button
               type="button"
-              onClick={() => {
-                refresh()
-                setJoined(false)
-              }}
+              onClick={() => setRound((r) => r + 1)}
               style={{
                 height: 44,
                 border: 0,
@@ -543,22 +582,12 @@ function Row({ label, last, children }: { label: string; last?: boolean; childre
   )
 }
 
-function BottomLink({ to, children }: { to: string; children: ReactNode }) {
-  return (
-    <Link
-      to={to}
-      style={{
-        height: 44,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontSize: 12,
-        fontWeight: 800,
-        letterSpacing: '1.2px',
-        textDecoration: 'none',
-      }}
-    >
-      {children}
-    </Link>
-  )
-}
+const bottomLink = {
+  height: 44,
+  border: 0,
+  background: 'transparent',
+  color: 'inherit',
+  fontSize: 12,
+  fontWeight: 800,
+  letterSpacing: '1.2px',
+} as const

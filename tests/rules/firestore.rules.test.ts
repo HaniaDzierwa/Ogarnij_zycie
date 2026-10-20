@@ -330,6 +330,19 @@ function join(uid: string, code = CODE, houseId = 'dom1', scope = ALL) {
 describe('zaproszenia', () => {
   beforeEach(seed)
 
+  test('za długa lista imion domowników w zaproszeniu – odrzucona', () =>
+    assertFails(
+      setDoc(doc(db('hania'), paths.invite('444444')), {
+        ...newInviteDoc({
+          houseId: 'dom1',
+          houseName: 'Dom',
+          uid: 'hania',
+          name: 'Hania',
+          scope: ALL,
+        }),
+        memberNames: Array.from({ length: 21 }, (_, i) => `D${i}`),
+      }),
+    ))
   test('domownik tworzy zaproszenie do swojego domu; obcy – nie, do cudzego', async () => {
     await assertSucceeds(invite())
     await assertFails(invite('111111', 'obcy', 'dom1'))

@@ -184,11 +184,13 @@ service cloud.firestore {
         && code.matches('^[0-9]{6}$')
         && isMember(request.resource.data.houseId)
         && request.resource.data.keys().hasOnly(['houseId', 'houseName', 'createdBy', 'inviterName',
-            'createdAt', 'scope', 'usedBy', 'usedAt'])
+            'memberNames', 'createdAt', 'scope', 'usedBy', 'usedAt'])
         && request.resource.data.createdBy == me()
         && request.resource.data.createdAt == request.time
         && text(request.resource.data.houseName, 40)
         && str(request.resource.data.inviterName, 40)
+        && request.resource.data.memberNames is list
+        && request.resource.data.memberNames.size() <= 20
         && validScope(request.resource.data.scope)
         && request.resource.data.usedBy == null
         && request.resource.data.usedAt == null;
