@@ -267,3 +267,24 @@ describe('edycja i usuwanie – jak w Zadaniach', () => {
     expect(screen.getByRole('alertdialog', { name: 'Usunąć zadanie?' })).toBeDefined()
   })
 })
+
+describe('notatka przy wydarzeniu', () => {
+  test('przy nowym wydarzeniu: widać ją w agendzie, w arkuszu – do edycji', () => {
+    renderAt('/kalendarz?nowe=wydarzenie')
+    const sheet = screen.getByRole('dialog', { name: 'Nowe wydarzenie' })
+    fireEvent.change(within(sheet).getByLabelText('NAZWA'), { target: { value: 'Basen' } })
+    fireEvent.change(within(sheet).getByLabelText(/NOTATKA/), {
+      target: { value: 'Zabrać czepki' },
+    })
+    fireEvent.click(within(sheet).getByRole('button', { name: 'Dodaj do kalendarza' }))
+    expect(agenda().textContent).toContain('ZABRAĆ CZEPKI')
+
+    fireEvent.click(screen.getByRole('button', { name: /^Basen/ }))
+    const detail = screen.getByRole('dialog', { name: 'Wydarzenie' })
+    fireEvent.change(within(detail).getByLabelText(/NOTATKA/), {
+      target: { value: 'Zabrać czepki i klapki' },
+    })
+    fireEvent.click(within(detail).getAllByRole('button', { name: 'Gotowe' })[0])
+    expect(agenda().textContent).toContain('ZABRAĆ CZEPKI I KLAPKI')
+  })
+})

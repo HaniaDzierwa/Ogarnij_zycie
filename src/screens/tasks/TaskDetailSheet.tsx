@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Box, Chip, Dot, Sheet } from '../../components/ui.tsx'
+import { Box, Chip, Dot, NoteField, Sheet } from '../../components/ui.tsx'
 import { CheckIcon, CloseIcon, PlusIcon, TrashIcon, UndoIcon } from '../../components/icons.tsx'
 import { addDays, dueLabel, weekStart, type DateKey } from '../../data/dates.ts'
 import type { Category, Task } from '../../data/types.ts'
@@ -356,6 +356,12 @@ export function TaskDetailSheet({
           </button>
         </div>
       </div>
+
+      <NoteField
+        id="det-notatka"
+        value={task.note}
+        onChange={(note) => onChange((t) => ({ ...t, note }))}
+      />
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: 8, marginTop: 2 }}>
         <button

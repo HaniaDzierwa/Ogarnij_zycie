@@ -141,6 +141,7 @@ Zakupy `#5E8C6A` · Dom `#B8925A` · Zdrowie `#A4492F` · Urzędy `#6E5F8C` · A
 
 - Arkusze (bottom sheet): nad arkuszem zawsze widać pas przyciemnienia (min. 88 px + pasek stanu) – dotknięcie go zamyka arkusz; dłuższa treść przewija się w arkuszu (ustalone 2026-10-18).
 - Kto zrobił: **samo imię, bez rodzaju** (2026-10-18): Ogarnięte „HANIA · 9:10”, arkusz „Ogarnięte: Hania” / „Dodane: Hania”, Kosz „ZAKUPY · HANIA · 2 DNI TEMU”, zaproszenie „Ola *jest z Wami*” / „Nowy domownik jest teraz w Waszym domu…”.
+- Notatka (2026-10-20): w arkuszach zadania i wydarzenia (nowych i edycji) pole „NOTATKA (opcjonalnie)”, do 500 znaków; przy wydarzeniu widać ją pod tytułem w agendzie (najwyżej 2 linie).
 - Panel filtrów zamyka dotknięcie w dowolne miejsce poza nim, także nagłówka i zakładek; przycisk „Filtry” ma stałą nazwę i licznik aktywnych filtrów; pod nim chipy aktywnych filtrów z „×”; „Wyczyść” tylko przy 2 filtrach.
 - „Zwiń wszystko” ⇄ „Rozwiń wszystko”.
 - Kafelki na Starcie otwierają Zadania/Kalendarz z gotowym filtrem lub dniem.
@@ -160,7 +161,7 @@ houses/{houseId}                    name (wpisuje założyciel), ownerUid, creat
 houses/{houseId}/members/{uid}      name, role(owner|member), scope{all, categoryIds[], calendar}, joinedAt
 houses/{houseId}/categories/{id}    name, color, order, updatedAt, updatedBy
 houses/{houseId}/tasks/{id}         title, categoryId|null, priority(high|mid|low), due('RRRR-MM-DD'|null), done,
-                                    subtasks[{id,title,done}], createdBy, doneAt(Timestamp|null), doneBy,
+                                    subtasks[{id,title,done}], note (notatka, do 500), createdBy, doneAt(Timestamp|null), doneBy,
                                     deleted, deletedAt(Timestamp|null), deletedBy, updatedAt, updatedBy
 houses/{houseId}/eventTypes/{id}    name, dot, bg, fg, icon, system, updatedAt, updatedBy
                                     (wbudowane id: task, birthday, party, event, doctor)

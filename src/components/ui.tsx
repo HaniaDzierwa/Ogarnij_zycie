@@ -637,3 +637,47 @@ export function BottomActions({ children }: { children: ReactNode }) {
     </div>
   )
 }
+
+/** „Luźna” notatka do zadania albo wydarzenia (do 500 znaków, pole rośnie z tekstem). */
+export function NoteField({
+  id,
+  value,
+  onChange,
+}: {
+  id: string
+  value: string
+  onChange: (v: string) => void
+}) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+      <label
+        htmlFor={id}
+        style={{ fontSize: 11, fontWeight: 800, letterSpacing: '1.4px', color: colors.muted }}
+      >
+        NOTATKA <span style={{ fontWeight: 600, letterSpacing: '0.4px' }}>(opcjonalnie)</span>
+      </label>
+      <textarea
+        id={id}
+        rows={3}
+        maxLength={500}
+        placeholder="np. kod do domofonu, co zabrać, kogo zapytać…"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        style={{
+          minHeight: 84,
+          resize: 'vertical',
+          fieldSizing: 'content',
+          border: `1px solid ${colors.border}`,
+          borderRadius: 16,
+          padding: '12px 16px',
+          fontFamily: 'inherit',
+          fontSize: 16,
+          lineHeight: 1.45,
+          color: colors.green900,
+          background: colors.white,
+          outlineColor: colors.green900,
+        }}
+      />
+    </div>
+  )
+}

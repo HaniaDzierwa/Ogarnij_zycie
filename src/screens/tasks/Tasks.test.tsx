@@ -267,3 +267,25 @@ test('arkusz: w niedzielę „W tym tygodniu” da się wybrać, choć to ten sa
   expect(chip('Dziś').getAttribute('aria-pressed')).toBe('true')
   expect(chip('W tym tygodniu').getAttribute('aria-pressed')).toBe('false')
 })
+
+test('notatka: przy nowym zadaniu i w arkuszu zadania (zapis od razu)', () => {
+  renderAt('/zadania?nowe=zadanie')
+  const sheet = screen.getByRole('dialog', { name: 'Nowe zadanie' })
+  fireEvent.change(within(sheet).getByLabelText('CO TRZEBA ZROBIĆ?'), {
+    target: { value: 'Odebrać paczkę' },
+  })
+  fireEvent.change(within(sheet).getByLabelText(/NOTATKA/), {
+    target: { value: 'Paczkomat przy Biedronce, kod 4821' },
+  })
+  fireEvent.click(within(sheet).getByRole('button', { name: 'Dodaj zadanie' }))
+  click('Otwórz zadanie Odebrać paczkę')
+  const detail = screen.getByRole('dialog', { name: 'Zadanie' })
+  const note = within(detail).getByLabelText(/NOTATKA/) as HTMLTextAreaElement
+  expect(note.value).toBe('Paczkomat przy Biedronce, kod 4821')
+  fireEvent.change(note, { target: { value: 'Kod 4821 – ważny do piątku' } })
+  fireEvent.click(within(detail).getAllByRole('button', { name: 'Gotowe' })[0])
+  click('Otwórz zadanie Odebrać paczkę')
+  expect(
+    (within(screen.getByRole('dialog')).getByLabelText(/NOTATKA/) as HTMLTextAreaElement).value,
+  ).toBe('Kod 4821 – ważny do piątku')
+})

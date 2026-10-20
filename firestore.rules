@@ -89,7 +89,7 @@ service cloud.firestore {
     }
 
     function validTask(d) {
-      return d.keys().hasOnly(['title', 'categoryId', 'priority', 'due', 'done', 'subtasks',
+      return d.keys().hasOnly(['title', 'categoryId', 'priority', 'due', 'done', 'subtasks', 'note',
           'createdBy', 'doneAt', 'doneBy', 'deleted', 'deletedAt', 'deletedBy', 'updatedAt', 'updatedBy'])
         && text(d.title, 200)
         && strOrNull(d.categoryId, 100)
@@ -97,6 +97,8 @@ service cloud.firestore {
         && (d.due == null || isDay(d.due))
         && d.done is bool
         && validSubtasks(d.subtasks)
+        // notatka (od 2026-10-20) – starsze zadania mogą jej nie mieć
+        && (!('note' in d) || str(d.note, 500))
         && author(d)
         && tsOrNull(d.doneAt)
         && strOrNull(d.doneBy, 128)

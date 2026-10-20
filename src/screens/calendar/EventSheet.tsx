@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react'
-import { Chip, Dot, Field, PrimaryButton, Sheet } from '../../components/ui.tsx'
+import { Chip, Dot, Field, NoteField, PrimaryButton, Sheet } from '../../components/ui.tsx'
 import { DAYS, MONTHS_GEN, parseKey, type DateKey } from '../../data/dates.ts'
 import type { CalendarEvent, EventType, Remind } from '../../data/types.ts'
 import { colors, fonts } from '../../theme'
@@ -35,6 +35,7 @@ export function EventSheet({
   const [from, setFrom] = useState('18:00')
   const [to, setTo] = useState('')
   const [remind, setRemind] = useState<Remind>('day')
+  const [note, setNote] = useState('')
   const [newTypeOpen, setNewTypeOpen] = useState(false)
   const [typeName, setTypeName] = useState('')
   const [typeColor, setTypeColor] = useState<string>(TYPE_SWATCHES[0].color)
@@ -61,7 +62,7 @@ export function EventSheet({
       to: timed && to ? to : null,
       typeId,
       remind,
-      note: '',
+      note: note.trim(),
       deleted: false,
       deletedAt: null,
       deletedBy: null,
@@ -285,6 +286,8 @@ export function EventSheet({
           ))}
         </div>
       </Group>
+
+      <NoteField id="notatka-wydarzenia" value={note} onChange={setNote} />
 
       <PrimaryButton onClick={submit}>Dodaj do kalendarza</PrimaryButton>
     </Sheet>

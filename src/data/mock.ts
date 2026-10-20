@@ -123,6 +123,7 @@ export function mockTasks(today: DateKey): Task[] {
     due: s.dueIn === undefined ? null : addDays(today, s.dueIn),
     done: !!s.done,
     subtasks: (s.subs ?? []).map(([t, d], j) => ({ id: `t${i + 1}s${j + 1}`, title: t, done: d })),
+    note: '',
     createdBy: s.by ?? 'hania',
     doneAt: s.done ? stamp(addDays(today, -s.done[0]), s.done[1]) : null,
     doneBy: s.done ? s.done[2] : null,

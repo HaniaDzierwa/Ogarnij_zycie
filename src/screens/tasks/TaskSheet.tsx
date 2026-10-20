@@ -1,6 +1,6 @@
 import { newId } from '../../data/ids.ts'
 import { useState } from 'react'
-import { Box, Chip, Dot, Field, PrimaryButton, Sheet } from '../../components/ui.tsx'
+import { Box, Chip, Dot, Field, NoteField, PrimaryButton, Sheet } from '../../components/ui.tsx'
 import { CloseIcon, PlusIcon } from '../../components/icons.tsx'
 import { addDays, dueLabel, weekStart, type DateKey } from '../../data/dates.ts'
 import type { Category, Subtask, Task } from '../../data/types.ts'
@@ -12,7 +12,10 @@ type Preset = (typeof PRESETS)[number]
 type DueChoice = Preset | 'Inna data'
 
 /** Nowe zadanie z formularza (resztę pól – kto, kiedy – uzupełnia ekran). */
-export type TaskDraft = Pick<Task, 'title' | 'categoryId' | 'priority' | 'due' | 'subtasks'>
+export type TaskDraft = Pick<
+  Task,
+  'title' | 'categoryId' | 'priority' | 'due' | 'subtasks' | 'note'
+>
 
 function presetDate(p: Preset, today: DateKey): DateKey | null {
   if (p === 'Dziś') return today
@@ -41,6 +44,7 @@ export function TaskSheet({ onClose, categories, today, onAddCategory, onSave }:
   const [choice, setChoice] = useState<DueChoice>('Bez terminu')
   const [customDate, setCustomDate] = useState<DateKey>(addDays(today, 7))
   const [steps, setSteps] = useState<Subtask[]>([])
+  const [note, setNote] = useState('')
   const [step, setStep] = useState('')
   const [addingCategory, setAddingCategory] = useState(false)
 
@@ -55,7 +59,7 @@ export function TaskSheet({ onClose, categories, today, onAddCategory, onSave }:
   const submit = () => {
     const t = title.trim()
     if (!t) return
-    onSave({ title: t, categoryId, priority, due, subtasks: steps })
+    onSave({ title: t, categoryId, priority, due, subtasks: steps, note: note.trim() })
   }
 
   return (
@@ -283,6 +287,8 @@ export function TaskSheet({ onClose, categories, today, onAddCategory, onSave }:
           </>
         )}
       </Group>
+
+      <NoteField id="notatka-zadania" value={note} onChange={setNote} />
 
       <PrimaryButton onClick={submit}>Dodaj zadanie</PrimaryButton>
     </Sheet>

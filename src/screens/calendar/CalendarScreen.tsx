@@ -603,9 +603,21 @@ function AgendaRow({
           <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 3 }}>
             <span style={{ fontSize: 16, fontWeight: 700, lineHeight: 1.3 }}>{item.title}</span>
             <span
-              style={{ fontSize: 11, fontWeight: 800, letterSpacing: '1px', color: colors.muted }}
+              style={{
+                fontSize: 11,
+                fontWeight: 800,
+                letterSpacing: '1px',
+                color: colors.muted,
+                // dłuższa notatka – najwyżej dwie linie z wielokropkiem (całość w arkuszu)
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+              }}
             >
-              {(type.name + (item.note ? ` · ${item.note}` : '')).toUpperCase()}
+              {(
+                type.name + (item.note ? ` · ${item.note.replace(/\s+/g, ' ')}` : '')
+              ).toUpperCase()}
             </span>
           </span>
           <span

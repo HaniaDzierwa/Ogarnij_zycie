@@ -16,6 +16,7 @@ const task: Task = {
   id: 't',
   title: 'Prezent',
   categoryId: 'shop',
+  note: '',
   priority: 'high',
   due: null,
   done: false,

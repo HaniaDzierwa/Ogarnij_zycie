@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { CheckIcon, EventTypeIcon, TrashIcon } from '../../components/icons.tsx'
-import { Chip, Dot, Sheet } from '../../components/ui.tsx'
+import { Chip, Dot, NoteField, Sheet } from '../../components/ui.tsx'
 import { REMINDS, setAllDay } from '../../data/eventOps.ts'
 import type { CalendarEvent, EventType } from '../../data/types.ts'
 import { colors, fonts, priorities } from '../../theme'
@@ -213,6 +213,12 @@ export function EventDetailSheet({
           ))}
         </div>
       </Group>
+
+      <NoteField
+        id="wyd-notatka"
+        value={event.note}
+        onChange={(note) => onChange((e) => ({ ...e, note }))}
+      />
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: 8, marginTop: 2 }}>
         <button

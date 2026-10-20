@@ -267,6 +267,10 @@ describe('poprawność danych', () => {
     await assertFails(put(sampleTask({ due: '9 października' })))
     await assertSucceeds(put(sampleTask({ due: '2026-10-16' })))
   })
+  test('notatka do 500 znaków', async () => {
+    await assertSucceeds(put(sampleTask({ note: 'Kod do domofonu 4821' })))
+    await assertFails(put(sampleTask({ note: 'x'.repeat(501) })))
+  })
   test('dodatkowe, nieznane pola są odrzucane', () =>
     assertFails(
       setDoc(doc(db('hania'), taskPath('dom1', 'z6')), {
