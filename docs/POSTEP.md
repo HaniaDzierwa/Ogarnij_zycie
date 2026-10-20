@@ -1,13 +1,13 @@
 # Postęp prac
 
-Aktualny etap: **2 – Konta i dane w Firestore** (w toku)
+Aktualny etap: **3 – Zadania** (w toku)
 
 | Etap | Status | Akceptacja |
 | --- | --- | --- |
 | 0 Przygotowanie | zakończony | 2026-10-18 |
 | 1 Klikalny mockup | zakończony | 2026-10-18 |
-| 2 Konta i dane | w toku | – |
-| 3 Zadania | – | – |
+| 2 Konta i dane | zakończony | 2026-10-20 |
+| 3 Zadania | w toku | – |
 | 4 Kategorie i filtry | – | – |
 | 5 Kalendarz | – | – |
 | 6 Start | – | – |
@@ -25,7 +25,7 @@ Aktualny etap: **2 – Konta i dane w Firestore** (w toku)
 | 4 Konta: Zaloguj się, Załóż konto, Nie pamiętam hasła z Firebase Auth; Ładowanie kieruje wg stanu konta; „Wyloguj” w stopce Ustawień | zrobione – do sprawdzenia na telefonie |
 | 5 Pierwsze uruchomienie → „Załóż nowy dom” z nazwą domu: dom, domownik, domyślne kategorie i rodzaje wydarzeń | zrobione – do sprawdzenia na telefonie |
 | 6 Dane z Firestore zamiast przykładowych (zadania, kosz, kategorie, wydarzenia, rodzaje, ustawienia), działanie bez internetu | zrobione – do sprawdzenia na telefonie |
-| 7 Wdrożenie reguł (Hania), demo na dwóch urządzeniach, odbiór | w toku – reguły wgrane, wersja testowa opublikowana, czeka demo Hani |
+| 7 Wdrożenie reguł (Hania), demo na dwóch urządzeniach, odbiór | zrobione – demo i odbiór: Hania „akceptuję” 2026-10-20 |
 
 „Dołącz do domu” (zaproszenia) zostaje w wersji z mockupu do etapu 8.
 
@@ -147,3 +147,4 @@ Wersja testowa: https://ogarnij-zycie--test-56tdtc0y.web.app (kanał `test`, odn
 - 2026-10-20 · Etap 2 · Krok 7: za zgodą Hani Claude wgrał reguły i indeksy (`npx firebase deploy --only firestore:rules,firestore:indexes` – „released rules”). Wersja testowa z kontem i danymi w Firestore: https://ogarnij-zycie--test-56tdtc0y.web.app (do 2026-10-27). Czeka demo na telefonie i drugim urządzeniu oraz odbiór etapu 2.
 - 2026-10-20 · Etap 2 · Poprawka (błąd zgłoszony przez Hanię): po ponownym zalogowaniu Start się wywracał („reading dot”) – Firestore oddał zadania i wydarzenia przed listą rodzajów wydarzeń, a kod brał kolor nieistniejącego rodzaju. (1) `eventTypeOf` – rodzaj zawsze znany (z domu, wbudowany o tym id albo „Wydarzenie”) we wszystkich miejscach (Start, Kalendarz, arkusz wydarzenia, Kosz); ikony wbudowanych rodzajów w jednym miejscu (`src/theme`). (2) Ekran ładowania, dopóki nie przyjdą wszystkie części danych domu (`ready` w magazynie; błąd odczytu części nie blokuje w nieskończoność). Testy: Start/Kalendarz/Kosz bez wczytanych rodzajów, ekran ładowania przy niewczytanych danych, `eventTypeOf`. · Sprawdzenie: wyloguj → zaloguj → Start bez błędu; `npm test` – 156 testów.
 - 2026-10-20 · Etap 2 · Hania po poprawce: „działa ok, możemy iść dalej z planem”. Przed zamknięciem etapu – potwierdzenie punktów odbioru i „akceptuję”.
+- 2026-10-20 · Etap 2 · Odbiór: dane przetrwają zamknięcie przeglądarki, działają bez internetu i wracają na innym urządzeniu; testy reguł 27/27. Hania: „akceptuję”. Etap 2 zakończony.

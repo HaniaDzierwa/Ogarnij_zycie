@@ -67,8 +67,8 @@ Cel: wszystkie ekrany z projektu w aplikacji, na przykładowych danych (w pamię
 8. Domownik to samo imię – bez formy czasownika (bez „ogarnęła/ogarnął”); wszędzie „HANIA · 9:10”, „Ogarnięte: Hania”, „Dodane: Hania” (decyzja Hani 2026-10-18, już w mockupie).
 
 **Odbiór:**
-- [ ] Dane przetrwają zamknięcie przeglądarki, działają bez internetu i wracają po zalogowaniu na innym urządzeniu
-- [ ] Testy reguł: obcy użytkownik nie czyta ani nie zapisuje danych cudzego domu
+- [x] Dane przetrwają zamknięcie przeglądarki, działają bez internetu i wracają po zalogowaniu na innym urządzeniu
+- [x] Testy reguł: obcy użytkownik nie czyta ani nie zapisuje danych cudzego domu
 
 ## Etap 3 – Zadania
 
