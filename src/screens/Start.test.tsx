@@ -45,23 +45,66 @@ test('kafelek „Pilne” otwiera Zadania z filtrem Pilne', () => {
   expect(router.state.location.search).toBe('?pokaz=pilne')
 })
 
+const section = (name: string) => screen.getByRole('heading', { name }).closest('section')!
+/** Wiersze sekcji: przyciski otwierające arkusz (bez kwadracików i ukrytych akcji gestów). */
+const rows = (name: string) =>
+  within(section(name))
+    .getAllByRole('button')
+    .filter(
+      (b) => !/^(Ogarnij|Przenieś do kosza): /.test(b.getAttribute('aria-label') ?? b.textContent!),
+    )
+
 test('Pilne: najbliższe terminy – hydraulik DZIŚ, recepta JUTRO', () => {
   renderAt('/?pora=dzien')
-  const section = screen.getByRole('heading', { name: 'Pilne' }).closest('section')!
-  const rows = within(section).getAllByRole('link').slice(1)
-  expect(rows.map((r) => r.textContent)).toEqual([
+  expect(rows('Pilne').map((r) => r.textContent)).toEqual([
     'Zadzwonić do hydraulika – cieknący kranDOMDZIŚ',
     'Wykupić receptęZDROWIEJUTRO',
   ])
 })
 
-test('Najbliższe wydarzenia: dwa najbliższe, klik otwiera Kalendarz z dniem', () => {
-  const router = renderAt('/?pora=dzien')
-  const section = screen.getByRole('heading', { name: 'Najbliższe wydarzenia' }).closest('section')!
-  const rows = within(section).getAllByRole('link').slice(1)
-  expect(rows).toHaveLength(2)
-  expect(rows[0].textContent).toContain('Kino z Krzysiem')
-  expect(rows[0].textContent).toContain('jutro')
-  fireEvent.click(rows[0])
-  expect(router.state.location.search).toBe('?dzien=2026-10-10')
+test('Pilne: dotknięcie otwiera arkusz zadania, kwadracik ogarnia z „Cofnij”', () => {
+  renderAt('/?pora=dzien')
+  fireEvent.click(rows('Pilne')[1])
+  const sheet = screen.getByRole('dialog', { name: 'Zadanie' })
+  expect(within(sheet).getByText('DO ZROBIENIA · ZDROWIE')).toBeDefined()
+  fireEvent.click(within(sheet).getAllByRole('button', { name: 'Gotowe' })[0])
+
+  fireEvent.click(screen.getByRole('button', { name: 'Ogarnij: Wykupić receptę' }))
+  expect(screen.getByRole('status').textContent).toContain('Ogarnięte: Wykupić receptę')
+  expect(section('Pilne').textContent).not.toContain('Wykupić receptę')
+  fireEvent.click(screen.getByRole('button', { name: 'COFNIJ' }))
+  expect(section('Pilne').textContent).toContain('Wykupić receptę')
+})
+
+test('Pilne: przeciągnięcie w lewo pyta i przenosi do kosza', () => {
+  renderAt('/?pora=dzien')
+  fireEvent.click(screen.getByRole('button', { name: 'Przenieś do kosza: Wykupić receptę' }))
+  const ask = screen.getByRole('alertdialog', { name: 'Usunąć zadanie?' })
+  fireEvent.click(within(ask).getByRole('button', { name: 'Usuń' }))
+  expect(screen.getByRole('status').textContent).toContain('Przeniesiono do kosza: Wykupić receptę')
+})
+
+test('Najbliższe wydarzenia: dwa najbliższe; dotknięcie – arkusz wydarzenia z edycją', () => {
+  renderAt('/?pora=dzien')
+  const ev = rows('Najbliższe wydarzenia')
+  expect(ev).toHaveLength(2)
+  expect(ev[0].textContent).toContain('Kino z Krzysiem')
+  expect(ev[0].textContent).toContain('jutro')
+  fireEvent.click(ev[0])
+  const sheet = screen.getByRole('dialog', { name: 'Wydarzenie' })
+  fireEvent.change(within(sheet).getByLabelText('Nazwa wydarzenia'), {
+    target: { value: 'Kino z Krzysiem i Olą' },
+  })
+  fireEvent.click(within(sheet).getAllByRole('button', { name: 'Gotowe' })[0])
+  expect(section('Najbliższe wydarzenia').textContent).toContain('Kino z Krzysiem i Olą')
+})
+
+test('Najbliższe wydarzenia: w lewo – pytanie i do kosza; na liście pojawia się następne', () => {
+  renderAt('/?pora=dzien')
+  fireEvent.click(screen.getByRole('button', { name: 'Przenieś do kosza: Kino z Krzysiem' }))
+  const ask = screen.getByRole('alertdialog', { name: 'Usunąć wydarzenie?' })
+  fireEvent.click(within(ask).getByRole('button', { name: 'Usuń' }))
+  const ev = rows('Najbliższe wydarzenia')
+  expect(ev[0].textContent).toContain('Zebranie w szkole')
+  expect(screen.getByRole('status').textContent).toContain('Przeniesiono do kosza: Kino z Krzysiem')
 })

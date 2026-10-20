@@ -144,6 +144,7 @@ Zakupy `#5E8C6A` · Dom `#B8925A` · Zdrowie `#A4492F` · Urzędy `#6E5F8C` · A
 - Panel filtrów zamyka dotknięcie w dowolne miejsce poza nim, także nagłówka i zakładek; przycisk „Filtry” ma stałą nazwę i licznik aktywnych filtrów; pod nim chipy aktywnych filtrów z „×”; „Wyczyść” tylko przy 2 filtrach.
 - „Zwiń wszystko” ⇄ „Rozwiń wszystko”.
 - Kafelki na Starcie otwierają Zadania/Kalendarz z gotowym filtrem lub dniem.
+- Start (2026-10-20): wiersze w „Pilne” i „Najbliższe wydarzenia” działają jak na liście zadań i w kalendarzu – kwadracik ogarnia, dotknięcie otwiera arkusz, w prawo ogarnij (zadanie), w lewo do kosza (z pytaniem), pasek COFNIJ. Linki „ZADANIA” / „KALENDARZ” przy sekcjach bez zmian.
 - Na Starcie najpierw „Pilne”, potem „Najbliższe wydarzenia” (min. 2).
 - Strzałki tygodnia w kalendarzu pod nagłówkiem, nie w nim.
 - Tryb dzień/noc nagłówka Startu i ekranu ładowania wg godziny (6:00–18:00 dzień).

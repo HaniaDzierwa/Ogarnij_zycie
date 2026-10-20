@@ -3,7 +3,10 @@ import { Link, useSearchParams } from 'react-router'
 import { paths } from '../app/screens.ts'
 import { Accent, Header } from '../components/Header.tsx'
 import { Logo } from '../components/Logo.tsx'
+import { CheckIcon, TrashIcon } from '../components/icons.tsx'
+import { SwipeRow } from '../components/SwipeRow.tsx'
 import { TabBar } from '../components/TabBar.tsx'
+import { UndoToast } from '../components/UndoToast.tsx'
 import { Box, Card, Screen, OfflineBadge } from '../components/ui.tsx'
 import {
   DAYS_SHORT,
@@ -26,6 +29,7 @@ import {
   weekDays,
 } from '../data/selectors.ts'
 import { colors, fonts, priorities, shadows, todayBadge } from '../theme'
+import { useItemSheets } from './shared/useItemSheets.tsx'
 
 /** 2 Start (Kategorie.dc.html, StartDzien / StartNoc). Podgląd pory: `?pora=dzien|noc`. */
 export function StartScreen() {
@@ -53,6 +57,8 @@ export function StartScreen() {
     .slice(0, 2)
   const nextEvents = upcomingEvents(events, today, 2)
   const name = userName.trim()
+  // zadania i wydarzenia na Starcie – te same akcje co w Zadaniach i Kalendarzu (uwaga Hani 2026-10-20)
+  const sheets$ = useItemSheets()
 
   return (
     <Screen>
@@ -259,72 +265,116 @@ export function StartScreen() {
             {nearestUrgent.map((t, i) => {
               const label = t.due ? dueLabel(t.due, today) : null
               return (
-                <Link
+                <div
                   key={t.id}
-                  to={paths.zadaniaPilne}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 14,
-                    padding: '14px 16px',
-                    borderTop: i === 0 ? 'none' : `1px solid ${colors.line}`,
-                    color: colors.green900,
-                    textDecoration: 'none',
-                  }}
+                  style={{ borderTop: i === 0 ? 'none' : `1px solid ${colors.line}` }}
                 >
-                  <Box color={priorities.high.line} />
-                  <span
-                    style={{
-                      flex: 1,
-                      minWidth: 0,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: 3,
+                  <SwipeRow
+                    right={{
+                      label: 'Ogarnij',
+                      icon: <CheckIcon />,
+                      bg: colors.green900,
+                      fg: colors.brass300,
+                      run: () => sheets$.toggleDone(t),
+                    }}
+                    left={{
+                      label: 'Usuń',
+                      icon: <TrashIcon />,
+                      bg: priorities.high.line,
+                      fg: colors.white,
+                      srLabel: `Przenieś do kosza: ${t.title}`,
+                      run: () => sheets$.trashTask(t),
                     }}
                   >
-                    <span style={{ fontSize: 16, fontWeight: 700 }}>{t.title}</span>
-                    <span
-                      style={{
-                        fontSize: 11,
-                        fontWeight: 800,
-                        letterSpacing: '1px',
-                        color: colors.muted,
-                      }}
-                    >
-                      {categoryName(t.categoryId).toUpperCase()}
-                    </span>
-                  </span>
-                  {label === 'DZIŚ' || label === 'PO TERMINIE' ? (
-                    <span
-                      style={{
-                        fontSize: 11,
-                        fontWeight: 800,
-                        letterSpacing: '0.6px',
-                        color: todayBadge.fg,
-                        background: todayBadge.bg,
-                        padding: '4px 10px',
-                        borderRadius: 10,
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
-                      {label}
-                    </span>
-                  ) : (
-                    label && (
-                      <span
+                    <div style={{ display: 'flex', alignItems: 'stretch' }}>
+                      <button
+                        type="button"
+                        aria-label={`Ogarnij: ${t.title}`}
+                        onClick={() => sheets$.toggleDone(t)}
                         style={{
-                          fontSize: 11,
-                          fontWeight: 800,
-                          letterSpacing: '0.6px',
-                          color: colors.brass700,
-                          whiteSpace: 'nowrap',
+                          width: 56,
+                          flex: 'none',
+                          border: 0,
+                          padding: 0,
+                          background: 'transparent',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
                         }}
                       >
-                        {label}
-                      </span>
-                    )
-                  )}
-                </Link>
+                        <Box color={priorities.high.line} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => sheets$.openTask(t)}
+                        style={{
+                          flex: 1,
+                          minWidth: 0,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 14,
+                          padding: '14px 16px 14px 0',
+                          border: 0,
+                          background: 'transparent',
+                          textAlign: 'left',
+                          color: colors.green900,
+                        }}
+                      >
+                        <span
+                          style={{
+                            flex: 1,
+                            minWidth: 0,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: 3,
+                          }}
+                        >
+                          <span style={{ fontSize: 16, fontWeight: 700 }}>{t.title}</span>
+                          <span
+                            style={{
+                              fontSize: 11,
+                              fontWeight: 800,
+                              letterSpacing: '1px',
+                              color: colors.muted,
+                            }}
+                          >
+                            {categoryName(t.categoryId).toUpperCase()}
+                          </span>
+                        </span>
+                        {label === 'DZIŚ' || label === 'PO TERMINIE' ? (
+                          <span
+                            style={{
+                              fontSize: 11,
+                              fontWeight: 800,
+                              letterSpacing: '0.6px',
+                              color: todayBadge.fg,
+                              background: todayBadge.bg,
+                              padding: '4px 10px',
+                              borderRadius: 10,
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            {label}
+                          </span>
+                        ) : (
+                          label && (
+                            <span
+                              style={{
+                                fontSize: 11,
+                                fontWeight: 800,
+                                letterSpacing: '0.6px',
+                                color: colors.brass700,
+                                whiteSpace: 'nowrap',
+                              }}
+                            >
+                              {label}
+                            </span>
+                          )
+                        )}
+                      </button>
+                    </div>
+                  </SwipeRow>
+                </div>
               )
             })}
           </Card>
@@ -347,86 +397,115 @@ export function StartScreen() {
               ? 'CAŁY DZIEŃ'
               : `${DAYS_SHORT[d.getDay()]} ${e.from}${e.to ? `–${e.to}` : ''}`
             return (
-              <Link
+              <div
                 key={e.id}
-                to={paths.kalendarzDzien(e.date)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 14,
-                  padding: '10px 14px 10px 10px',
-                  borderRadius: 20,
-                  background: colors.white,
-                  boxShadow: shadows.card,
-                  color: colors.green900,
-                  textDecoration: 'none',
-                }}
+                style={{ borderRadius: 20, boxShadow: shadows.card, overflow: 'hidden' }}
               >
-                <span
-                  style={{
-                    width: 46,
-                    height: 52,
-                    borderRadius: '23px 23px 10px 10px',
-                    background: type.bg,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: 1,
-                    flex: 'none',
+                <SwipeRow
+                  left={{
+                    label: 'Usuń',
+                    icon: <TrashIcon />,
+                    bg: priorities.high.line,
+                    fg: colors.white,
+                    srLabel: `Przenieś do kosza: ${e.title}`,
+                    run: () => sheets$.removeEvent(e),
                   }}
                 >
-                  <span
+                  <button
+                    type="button"
+                    onClick={() => sheets$.openEvent(e)}
                     style={{
-                      fontFamily: fonts.serif,
-                      fontSize: 21,
-                      fontWeight: 600,
-                      lineHeight: 1,
-                      color: type.fg,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 14,
+                      width: '100%',
+                      padding: '10px 14px 10px 10px',
+                      border: 0,
+                      background: 'transparent',
+                      textAlign: 'left',
+                      color: colors.green900,
                     }}
                   >
-                    {d.getDate()}
-                  </span>
-                  <span
-                    style={{ fontSize: 10, fontWeight: 800, letterSpacing: '1px', color: type.fg }}
-                  >
-                    {MONTHS_SHORT[d.getMonth()]}
-                  </span>
-                </span>
-                <span
-                  style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 3 }}
-                >
-                  <span style={{ fontSize: 16, fontWeight: 700 }}>{e.title}</span>
-                  <span
-                    style={{
-                      fontSize: 11,
-                      fontWeight: 800,
-                      letterSpacing: '1px',
-                      color: colors.muted,
-                    }}
-                  >
-                    {type.name.toUpperCase()} · {when}
-                  </span>
-                </span>
-                <span
-                  style={{
-                    fontSize: 12,
-                    fontWeight: 800,
-                    color: priorities.mid.fg,
-                    background: '#EFE3CC',
-                    padding: '4px 10px',
-                    borderRadius: 12,
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {inDays(diffDays(today, e.date))}
-                </span>
-              </Link>
+                    <span
+                      style={{
+                        width: 46,
+                        height: 52,
+                        borderRadius: '23px 23px 10px 10px',
+                        background: type.bg,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 1,
+                        flex: 'none',
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontFamily: fonts.serif,
+                          fontSize: 21,
+                          fontWeight: 600,
+                          lineHeight: 1,
+                          color: type.fg,
+                        }}
+                      >
+                        {d.getDate()}
+                      </span>
+                      <span
+                        style={{
+                          fontSize: 10,
+                          fontWeight: 800,
+                          letterSpacing: '1px',
+                          color: type.fg,
+                        }}
+                      >
+                        {MONTHS_SHORT[d.getMonth()]}
+                      </span>
+                    </span>
+                    <span
+                      style={{
+                        flex: 1,
+                        minWidth: 0,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 3,
+                      }}
+                    >
+                      <span style={{ fontSize: 16, fontWeight: 700 }}>{e.title}</span>
+                      <span
+                        style={{
+                          fontSize: 11,
+                          fontWeight: 800,
+                          letterSpacing: '1px',
+                          color: colors.muted,
+                        }}
+                      >
+                        {type.name.toUpperCase()} · {when}
+                      </span>
+                    </span>
+                    <span
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 800,
+                        color: priorities.mid.fg,
+                        background: '#EFE3CC',
+                        padding: '4px 10px',
+                        borderRadius: 12,
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {inDays(diffDays(today, e.date))}
+                    </span>
+                  </button>
+                </SwipeRow>
+              </div>
             )
           })}
         </div>
       </Section>
 
+      {sheets$.sheets}
+      <UndoToast />
       <TabBar active="start" />
     </Screen>
   )

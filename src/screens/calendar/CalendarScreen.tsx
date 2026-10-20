@@ -22,7 +22,6 @@ import {
   inDays,
   parseKey,
   weekStart,
-  whenLabel,
   type DateKey,
 } from '../../data/dates.ts'
 import { useStore } from '../../data/store.ts'
@@ -41,14 +40,10 @@ import {
 } from './calendarView.ts'
 import { SwipeRow, type SwipeAction } from '../../components/SwipeRow.tsx'
 import { UndoToast } from '../../components/UndoToast.tsx'
-import { useConfirmDelete } from '../../components/useConfirmDelete.tsx'
-import { deleteEvent } from '../../data/eventOps.ts'
 import type { CalendarItem } from '../../data/selectors.ts'
-import type { CalendarEvent, EventType, Task } from '../../data/types.ts'
-import { TaskDetailSheet } from '../tasks/TaskDetailSheet.tsx'
-import { useTaskActions } from '../tasks/useTaskActions.ts'
-import { EventDetailSheet } from './EventDetailSheet.tsx'
+import type { EventType } from '../../data/types.ts'
 import { EventSheet } from './EventSheet.tsx'
+import { useItemSheets } from '../shared/useItemSheets.tsx'
 
 type View = 'week' | 'month'
 
@@ -57,7 +52,7 @@ const DATE_PARAM = /^\d{4}-\d{2}-\d{2}$/
 /** 4 Kalendarz (Kalendarz.dc.html). Adres: `?dzien=RRRR-MM-DD`, `?nowe=wydarzenie`. */
 export function CalendarScreen() {
   const store = useStore()
-  const { today, tasks, events, categories, eventTypes, members } = store
+  const { today, tasks, events, categories, eventTypes } = store
   const [params, setParams] = useSearchParams()
 
   const [view, setView] = useState<View>('week')
@@ -106,42 +101,20 @@ export function CalendarScreen() {
   const selDate = parseKey(sel)
   const isWeek = view === 'week'
 
-  // Arkusz wydarzenia albo zadania (termin zadania) – jak na liście zadań
-  const [eventId, setEventId] = useState<string | null>(null)
-  const [taskId, setTaskId] = useState<string | null>(null)
-  const eventDetail = events.find((e) => e.id === eventId && !e.deleted)
-  const taskDetail = tasks.find((t) => t.id === taskId && !t.deleted)
-  const taskActions = useTaskActions()
-
-  const confirmDelete = useConfirmDelete()
-  const trashTask = (t: Task) =>
-    confirmDelete.ask('zadanie', t.title, () => {
-      if (taskId === t.id) setTaskId(null)
-      taskActions.trash(t)
-    })
-  const removeEvent = (e: CalendarEvent) =>
-    confirmDelete.ask('wydarzenie', e.title, () => {
-      if (eventId === e.id) setEventId(null)
-      store.changeEvents(`Przeniesiono do kosza: ${e.title}`, (list) =>
-        list.map((x) => (x.id === e.id ? deleteEvent(x, store.who()) : x)),
-      )
-    })
+  // Arkusz wydarzenia albo zadania (termin zadania) – jak na liście zadań; po zamknięciu – dzień wpisu
+  const items$ = useItemSheets({
+    onCloseEvent: (e) => pick(e.date),
+    onCloseTask: (t) => t.due && pick(t.due),
+  })
   /** Wiersz w agendzie i w „Później”: dotknięcie = arkusz, w lewo = do kosza, w prawo = ogarnij (zadanie). */
   const rowActions = (e: CalendarItem) => {
     const task = e.taskId ? tasks.find((t) => t.id === e.taskId) : undefined
     const event = task ? undefined : events.find((x) => x.id === e.id)
     return {
-      onOpen: () => (task ? setTaskId(task.id) : setEventId(e.id)),
-      onDone: task && (() => taskActions.toggleDone(task)),
-      onDelete: () => (task ? trashTask(task) : event && removeEvent(event)),
+      onOpen: () => (task ? items$.openTask(task) : event && items$.openEvent(event)),
+      onDone: task && (() => items$.toggleDone(task)),
+      onDelete: () => (task ? items$.trashTask(task) : event && items$.removeEvent(event)),
     }
-  }
-  /** „Dodane: Hania” / „Ogarnięte: Hania” – bez rodzaju */
-  const memberLabel = (t: Task) => {
-    const m = members.find((x) => x.uid === (t.done ? t.doneBy : t.createdBy))
-    if (!m) return ''
-    if (!t.done) return `Dodane: ${m.name}`
-    return `Ogarnięte: ${m.name}`
   }
 
   const addType = (name: string, color: string) => {
@@ -544,51 +517,7 @@ export function CalendarScreen() {
         />
       )}
 
-      {eventDetail && (
-        <EventDetailSheet
-          key={eventDetail.id}
-          event={eventDetail}
-          eventTypes={eventTypes}
-          status={`${typeOf(eventDetail.typeId).name} · ${dayLabel(eventDetail.date)}`.toUpperCase()}
-          onChange={(fn) =>
-            store.setEvents((list) => list.map((x) => (x.id === eventDetail.id ? fn(x) : x)))
-          }
-          meta={`Dodane: ${members.find((m) => m.uid === eventDetail.createdBy)?.name ?? ''}`}
-          onDelete={() => removeEvent(eventDetail)}
-          onClose={() => {
-            setEventId(null)
-            // po zmianie dnia kalendarz przechodzi do nowego dnia wydarzenia
-            pick(eventDetail.date)
-          }}
-        />
-      )}
-
-      {taskDetail && (
-        <TaskDetailSheet
-          key={taskDetail.id}
-          task={taskDetail}
-          categories={categories}
-          today={today}
-          status={
-            taskDetail.done && taskDetail.doneAt
-              ? `OGARNIĘTE · ${whenLabel(taskDetail.doneAt, today).toUpperCase()}`
-              : `DO ZROBIENIA · ${categoryName(taskDetail.categoryId).toUpperCase()}`
-          }
-          meta={memberLabel(taskDetail)}
-          onChange={(fn) => taskActions.edit(taskDetail, fn)}
-          onToggleDone={() => taskActions.toggleDone(taskDetail)}
-          onToggleSub={(sid) => taskActions.toggleSub(taskDetail, sid)}
-          onRemoveSub={(sid) => taskActions.removeSub(taskDetail, sid)}
-          onAddSub={(title) => taskActions.addSub(taskDetail, title)}
-          onTrash={() => trashTask(taskDetail)}
-          onClose={() => {
-            setTaskId(null)
-            if (taskDetail.due) pick(taskDetail.due)
-          }}
-        />
-      )}
-
-      {confirmDelete.dialog}
+      {items$.sheets}
       <UndoToast />
       <TabBar active="kalendarz" onAddEvent={() => setSheetOpen(true)} />
     </Screen>
@@ -599,12 +528,6 @@ export function CalendarScreen() {
 export function CalendarRoute() {
   const [params] = useSearchParams()
   return <CalendarScreen key={params.get('dzien') ?? ''} />
-}
-
-/** „Piątek, 16 października” */
-function dayLabel(k: DateKey): string {
-  const d = parseKey(k)
-  return `${DAYS[d.getDay()]}, ${d.getDate()} ${MONTHS_GEN[d.getMonth()]}`
 }
 
 /** Gest w prawo na terminie zadania. */
