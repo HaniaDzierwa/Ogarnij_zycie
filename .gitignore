@@ -1,10 +1,42 @@
+# Zależności i build
 node_modules/
 dist/
-.env.local
+dev-dist/
+*.tsbuildinfo
+coverage/
+
+# Firebase: pamięć podręczna CLI, logi i dane emulatorów
 .firebase/
 *.log
-service-account*.json
-.wrangler/
+firebase-debug.*.log
+emulator-data/
+firebase-export-*/
+
+# Sekrety – nigdy w repozytorium (CLAUDE.md, zasada 6)
+.env.local
+.env.*.local
 *.local
+service-account*.json
+*-firebase-adminsdk-*.json
+*.pem
+*.key
+.dev.vars
+
+# Cloudflare Worker (etap 7)
+.wrangler/
+
+# Edytory i system
 .vscode/*
 !.vscode/extensions.json
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Lokalne ustawienia Claude Code (prywatne, na tym komputerze)
+.claude/settings.local.json
+
+# Tymczasowe pliki
+*.tmp
+*.zip
