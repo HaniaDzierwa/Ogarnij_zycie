@@ -7,8 +7,10 @@ import { ChevronRightIcon, TrashIcon, UsersIcon } from '../../components/icons.t
 import { Logo } from '../../components/Logo.tsx'
 import { TabBar } from '../../components/TabBar.tsx'
 import {
+  Box,
   Card,
   ConfirmDialog,
+  Dot,
   OfflineBadge,
   Screen,
   SectionLabel,
@@ -204,6 +206,35 @@ export function SettingsScreen() {
         </Card>
       </Section>
 
+      <Section label="ZADANIA">
+        <Card radius={22}>
+          <div style={{ borderBottom: `1px solid ${colors.line}` }}>
+            <LinkRow
+              to={paths.kategorie}
+              icon={
+                <span style={{ display: 'flex', gap: 3 }}>
+                  {store.categories.slice(0, 3).map((c) => (
+                    <Dot key={c.id} color={c.color} size={8} />
+                  ))}
+                </span>
+              }
+              iconBg={colors.cream}
+              iconFg={colors.green900}
+              title="Kategorie"
+              meta={`${store.categories.length} ${plural(store.categories.length, ['KATEGORIA', 'KATEGORIE', 'KATEGORII'])}`}
+            />
+          </div>
+          <LinkRow
+            to={paths.priorytety}
+            icon={<Box color={priorities.high.line} size={18} />}
+            iconBg={priorities.high.bg}
+            iconFg={priorities.high.fg}
+            title="Priorytety"
+            meta={prioMeta(store.customPriorities.length)}
+          />
+        </Card>
+      </Section>
+
       <Section label="PORZĄDKI">
         <Card radius={22}>
           <div
@@ -349,6 +380,13 @@ export function SettingsScreen() {
       <TabBar active="ustawienia" />
     </Screen>
   )
+}
+
+/** „3 WBUDOWANE · 1 WŁASNY”. */
+function prioMeta(own: number): string {
+  return own
+    ? `3 WBUDOWANE · ${own} ${plural(own, ['WŁASNY', 'WŁASNE', 'WŁASNYCH'])}`
+    : '3 WBUDOWANE · DODAJ WŁASNY'
 }
 
 function Section({ label, children }: { label: string; children: ReactNode }) {

@@ -12,6 +12,8 @@ export type ScreenId =
   | 'kalendarz'
   | 'ustawienia'
   | 'domownicy'
+  | 'kategorie'
+  | 'priorytety'
   | 'zapros'
   | 'dolacz'
 
@@ -56,6 +58,9 @@ export const paths = {
   kalendarzNowe: '/kalendarz?nowe=wydarzenie',
   ustawienia: '/ustawienia',
   domownicy: '/ustawienia/domownicy',
+  /** Ustawienia → Zadania: kategorie i własne priorytety (decyzja Hani 2026-10-20). */
+  kategorie: '/ustawienia/kategorie',
+  priorytety: '/ustawienia/priorytety',
   zapros: '/ustawienia/domownicy/zapros',
   dolacz: '/dolacz',
 } as const
@@ -178,8 +183,30 @@ export const screens: Screen[] = [
     transitions: [
       ...tabs,
       { label: 'Wspólny dom → Domownicy', to: paths.domownicy },
+      { label: 'Zadania → Kategorie', to: paths.kategorie },
+      { label: 'Zadania → Priorytety', to: paths.priorytety },
       { label: 'Porządki → Kosz', to: paths.kosz },
     ],
+  },
+  {
+    id: 'kategorie',
+    path: paths.kategorie,
+    number: '5g',
+    name: 'Kategorie',
+    source: 'brak w projekcie – lista w stylu Kosza / Domowników (decyzja Hani 2026-10-20)',
+    tab: 'ustawienia',
+    back: { to: paths.ustawienia, label: 'USTAWIENIA' },
+    transitions: [{ label: 'Wróć do Ustawień', to: paths.ustawienia }],
+  },
+  {
+    id: 'priorytety',
+    path: paths.priorytety,
+    number: '5h',
+    name: 'Priorytety',
+    source: 'brak w projekcie – lista w stylu Kosza / Domowników (decyzja Hani 2026-10-20)',
+    tab: 'ustawienia',
+    back: { to: paths.ustawienia, label: 'USTAWIENIA' },
+    transitions: [{ label: 'Wróć do Ustawień', to: paths.ustawienia }],
   },
   {
     id: 'domownicy',

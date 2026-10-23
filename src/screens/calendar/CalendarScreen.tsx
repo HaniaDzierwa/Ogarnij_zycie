@@ -25,7 +25,7 @@ import {
   type DateKey,
 } from '../../data/dates.ts'
 import { useStore } from '../../data/store.ts'
-import { calendarItems, eventTypeOf, weekDays } from '../../data/selectors.ts'
+import { calendarItems, eventTypeOf, priorityOf, weekDays } from '../../data/selectors.ts'
 import { colors, fonts, priorities, shadows } from '../../theme'
 import {
   agendaFor,
@@ -52,7 +52,7 @@ const DATE_PARAM = /^\d{4}-\d{2}-\d{2}$/
 /** 4 Kalendarz (Kalendarz.dc.html). Adres: `?dzien=RRRR-MM-DD`, `?nowe=wydarzenie`. */
 export function CalendarScreen() {
   const store = useStore()
-  const { today, tasks, events, categories, eventTypes } = store
+  const { today, tasks, events, categories, eventTypes, priorities: prioList } = store
   const [params, setParams] = useSearchParams()
 
   const [view, setView] = useState<View>('week')
@@ -80,7 +80,12 @@ export function CalendarScreen() {
   const categoryName = (id: string | null) =>
     categories.find((c) => c.id === id)?.name ?? 'Bez kategorii'
   const typeOf = (id: string) => eventTypeOf(eventTypes, id)
-  const items = calendarItems(tasks, events, categoryName, (t) => priorities[t.priority].label)
+  const items = calendarItems(
+    tasks,
+    events,
+    categoryName,
+    (t) => priorityOf(prioList, t.priority).label,
+  )
 
   const pick = (k: DateKey) => {
     const d = parseKey(k)

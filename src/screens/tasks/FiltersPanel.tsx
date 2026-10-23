@@ -1,12 +1,12 @@
-import { useState } from 'react'
 import { Chip, Segmented } from '../../components/ui.tsx'
-import { CloseIcon } from '../../components/icons.tsx'
-import type { Category } from '../../data/types.ts'
+import type { Category, PriorityDef } from '../../data/types.ts'
 import { colors } from '../../theme'
-import { NewCategoryButton, NewCategoryForm } from './NewCategoryForm.tsx'
-import { NO_CATEGORY_ID, SHOWS, type GroupBy, type Show } from './tasksView.ts'
+import { showsOf, type GroupBy, type Show } from './tasksView.ts'
 
-/** Panel filtrów: Pokaż, Kategoria (z edycją i nową kategorią), Grupuj. */
+/**
+ * Panel filtrów: Pokaż, Kategoria, Grupuj – tylko filtrowanie. Kategorie i priorytety zmienia się
+ * w Ustawieniach (decyzja Hani 2026-10-20: edycja w filtrach była nieintuicyjna).
+ */
 export function FiltersPanel({
   show,
   onShow,
@@ -16,8 +16,7 @@ export function FiltersPanel({
   counts,
   groupBy,
   onGroupBy,
-  onAddCategory,
-  onDeleteCategory,
+  priorities,
 }: {
   show: Show
   onShow: (s: Show) => void
@@ -27,11 +26,8 @@ export function FiltersPanel({
   counts: Record<string, number>
   groupBy: GroupBy
   onGroupBy: (g: GroupBy) => void
-  onAddCategory: (name: string, color: string) => void
-  onDeleteCategory: (id: string) => void
+  priorities: PriorityDef[]
 }) {
-  const [manage, setManage] = useState(false)
-  const [adding, setAdding] = useState(false)
   const list = [{ id: 'all', name: 'Wszystko' }, ...categories]
 
   return (
@@ -50,7 +46,7 @@ export function FiltersPanel({
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         <Label>POKAŻ</Label>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-          {SHOWS.map((o) => (
+          {showsOf(priorities).map((o) => (
             <Chip key={o.id} on={show === o.id} onClick={() => onShow(o.id)}>
               {o.name}
             </Chip>
@@ -59,51 +55,14 @@ export function FiltersPanel({
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Label>KATEGORIA</Label>
-          <TextButton onClick={() => setManage((m) => !m)}>
-            {manage ? 'GOTOWE' : 'EDYTUJ'}
-          </TextButton>
-        </div>
+        <Label>KATEGORIA</Label>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
           {list.map((c) => (
-            <span key={c.id} style={{ display: 'inline-flex', alignItems: 'center' }}>
-              <Chip on={category === c.id} onClick={() => onCategory(c.id)}>
-                {c.name} <span style={{ opacity: 0.65, fontWeight: 600 }}>{counts[c.id] ?? 0}</span>
-              </Chip>
-              {manage && c.id !== 'all' && c.id !== NO_CATEGORY_ID && (
-                <button
-                  type="button"
-                  onClick={() => onDeleteCategory(c.id)}
-                  aria-label={`Usuń kategorię ${c.name}`}
-                  style={{
-                    width: 32,
-                    height: 36,
-                    border: 0,
-                    background: 'transparent',
-                    color: '#A4492F',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <CloseIcon />
-                </button>
-              )}
-            </span>
+            <Chip key={c.id} on={category === c.id} onClick={() => onCategory(c.id)}>
+              {c.name} <span style={{ opacity: 0.65, fontWeight: 600 }}>{counts[c.id] ?? 0}</span>
+            </Chip>
           ))}
-          {!adding && <NewCategoryButton onClick={() => setAdding(true)} />}
         </div>
-        {adding && (
-          <NewCategoryForm
-            id="nowa-kategoria-filtr"
-            onCancel={() => setAdding(false)}
-            onAdd={(name, color) => {
-              onAddCategory(name, color)
-              setAdding(false)
-            }}
-          />
-        )}
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>

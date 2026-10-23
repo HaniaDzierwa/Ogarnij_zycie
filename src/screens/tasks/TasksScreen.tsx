@@ -13,6 +13,7 @@ import { plural } from '../../data/plural.ts'
 import { moveToTrash } from '../../data/taskOps.ts'
 import type { Task } from '../../data/types.ts'
 import { colors, fonts, priorities, shadows, sizes } from '../../theme'
+import { priorityOf } from '../../data/selectors.ts'
 import { ClearSheet } from './ClearSheet.tsx'
 import { FiltersPanel, TextButton } from './FiltersPanel.tsx'
 import { TaskDetailSheet } from './TaskDetailSheet.tsx'
@@ -21,10 +22,8 @@ import { TaskSheet } from './TaskSheet.tsx'
 import {
   categoriesWithNone,
   categoryKey,
-  deleteCategory,
   doneGroups,
   emptyLabel,
-  SHOWS,
   showFromParam,
   tasksView,
   type GroupBy,
@@ -39,13 +38,13 @@ import { useTaskActions } from './useTaskActions.ts'
  */
 export function TasksScreen() {
   const store = useStore()
-  const { today, tasks, categories, members } = store
+  const { today, tasks, categories, members, priorities: prioList } = store
   const [params, setParams] = useSearchParams()
 
   const [tab, setTab] = useState<Tab>(() =>
     params.get('zakladka') === 'ogarniete' ? 'done' : 'todo',
   )
-  const [show, setShow] = useState<Show>(() => showFromParam(params.get('pokaz')))
+  const [show, setShow] = useState<Show>(() => showFromParam(params.get('pokaz'), prioList))
   const [category, setCategory] = useState('all')
   const [groupBy, setGroupBy] = useState<GroupBy>('cat')
   const [filtersOpen, setFiltersOpen] = useState(false)
@@ -67,7 +66,7 @@ export function TasksScreen() {
     )
 
   const cats = categoriesWithNone(categories, tasks)
-  const view = tasksView(tasks, categories, { show, category, groupBy })
+  const view = tasksView(tasks, categories, { show, category, groupBy, priorities: prioList })
   const done = doneGroups(tasks, today)
   const categoryName = (t: Task) => cats.find((c) => c.id === categoryKey(t))?.name ?? ''
   const activeCount = (show !== 'all' ? 1 : 0) + (category !== 'all' ? 1 : 0)
@@ -316,8 +315,8 @@ export function TasksScreen() {
               >
                 {show !== 'all' && (
                   <ActiveChip
-                    name={SHOWS.find((s) => s.id === show)!.name}
-                    mark={<Box color={priorities[show].line} size={12} />}
+                    name={priorityOf(prioList, show).label}
+                    mark={<Box color={priorityOf(prioList, show).line} size={12} />}
                     onRemove={() => setShow('all')}
                   />
                 )}
@@ -353,13 +352,7 @@ export function TasksScreen() {
                 counts={view.categoryCounts}
                 groupBy={groupBy}
                 onGroupBy={setGroupBy}
-                onAddCategory={addCategory}
-                onDeleteCategory={(id) => {
-                  const after = deleteCategory(categories, tasks, id)
-                  store.setCategories(() => after.categories)
-                  store.setTasks(() => after.tasks)
-                  if (category === id) setCategory('all')
-                }}
+                priorities={prioList}
               />
             )}
           </div>
@@ -405,7 +398,7 @@ export function TasksScreen() {
       >
         {tab === 'todo' && (
           <>
-            {view.groups.length === 0 && <Empty>{emptyLabel(show)}</Empty>}
+            {view.groups.length === 0 && <Empty>{emptyLabel(show, prioList)}</Empty>}
             {view.groups.map((g) => {
               const open = !collapsed[g.key]
               const high = g.items.filter((t) => t.priority === 'high').length

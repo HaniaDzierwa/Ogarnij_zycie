@@ -35,14 +35,30 @@ export const dayHeader = {
   roofsNear: '#7FA98C',
 } as const
 
-export type Priority = 'high' | 'mid' | 'low'
+/** Trzy wbudowane priorytety – zawsze są, nie da się ich usunąć. */
+export type BuiltInPriority = 'high' | 'mid' | 'low'
 
-export const priorities: Record<Priority, { label: string; line: string; bg: string; fg: string }> =
-  {
-    high: { label: 'Pilne', line: '#A4492F', bg: '#F3DCD3', fg: '#8C3D27' },
-    mid: { label: 'Ważne', line: '#B8925A', bg: '#EFE3CC', fg: '#6E5220' },
-    low: { label: 'Przy okazji', line: '#9AA59D', bg: '#E6E8E3', fg: '#4F5B53' },
-  }
+/** Id priorytetu zadania: wbudowany albo własny (z bazy domu). */
+export type Priority = string
+
+export const priorities: Record<
+  BuiltInPriority,
+  { label: string; line: string; bg: string; fg: string; order: number }
+> = {
+  high: { label: 'Pilne', line: '#A4492F', bg: '#F3DCD3', fg: '#8C3D27', order: 10 },
+  mid: { label: 'Ważne', line: '#B8925A', bg: '#EFE3CC', fg: '#6E5220', order: 20 },
+  low: { label: 'Przy okazji', line: '#9AA59D', bg: '#E6E8E3', fg: '#4F5B53', order: 30 },
+}
+
+/** Priorytet nowego zadania i zastępczy (nieznany id). */
+export const DEFAULT_PRIORITY: BuiltInPriority = 'mid'
+
+/** Rozjaśnienie (f > 0) albo przyciemnienie (f < 0) koloru '#RRGGBB'. */
+export function shade(hex: string, f: number): string {
+  const n = parseInt(hex.slice(1), 16)
+  const mix = (c: number) => Math.round(f > 0 ? c + (255 - c) * f : c * (1 + f))
+  return `rgb(${mix(n >> 16)}, ${mix((n >> 8) & 255)}, ${mix(n & 255)})`
+}
 
 /** Plakietka „DZIŚ” przy niezrobionym zadaniu. */
 export const todayBadge = { bg: '#A4492F', fg: '#FFFFFF' } as const

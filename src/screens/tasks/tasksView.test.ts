@@ -1,8 +1,13 @@
 import { describe, expect, test } from 'vitest'
 import { mockCategories, mockTasks } from '../../data/mock.ts'
+import { allPriorities } from '../../data/selectors.ts'
 import {
   clearCandidates,
   deleteCategory,
+  deletePriority,
+  showsOf,
+  tasksWithCategory,
+  tasksWithPriority,
   doneGroups,
   NO_CATEGORY_ID,
   showFromParam,
@@ -84,19 +89,73 @@ describe('Kosz', () => {
   })
 })
 
-describe('usuwanie kategorii', () => {
-  test('zadania trafiają do „Bez kategorii”, która pojawia się jako grupa', () => {
-    const after = deleteCategory(mockCategories, tasks, 'car')
-    const v = tasksView(after.tasks, after.categories, {
+describe('usuwanie kategorii i priorytetów', () => {
+  test('przypięte zadania (do zrobienia i ogarnięte) blokują usuwanie; kosz się nie liczy', () => {
+    expect(tasksWithCategory(tasks, 'car')).toBe(2)
+    const inTrash = tasks.map((t) => (t.categoryId === 'car' ? { ...t, deleted: true } : t))
+    expect(tasksWithCategory(inTrash, 'car')).toBe(0)
+    expect(tasksWithPriority(tasks, 'high')).toBeGreaterThan(0)
+  })
+  test('usunięta kategoria: zadania z kosza przechodzą do „Bez kategorii”', () => {
+    const inTrash = tasks.map((t) => (t.categoryId === 'car' ? { ...t, deleted: true } : t))
+    const after = deleteCategory(mockCategories, inTrash, 'car')
+    expect(after.categories.some((c) => c.id === 'car')).toBe(false)
+    const moved = after.tasks.find((t) => t.title === 'Przegląd techniczny')!
+    expect([moved.categoryId, moved.deleted]).toEqual([null, true])
+    const restored = after.tasks.map((t) => ({ ...t, deleted: false }))
+    const v = tasksView(restored, after.categories, {
       show: 'all',
       category: 'all',
       groupBy: 'cat',
     })
-    const last = v.groups.at(-1)!
-    expect([last.key, last.name, last.items.map((t) => t.title)]).toEqual([
-      NO_CATEGORY_ID,
-      'BEZ KATEGORII',
-      ['Przegląd techniczny'],
+    expect(v.groups.at(-1)!.key).toBe(NO_CATEGORY_ID)
+  })
+  test('usunięty własny priorytet: zadania z kosza przechodzą na „Ważne”', () => {
+    const custom = [{ id: 'p1', name: 'Na weekend', color: '#3F7A7A', order: 25 }]
+    const t = { ...tasks[0], priority: 'p1', deleted: true }
+    const after = deletePriority(custom, [t], 'p1')
+    expect([after.custom, after.tasks[0].priority]).toEqual([[], 'mid'])
+  })
+})
+
+describe('własne priorytety', () => {
+  const custom = [{ id: 'p1', name: 'Na weekend', color: '#3F7A7A', order: 25 }]
+  const prios = allPriorities(custom)
+  const withCustom = tasks.map((t, i) => (i === 0 ? { ...t, priority: 'p1' } : t))
+
+  test('w filtrze „Pokaż” i w grupach na swoim miejscu (między Ważne a Przy okazji)', () => {
+    expect(showsOf(prios).map((s) => s.name)).toEqual([
+      'Wszystkie',
+      'Pilne',
+      'Ważne',
+      'Na weekend',
+      'Przy okazji',
     ])
+    const v = tasksView(withCustom, mockCategories, {
+      show: 'all',
+      category: 'all',
+      groupBy: 'prio',
+      priorities: prios,
+    })
+    expect(v.groups.map((g) => g.name)).toEqual(['PILNE', 'WAŻNE', 'NA WEEKEND', 'PRZY OKAZJI'])
+    expect(v.groups[2].items.map((t) => t.id)).toEqual([withCustom[0].id])
+  })
+  test('filtr po własnym priorytecie; adres ?pokaz=<id>', () => {
+    expect(showFromParam('p1', prios)).toBe('p1')
+    const v = tasksView(withCustom, mockCategories, {
+      show: 'p1',
+      category: 'all',
+      groupBy: 'cat',
+      priorities: prios,
+    })
+    expect(v.groups.flatMap((g) => g.items).map((t) => t.id)).toEqual([withCustom[0].id])
+  })
+  test('nieznany priorytet (jeszcze nie wczytany) – jak „Ważne”', () => {
+    const v = tasksView(withCustom, mockCategories, {
+      show: 'mid',
+      category: 'all',
+      groupBy: 'cat',
+    })
+    expect(v.groups.flatMap((g) => g.items).some((t) => t.id === withCustom[0].id)).toBe(true)
   })
 })

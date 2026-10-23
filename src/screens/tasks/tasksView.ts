@@ -1,9 +1,18 @@
 // Logika listy zadań (Zadania.dc.html, Kosz.dc.html → renderVals).
 
-import { noCategory, priorities, type Priority } from '../../theme'
+import { DEFAULT_PRIORITY, noCategory, type Priority } from '../../theme'
 import { diffDays, stampDay, type DateKey } from '../../data/dates.ts'
-import type { CalendarEvent, Category, Task } from '../../data/types.ts'
+import { plural } from '../../data/plural.ts'
+import { allPriorities } from '../../data/selectors.ts'
+import type {
+  CalendarEvent,
+  Category,
+  CustomPriority,
+  PriorityDef,
+  Task,
+} from '../../data/types.ts'
 
+/** 'all' albo id priorytetu (wbudowanego lub własnego). */
 export type Show = 'all' | Priority
 export type GroupBy = 'cat' | 'prio'
 export type Tab = 'todo' | 'done'
@@ -11,19 +20,28 @@ export type Tab = 'todo' | 'done'
 /** Kategoria „Bez kategorii” – pojawia się, gdy jakieś zadanie nie ma kategorii. */
 export const NO_CATEGORY_ID = '__bez'
 
-/** Filtr „Pokaż” – bez „Ogarnięte” (ogarnięte mają własną zakładkę). */
-export const SHOWS: { id: Show; name: string; param: string }[] = [
-  { id: 'all', name: 'Wszystkie', param: 'wszystkie' },
-  { id: 'high', name: 'Pilne', param: 'pilne' },
-  { id: 'mid', name: 'Ważne', param: 'wazne' },
-  { id: 'low', name: 'Przy okazji', param: 'przy-okazji' },
-]
+/** Wbudowane priorytety bez listy domu (np. zanim przyjdą własne z bazy). */
+const BUILT_IN = allPriorities([])
 
-export function showFromParam(param: string | null): Show {
-  return SHOWS.find((s) => s.param === param)?.id ?? 'all'
+/** Adres filtra wbudowanego priorytetu: `?pokaz=pilne`; własny – po id. */
+const PARAMS: Record<string, string> = { high: 'pilne', mid: 'wazne', low: 'przy-okazji' }
+
+/**
+ * Filtr „Pokaż” – Wszystkie i wszystkie priorytety domu w kolejności (bez „Ogarnięte” –
+ * ogarnięte mają własną zakładkę).
+ */
+export function showsOf(
+  priorities: PriorityDef[] = BUILT_IN,
+): { id: Show; name: string; param: string }[] {
+  return [
+    { id: 'all', name: 'Wszystkie', param: 'wszystkie' },
+    ...priorities.map((p) => ({ id: p.id, name: p.label, param: PARAMS[p.id] ?? p.id })),
+  ]
 }
 
-const PRIORITY_ORDER: Priority[] = ['high', 'mid', 'low']
+export function showFromParam(param: string | null, priorities: PriorityDef[] = BUILT_IN): Show {
+  return showsOf(priorities).find((s) => s.param === param)?.id ?? 'all'
+}
 
 /** Kategorie do wyświetlenia: zdefiniowane + „Bez kategorii”, jeśli potrzebna. */
 export function categoriesWithNone(categories: Category[], tasks: Task[]): Category[] {
@@ -58,16 +76,20 @@ export type TasksView = {
 export function tasksView(
   tasks: Task[],
   categories: Category[],
-  opts: { show: Show; category: string; groupBy: GroupBy },
+  opts: { show: Show; category: string; groupBy: GroupBy; priorities?: PriorityDef[] },
 ): TasksView {
-  const { show, category, groupBy } = opts
+  const { show, category, groupBy, priorities = BUILT_IN } = opts
+  // nieznany priorytet (np. własny jeszcze nie wczytany) – jak „Ważne”
+  const prioOf = (t: Task) =>
+    priorities.some((p) => p.id === t.priority) ? t.priority : DEFAULT_PRIORITY
+  const rank = (t: Task) => priorities.findIndex((p) => p.id === prioOf(t))
   const live = tasks.filter((t) => !t.deleted)
   const cats = categoriesWithNone(categories, live)
   const allOpen = live.filter((t) => !t.done)
   const open = allOpen
     .filter((t) => category === 'all' || categoryKey(t) === category)
-    .filter((t) => show === 'all' || show === t.priority)
-    .sort((a, b) => PRIORITY_ORDER.indexOf(a.priority) - PRIORITY_ORDER.indexOf(b.priority))
+    .filter((t) => show === 'all' || show === prioOf(t))
+    .sort((a, b) => rank(a) - rank(b))
 
   const groups: Group[] =
     groupBy === 'cat'
@@ -78,12 +100,12 @@ export function tasksView(
           kind: 'cat' as const,
           items: open.filter((t) => categoryKey(t) === c.id),
         }))
-      : PRIORITY_ORDER.map((p) => ({
-          key: p,
-          name: priorities[p].label.toUpperCase(),
-          color: priorities[p].line,
+      : priorities.map((p) => ({
+          key: p.id,
+          name: p.label.toUpperCase(),
+          color: p.line,
           kind: 'prio' as const,
-          items: open.filter((t) => t.priority === p),
+          items: open.filter((t) => prioOf(t) === p.id),
         }))
 
   const categoryCounts: Record<string, number> = { all: allOpen.length }
@@ -187,7 +209,7 @@ export function trashWhat(items: TrashItem[]): string {
   return t && e ? 'zadania i wydarzenia' : e ? 'wydarzenia' : 'zadania'
 }
 
-export function emptyLabel(show: Show): string {
+export function emptyLabel(show: Show, priorities: PriorityDef[] = BUILT_IN): string {
   switch (show) {
     case 'high':
       return 'Nic pilnego – oddychaj spokojnie.'
@@ -195,12 +217,32 @@ export function emptyLabel(show: Show): string {
       return 'Brak ważnych zadań.'
     case 'low':
       return 'Nic do zrobienia przy okazji.'
-    default:
+    case 'all':
       return 'Brak zadań w tym widoku.'
+    default: {
+      const p = priorities.find((x) => x.id === show)
+      return p ? `Brak zadań „${p.label}”.` : 'Brak zadań w tym widoku.'
+    }
   }
 }
 
-/** Usunięcie kategorii: jej zadania trafiają do „Bez kategorii”. */
+/**
+ * Zadania przypięte do kategorii / priorytetu (do zrobienia i ogarnięte; kosz się nie liczy) –
+ * dopóki są, kategorii ani priorytetu nie da się usunąć (decyzja Hani 2026-10-20).
+ */
+export const tasksWithCategory = (tasks: Task[], id: string) =>
+  tasks.filter((t) => !t.deleted && t.categoryId === id).length
+export const tasksWithPriority = (tasks: Task[], id: string) =>
+  tasks.filter((t) => !t.deleted && t.priority === id).length
+
+/** „3 ZADANIA”, „BRAK ZADAŃ”. */
+export const tasksMeta = (n: number) =>
+  n ? `${n} ${plural(n, ['ZADANIE', 'ZADANIA', 'ZADAŃ'])}` : 'BRAK ZADAŃ'
+
+/**
+ * Usunięcie pustej kategorii. Zadania z Kosza, które ją miały, przechodzą do „Bez kategorii”
+ * (żeby po przywróceniu nie wskazywały na nieistniejącą).
+ */
 export function deleteCategory(
   categories: Category[],
   tasks: Task[],
@@ -208,6 +250,20 @@ export function deleteCategory(
 ): { categories: Category[]; tasks: Task[] } {
   return {
     categories: categories.filter((c) => c.id !== id),
-    tasks: tasks.map((t) => (t.categoryId === id ? { ...t, categoryId: null } : t)),
+    tasks: tasks.map((t) => (t.deleted && t.categoryId === id ? { ...t, categoryId: null } : t)),
+  }
+}
+
+/** Usunięcie pustego własnego priorytetu; zadania z Kosza z tym priorytetem – „Ważne”. */
+export function deletePriority(
+  custom: CustomPriority[],
+  tasks: Task[],
+  id: string,
+): { custom: CustomPriority[]; tasks: Task[] } {
+  return {
+    custom: custom.filter((p) => p.id !== id),
+    tasks: tasks.map((t) =>
+      t.deleted && t.priority === id ? { ...t, priority: DEFAULT_PRIORITY } : t,
+    ),
   }
 }

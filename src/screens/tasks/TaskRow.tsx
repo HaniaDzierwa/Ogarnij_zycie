@@ -3,7 +3,8 @@ import { SwipeRow } from '../../components/SwipeRow.tsx'
 import { Box } from '../../components/ui.tsx'
 import { CheckIcon, TrashIcon, UndoIcon } from '../../components/icons.tsx'
 import { dueLabel, type DateKey } from '../../data/dates.ts'
-import { subtaskProgress } from '../../data/selectors.ts'
+import { priorityOf, subtaskProgress } from '../../data/selectors.ts'
+import { useStore } from '../../data/store.ts'
 import type { Task } from '../../data/types.ts'
 import { colors, fonts, priorities, todayBadge } from '../../theme'
 import type { GroupBy } from './tasksView.ts'
@@ -46,7 +47,7 @@ export function TaskRow({
   onTrash,
   onToggleSub,
 }: Props) {
-  const p = priorities[task.priority]
+  const p = priorityOf(useStore().priorities, task.priority)
   const pct = subtaskProgress(task)
   const subDone = task.subtasks.filter((s) => s.done).length
   const due = task.due ? dueLabel(task.due, today) : null

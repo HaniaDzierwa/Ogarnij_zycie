@@ -11,6 +11,8 @@ import {
   eventTypeFromDoc,
   eventTypeToDoc,
   paths,
+  priorityFromDoc,
+  priorityToDoc,
   taskFromDoc,
   taskToDoc,
   type HouseDoc,
@@ -22,11 +24,13 @@ import { useHouse } from '../house/house.ts'
 import { builtInEventTypes } from '../theme'
 import { nowStamp, today as getToday } from './dates.ts'
 import { revertChanges } from './listDiff.ts'
+import { allPriorities } from './selectors.ts'
 import { StoreContext, useUndoToast, type Store } from './store.ts'
 import type {
   CalendarEvent,
   Category,
   CleanupDays,
+  CustomPriority,
   EventType,
   Member,
   NotificationSettings,
@@ -44,7 +48,7 @@ const typeOrder = (a: EventType, b: EventType) => {
 }
 
 /** Części danych domu czytane na żywo: dom, zadania, kategorie, wydarzenia, rodzaje, domownicy. */
-const HOUSE_PARTS = 6
+const HOUSE_PARTS = 7
 
 const reportError = (e: unknown) => console.error('Nie udało się zapisać zmian w Firestore', e)
 
@@ -67,6 +71,7 @@ function HouseData({ children }: { children: ReactNode }) {
 
   const [tasks, setTasksState] = useState<Task[]>([])
   const [categories, setCategoriesState] = useState<Category[]>([])
+  const [customPriorities, setPrioritiesState] = useState<CustomPriority[]>([])
   const [events, setEventsState] = useState<CalendarEvent[]>([])
   const [eventTypes, setEventTypesState] = useState<EventType[]>([])
   const [members, setMembers] = useState<Member[]>([])
@@ -77,8 +82,8 @@ function HouseData({ children }: { children: ReactNode }) {
   const [loaded, setLoaded] = useState<ReadonlySet<string>>(new Set())
 
   // Najnowsze listy – kolejne zmiany w jednym kliknięciu liczą się od wyniku poprzedniej.
-  const latest = useRef({ tasks, categories, events, eventTypes })
-  latest.current = { tasks, categories, events, eventTypes }
+  const latest = useRef({ tasks, categories, customPriorities, events, eventTypes })
+  latest.current = { tasks, categories, customPriorities, events, eventTypes }
 
   useEffect(() => {
     if (!uid) return
@@ -128,6 +133,14 @@ function HouseData({ children }: { children: ReactNode }) {
           mark('categories')
         },
         failed('categories'),
+      ),
+      onSnapshot(
+        collection(db, paths.priorities(houseId)),
+        (snap) => {
+          setPrioritiesState(snap.docs.map((d) => priorityFromDoc(d.id, d.data())))
+          mark('priorities')
+        },
+        failed('priorities'),
       ),
       onSnapshot(
         collection(db, paths.events(houseId)),
@@ -204,6 +217,17 @@ function HouseData({ children }: { children: ReactNode }) {
     () => makeSetter<Category>('categories', setCategoriesState, paths.categories, categoryToDoc),
     [makeSetter],
   )
+  const setCustomPriorities = useMemo(
+    () =>
+      makeSetter<CustomPriority>(
+        'customPriorities',
+        setPrioritiesState,
+        paths.priorities,
+        priorityToDoc,
+      ),
+    [makeSetter],
+  )
+  const priorities = useMemo(() => allPriorities(customPriorities), [customPriorities])
   const setEvents = useMemo(
     () => makeSetter<CalendarEvent>('events', setEventsState, paths.events, eventToDoc),
     [makeSetter],
@@ -251,6 +275,8 @@ function HouseData({ children }: { children: ReactNode }) {
       houseName,
       tasks,
       categories,
+      customPriorities,
+      priorities,
       events,
       eventTypes,
       members,
@@ -275,6 +301,7 @@ function HouseData({ children }: { children: ReactNode }) {
       changeEvents,
       undo,
       setCategories,
+      setCustomPriorities,
       setEvents,
       setEventTypes,
       setNotifications: (update: (n: NotificationSettings) => NotificationSettings) =>
@@ -290,6 +317,8 @@ function HouseData({ children }: { children: ReactNode }) {
       houseName,
       tasks,
       categories,
+      customPriorities,
+      priorities,
       events,
       eventTypes,
       members,
@@ -299,6 +328,7 @@ function HouseData({ children }: { children: ReactNode }) {
       changeEvents,
       undo,
       setCategories,
+      setCustomPriorities,
       setEvents,
       setEventTypes,
       updateUser,

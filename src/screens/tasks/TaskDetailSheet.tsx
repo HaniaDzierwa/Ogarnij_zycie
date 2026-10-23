@@ -2,9 +2,12 @@ import { useState } from 'react'
 import { Box, Chip, Dot, NoteField, Sheet } from '../../components/ui.tsx'
 import { CheckIcon, CloseIcon, PlusIcon, TrashIcon, UndoIcon } from '../../components/icons.tsx'
 import { addDays, dueLabel, weekStart, type DateKey } from '../../data/dates.ts'
+import { priorityOf } from '../../data/selectors.ts'
+import { useStore } from '../../data/store.ts'
 import type { Category, Task } from '../../data/types.ts'
 import { colors, fonts, priorities } from '../../theme'
 import { useBufferedText } from '../../components/useBufferedText.ts'
+import { PriorityPicker } from './PriorityPicker.tsx'
 import { DoneBox, SubtaskToggle } from './TaskRow.tsx'
 
 const PRESETS = ['Bez terminu', 'Dziś', 'Jutro', 'W tym tygodniu'] as const
@@ -51,6 +54,7 @@ export function TaskDetailSheet({
   onTrash,
   onClose,
 }: Props) {
+  const { priorities: prioList } = useStore()
   const [originalTitle] = useState(task.title)
   const [step, setStep] = useState('')
   // Kliknięty przycisk wygrywa, gdy dwa dają tę samą datę (w niedzielę „Dziś” = „W tym tygodniu”,
@@ -150,7 +154,7 @@ export function TaskDetailSheet({
           {task.done ? (
             <DoneBox size={28} />
           ) : (
-            <Box color={priorities[task.priority].line} size={28} />
+            <Box color={priorityOf(prioList, task.priority).line} size={28} />
           )}
         </button>
         <label htmlFor="det-tytul" className="sr-only">
@@ -197,42 +201,10 @@ export function TaskDetailSheet({
       </Group>
 
       <Group label="PRIORYTET">
-        <div
-          role="radiogroup"
-          aria-label="Priorytet"
-          style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 8 }}
-        >
-          {(['high', 'mid', 'low'] as const).map((id) => {
-            const p = priorities[id]
-            const on = task.priority === id
-            return (
-              <button
-                key={id}
-                type="button"
-                role="radio"
-                aria-checked={on}
-                onClick={() => onChange((t) => ({ ...t, priority: id }))}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 8,
-                  height: 48,
-                  borderRadius: 16,
-                  fontSize: 15,
-                  fontWeight: 700,
-                  border: on ? `2px solid ${p.line}` : `1px solid ${colors.border}`,
-                  background: on ? p.bg : colors.white,
-                  color: on ? p.fg : colors.green900,
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                <Box color={p.line} size={14} />
-                {p.label}
-              </button>
-            )
-          })}
-        </div>
+        <PriorityPicker
+          value={task.priority}
+          onChange={(id) => onChange((t) => ({ ...t, priority: id }))}
+        />
       </Group>
 
       <Group label="TERMIN">

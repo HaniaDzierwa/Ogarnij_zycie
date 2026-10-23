@@ -1,11 +1,12 @@
 import { newId } from '../../data/ids.ts'
 import { useState } from 'react'
-import { Box, Chip, Dot, Field, NoteField, PrimaryButton, Sheet } from '../../components/ui.tsx'
+import { Chip, Dot, Field, NoteField, PrimaryButton, Sheet } from '../../components/ui.tsx'
 import { CloseIcon, PlusIcon } from '../../components/icons.tsx'
 import { addDays, dueLabel, weekStart, type DateKey } from '../../data/dates.ts'
 import type { Category, Subtask, Task } from '../../data/types.ts'
-import { colors, fonts, priorities, type Priority } from '../../theme'
+import { colors, DEFAULT_PRIORITY, fonts, type Priority } from '../../theme'
 import { NewCategoryButton, NewCategoryForm } from './NewCategoryForm.tsx'
+import { PriorityPicker } from './PriorityPicker.tsx'
 
 const PRESETS = ['Bez terminu', 'Dziś', 'Jutro', 'W tym tygodniu'] as const
 type Preset = (typeof PRESETS)[number]
@@ -40,7 +41,7 @@ type Props = {
 export function TaskSheet({ onClose, categories, today, onAddCategory, onSave }: Props) {
   const [title, setTitle] = useState('')
   const [categoryId, setCategoryId] = useState<string | null>(categories[0]?.id ?? null)
-  const [priority, setPriority] = useState<Priority>('mid')
+  const [priority, setPriority] = useState<Priority>(DEFAULT_PRIORITY)
   const [choice, setChoice] = useState<DueChoice>('Bez terminu')
   const [customDate, setCustomDate] = useState<DateKey>(addDays(today, 7))
   const [steps, setSteps] = useState<Subtask[]>([])
@@ -103,42 +104,7 @@ export function TaskSheet({ onClose, categories, today, onAddCategory, onSave }:
       </Group>
 
       <Group label="PRIORYTET">
-        <div
-          role="radiogroup"
-          aria-label="Priorytet"
-          style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 8 }}
-        >
-          {(['high', 'mid', 'low'] as const).map((id) => {
-            const p = priorities[id]
-            const on = priority === id
-            return (
-              <button
-                key={id}
-                type="button"
-                role="radio"
-                aria-checked={on}
-                onClick={() => setPriority(id)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 8,
-                  height: 48,
-                  borderRadius: 16,
-                  fontSize: 15,
-                  fontWeight: 700,
-                  border: on ? `2px solid ${p.line}` : `1px solid ${colors.border}`,
-                  background: on ? p.bg : colors.white,
-                  color: on ? p.fg : colors.green900,
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                <Box color={p.line} size={14} />
-                {p.label}
-              </button>
-            )
-          })}
-        </div>
+        <PriorityPicker value={priority} onChange={setPriority} />
       </Group>
 
       <Group

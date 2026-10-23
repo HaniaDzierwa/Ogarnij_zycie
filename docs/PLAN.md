@@ -88,6 +88,8 @@ Cel: wszystkie ekrany z projektu w aplikacji, na przykładowych danych (w pamię
 
 ## Etap 4 – Wspólny dom (dawniej 8)
 
+> **Wstawka (decyzja Hani 2026-10-20):** przed krokiem 4 – Ustawienia → Zadania → Kategorie i Priorytety (własne priorytety obok trzech wbudowanych; bez usuwania kategorii / priorytetu z przypiętymi zadaniami); panel „Filtry” na ekranie Zadania tylko filtruje.
+
 1. **Zaproszenie:** jednorazowy link i 6 cyfr (ważne 10 min) – zapisane w Firestore (`invites/{kod}`); „Dołącz do domu” realizuje je, reguły Firestore sprawdzają ważność i jednorazowość. **Bez kodu QR i bez skanowania** (decyzja Hani 2026-10-20) – na „Zaproś domownika” znika obrazek QR, na „Dołącz do domu” skaner z ramką aparatu.
 2. **Dołączanie:** po kodzie albo linku „Znaleziono dom” z nazwą domu i domownikami, imię nowego domownika, „Dołącz jako …” → dom widoczny od razu.
 3. **Zakres:** domownik widzi wszystko albo wybrane kategorie i kalendarz; reguły to wymuszają.
@@ -105,7 +107,7 @@ Cel: wszystkie ekrany z projektu w aplikacji, na przykładowych danych (w pamię
 
 Funkcje są w aplikacji od etapów 1–2; w tym etapie poprawki z testów we dwoje i odbiory.
 
-- **Kategorie i filtry:** własne kategorie z kolorem; usuwanie z przeniesieniem zadań do „Bez kategorii”; panel filtrów (Pokaż + kategoria), chipy z „×”, licznik na „Filtry”, zamykanie kliknięciem obok; grupowanie po kategorii / priorytecie, zwijanie, „Zwiń/Rozwiń wszystko”.
+- **Kategorie i filtry:** własne kategorie z kolorem i własne priorytety (Ustawienia → Zadania); usuwanie tylko kategorii / priorytetu bez przypiętych zadań; panel filtrów (Pokaż + kategoria, bez edycji), chipy aktywnych filtrów z „×”, licznik na „Filtry”, zamykanie kliknięciem obok; grupowanie po kategorii / priorytecie, zwijanie, „Zwiń/Rozwiń wszystko”.
 - **Kalendarz:** rodzaje (wbudowane + własne), cały dzień / od–do, przypomnienie (zapisane, wysyłka w etapie 6); tydzień, miesiąc, agenda, „Później”, „Dziś”; terminy zadań w kalendarzu; edycja, usuwanie (z pytaniem) → Kosz, „Cofnij”.
 - **Start:** kafelki z danych („Ogarnięte dziś X / Y”: Y = ogarnięte dziś + niezrobione z terminem na dziś lub po terminie), skróty do Zadań / Kalendarza, powitanie dzień/noc; zadania i wydarzenia na Starcie działają jak w Zadaniach i Kalendarzu.
 - **Tydzień używania we dwoje** (Hania + domownik), lista uwag, poprawki.

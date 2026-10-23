@@ -10,6 +10,8 @@ import {
   eventToDoc,
   newHouseDocs,
   paths,
+  priorityFromDoc,
+  priorityToDoc,
   stampToTimestamp,
   taskFromDoc,
   taskToDoc,
@@ -44,7 +46,7 @@ describe('zadania', () => {
   })
 
   test('uszkodzony dokument nie wywraca aplikacji (bezpieczne wartości domyślne)', () => {
-    expect(taskFromDoc('x', { priority: 'bardzo' as never })).toMatchObject({
+    expect(taskFromDoc('x', { priority: 7 as never })).toMatchObject({
       id: 'x',
       title: '',
       priority: 'mid',
@@ -52,6 +54,15 @@ describe('zadania', () => {
       done: false,
       deleted: false,
     })
+  })
+})
+
+describe('priorytety', () => {
+  test('własny priorytet i zadanie z nim przechodzą do bazy i z powrotem', () => {
+    const p = { id: 'p1', name: 'Na weekend', color: '#3F7A7A', order: 25 }
+    expect(priorityFromDoc('p1', { ...priorityToDoc(p, 'hania') })).toEqual(p)
+    const task = { ...mockTasks(DAY)[0], priority: 'p1' }
+    expect(taskFromDoc(task.id, { ...taskToDoc(task, 'hania') }).priority).toBe('p1')
   })
 })
 

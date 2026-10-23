@@ -28,7 +28,9 @@ Styl „domowy elegancki”: butelkowa zieleń, mosiądz i krem, szeryfowy Fraun
 | 3a Kosz | `Kosz.dc.html` (+ `KoszPotwierdzenie`) | Wspólny kosz zadań i wydarzeń (wejście z Ustawień): chipy Wszystko / Zadania / Wydarzenia, licznik dni, Przywróć, Opróżnij kosz z potwierdzeniem |
 | 4a Kalendarz – usuwanie | `KalendarzLewo`, `KalendarzArkusz` | Przeciągnięcie wydarzenia w lewo = do kosza; klik w wydarzenie = arkusz wydarzenia. **Arkusz zostaje jak w aplikacji** (edycja w miejscu z polem DZIEŃ i „Gotowe”, nie „Edytuj wydarzenie / Zapisz zmiany” z projektu – decyzja Hani 2026-10-18) |
 | 4 Kalendarz | `Kalendarz.dc.html` | Tydzień/miesiąc, agenda, arkusz nowego i edytowanego wydarzenia, przeciąganie w lewo, pasek „Cofnij”; wariant `demo` |
-| 5 Ustawienia | `Ustawienia.dc.html` | Ty, Wspólny dom, Porządki (sprzątanie ogarniętych 7/30 dni/nigdy, Kosz), Powiadomienia, Wygląd (motyw – ukryty na start) |
+| 5 Ustawienia | `Ustawienia.dc.html` | Ty, Wspólny dom, **Zadania (Kategorie, Priorytety – decyzja Hani 2026-10-20)**, Porządki (sprzątanie ogarniętych 7/30 dni/nigdy, Kosz), Powiadomienia, Wygląd (motyw – ukryty na start) |
+| 5g Kategorie | brak w projekcie (styl Kosza / Domowników) | Lista: kropka w kolorze, nazwa, liczba zadań; arkusz: nazwa, kolor, „Usuń kategorię” (zablokowane przy przypiętych zadaniach); „+ Nowa kategoria” |
+| 5h Priorytety | brak w projekcie (styl Kosza / Domowników) | Lista w kolejności: wbudowane („WBUDOWANY”, bez edycji) i własne; arkusz własnego: nazwa, kolor, „Miejsce”, „Usuń priorytet” (zablokowane przy przypiętych zadaniach); „+ Nowy priorytet” z wyborem miejsca |
 | 5a Domownicy | `Synchronizacja.dc.html` – **tylko** część „Domownicy” (lista + „Zaproś domownika”) i karta „Na razie tylko Ty” (TEKSTY #4–6) | Bez karty synchronizacji, liczników, trybu pracy i ustawień sieci – Firebase synchronizuje sam (decyzja Hani 2026-10-18). Ustawienia → Wspólny dom → „Domownicy” |
 | ~~5b Zmiany od domownika~~ | `Import.dc.html` | **Nie robimy** (decyzja Hani 2026-10-18): zmiany domownika pojawiają się same w kilka sekund; informuje o nich push (etap 6) |
 | 5c–d Zaproś domownika | `Zaproszenie.dc.html`, `ZaproszenieGotowe.dc.html` | Dodać opcję „jednorazowy link”; **bez kodu QR** – zostają 6 cyfr i „Wyślij link wiadomością” (decyzja Hani 2026-10-20) |
@@ -64,6 +66,8 @@ Styl „domowy elegancki”: butelkowa zieleń, mosiądz i krem, szeryfowy Fraun
 | Pilne (`high`) | `#A4492F` | `#F3DCD3` | `#8C3D27` |
 | Ważne (`mid`) | `#B8925A` | `#EFE3CC` | `#6E5220` |
 | Przy okazji (`low`) | `#9AA59D` | `#E6E8E3` | `#4F5B53` |
+
+Własne priorytety (decyzja Hani 2026-10-20): kolor z palety nowych kategorii jako linia / ramka; tło i tekst etykiety wyliczone z niego (rozjaśnienie / przyciemnienie, jak przy własnych rodzajach wydarzeń). Kolejność: wbudowane mają `order` 10 / 20 / 30, własny – w połowie między sąsiadami wybranymi przy tworzeniu.
 
 Plakietka „DZIŚ”: tło `#A4492F`, tekst biały, 11 px / 800, padding 3–4 × 9–10 px, promień 10.
 
@@ -160,7 +164,8 @@ users/{uid}                         name, houseId|null, notif{tasks,events,morni
 houses/{houseId}                    name (wpisuje założyciel), ownerUid, createdAt
 houses/{houseId}/members/{uid}      name, role(owner|member), scope{all, categoryIds[], calendar}, joinedAt
 houses/{houseId}/categories/{id}    name, color, order, updatedAt, updatedBy
-houses/{houseId}/tasks/{id}         title, categoryId|null, priority(high|mid|low), due('RRRR-MM-DD'|null), done,
+houses/{houseId}/priorities/{id}    name, color, order(liczba, może być ułamek), updatedAt, updatedBy – tylko własne
+houses/{houseId}/tasks/{id}         title, categoryId|null, priority(high|mid|low|id własnego), due('RRRR-MM-DD'|null), done,
                                     subtasks[{id,title,done}], note (notatka, do 500), createdBy, doneAt(Timestamp|null), doneBy,
                                     deleted, deletedAt(Timestamp|null), deletedBy, updatedAt, updatedBy
 houses/{houseId}/eventTypes/{id}    name, dot, bg, fg, icon, system, updatedAt, updatedBy

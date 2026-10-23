@@ -2,8 +2,49 @@
 
 import { addDays, diffDays, weekStart, type DateKey } from './dates.ts'
 import { remindNote } from './eventOps.ts'
-import { builtInEventTypes } from '../theme'
-import type { CalendarEvent, EventType, Task } from './types.ts'
+import { builtInEventTypes, DEFAULT_PRIORITY, priorities, shade } from '../theme'
+import type { CalendarEvent, CustomPriority, EventType, PriorityDef, Task } from './types.ts'
+
+/** Wszystkie priorytety domu w kolejności: wbudowane i własne (wg `order`). */
+export function allPriorities(custom: CustomPriority[]): PriorityDef[] {
+  const builtIn = Object.entries(priorities).map(([id, p]) => ({ id, ...p, builtIn: true }))
+  const own = custom.map((c) => ({
+    id: c.id,
+    label: c.name,
+    line: c.color,
+    bg: shade(c.color, 0.82),
+    fg: shade(c.color, -0.35),
+    order: c.order,
+    builtIn: false,
+  }))
+  return [...builtIn, ...own].sort((a, b) => a.order - b.order)
+}
+
+/**
+ * Priorytet po id – zawsze jakiś: z listy albo „Ważne” (własny priorytet mógł jeszcze nie przyjść
+ * z bazy albo zniknąć).
+ */
+export function priorityOf(list: PriorityDef[], id: string): PriorityDef {
+  return (
+    list.find((p) => p.id === id) ??
+    list.find((p) => p.id === DEFAULT_PRIORITY) ?? {
+      id: DEFAULT_PRIORITY,
+      ...priorities[DEFAULT_PRIORITY],
+      builtIn: true,
+    }
+  )
+}
+
+/**
+ * Miejsce nowego priorytetu: `order` w połowie między sąsiadami (`after` – id poprzedniego,
+ * null = na początku).
+ */
+export function orderAfter(list: PriorityDef[], after: string | null): number {
+  const i = after === null ? -1 : list.findIndex((p) => p.id === after)
+  const prev = i >= 0 ? list[i].order : 0
+  const next = list[i + 1]?.order ?? prev + 20
+  return (prev + next) / 2
+}
 
 /**
  * Rodzaj wydarzenia po id – zawsze jakiś: z listy domu, wbudowany o tym id albo „Wydarzenie”.

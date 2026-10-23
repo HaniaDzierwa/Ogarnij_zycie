@@ -1,11 +1,12 @@
 import { describe, expect, test } from 'vitest'
-import { priorities } from '../theme'
 import { addDays, dueLabel, longDayLabel, shortDayLabel, weekStart } from './dates.ts'
 import { mockCategories, mockEvents, mockTasks } from './mock.ts'
 import {
+  allPriorities,
   calendarItems,
   eventTypeOf,
   openTasks,
+  priorityOf,
   subtaskProgress,
   upcomingEvents,
   urgentOpen,
@@ -65,7 +66,12 @@ describe('przykładowe dane = liczby z projektu (Start, 9 paź)', () => {
   })
 
   test('kalendarz: terminy niezrobionych zadań jako „Termin zadania”', () => {
-    const items = calendarItems(tasks, events, catName, (t) => priorities[t.priority].label)
+    const items = calendarItems(
+      tasks,
+      events,
+      catName,
+      (t) => priorityOf(allPriorities([]), t.priority).label,
+    )
     const onDay = items.filter((i) => i.date === DAY)
     expect(onDay.map((i) => [i.title, i.typeId, i.note])).toEqual([
       ['Zadzwonić do hydraulika – cieknący kran', 'task', 'Dom · Pilne'],

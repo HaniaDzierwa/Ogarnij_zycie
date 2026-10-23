@@ -33,6 +33,7 @@ import {
   newHouseDocs,
   newInviteDoc,
   paths,
+  priorityToDoc,
   taskToDoc,
 } from '../../src/firebase/model.ts'
 
@@ -231,6 +232,17 @@ describe('dane domu', () => {
       setDoc(doc(db('obcy'), `${paths.categories('dom1')}/k8`), categoryToDoc(cat, 'obcy')),
     )
   })
+  test('własne priorytety: domownik zapisuje i usuwa, obcy nie; zły kształt odrzucony', async () => {
+    const p = { id: 'p1', name: 'Na weekend', color: '#3F7A7A', order: 22.5 }
+    const at = (as: string) => doc(db(as), `${paths.priorities('dom1')}/p1`)
+    await assertFails(setDoc(at('obcy'), priorityToDoc(p, 'obcy')))
+    await assertSucceeds(setDoc(at('hania'), priorityToDoc(p, 'hania')))
+    await assertFails(setDoc(at('hania'), { ...priorityToDoc(p, 'hania'), name: '' }))
+    await assertFails(setDoc(at('hania'), { ...priorityToDoc(p, 'hania'), extra: 1 }))
+    await assertFails(getDoc(at('obcy')))
+    await assertFails(deleteDoc(at('obcy')))
+    await assertSucceeds(deleteDoc(at('hania')))
+  })
   test('wbudowanego rodzaju „Termin zadania” nie da się usunąć ani dodać nowego systemowego', async () => {
     await assertFails(deleteDoc(doc(db('hania'), `${paths.eventTypes('dom1')}/task`)))
     const sys = {
@@ -276,8 +288,12 @@ describe('poprawność danych', () => {
   const put = (t: Task) =>
     setDoc(doc(db('hania'), taskPath('dom1', 'z5')), taskToDoc({ ...t, id: 'z5' }, 'hania'))
 
-  test('priorytet tylko Pilne / Ważne / Przy okazji', () =>
-    assertFails(put(sampleTask({ priority: 'bardzo' as Task['priority'] }))))
+  test('priorytet: wbudowany albo id własnego – niepusty tekst do 100 znaków', async () => {
+    await assertSucceeds(put(sampleTask({ priority: 'p1' })))
+    await assertFails(put(sampleTask({ priority: '' })))
+    await assertFails(put(sampleTask({ priority: 'x'.repeat(101) })))
+    await assertFails(put(sampleTask({ priority: 7 as unknown as Task['priority'] })))
+  })
   test('tytuł nie może być pusty ani dłuższy niż 200 znaków', async () => {
     await assertFails(put(sampleTask({ title: '' })))
     await assertFails(put(sampleTask({ title: 'x'.repeat(201) })))

@@ -11,6 +11,8 @@ import { PlaceholderScreen } from '../screens/PlaceholderScreen.tsx'
 import { SettingsScreen } from '../screens/settings/SettingsScreen.tsx'
 import { InviteScreen } from '../screens/settings/InviteScreen.tsx'
 import { MembersScreen } from '../screens/settings/MembersScreen.tsx'
+import { CategoriesScreen } from '../screens/settings/CategoriesScreen.tsx'
+import { PrioritiesScreen } from '../screens/settings/PrioritiesScreen.tsx'
 import { StartScreen } from '../screens/StartScreen.tsx'
 import { TasksRoute } from '../screens/tasks/TasksScreen.tsx'
 import { TrashScreen } from '../screens/tasks/TrashScreen.tsx'
@@ -30,6 +32,8 @@ const built: Partial<Record<ScreenId, ReactNode>> = {
   kalendarz: <CalendarRoute />,
   ustawienia: <SettingsScreen />,
   domownicy: <MembersScreen />,
+  kategorie: <CategoriesScreen />,
+  priorytety: <PrioritiesScreen />,
   zapros: <InviteScreen />,
   dolacz: <JoinScreen />,
 }

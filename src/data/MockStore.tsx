@@ -11,8 +11,9 @@ import {
   mockUserName,
 } from './mock.ts'
 import { revertChanges } from './listDiff.ts'
+import { allPriorities } from './selectors.ts'
 import { StoreContext, useUndoToast, type Store } from './store.ts'
-import type { CalendarEvent, CleanupDays, Task } from './types.ts'
+import type { CalendarEvent, CleanupDays, CustomPriority, Task } from './types.ts'
 
 /** Przykładowe dane (testy, podgląd ekranów): w pamięci, znikają po odświeżeniu strony. */
 export function MockStoreProvider({
@@ -21,6 +22,7 @@ export function MockStoreProvider({
   noMembers = false,
   noEventTypes = false,
   notReady = false,
+  customPriorities: initialPriorities = [],
 }: {
   children: ReactNode
   today?: DateKey
@@ -30,12 +32,16 @@ export function MockStoreProvider({
   noEventTypes?: boolean
   /** Dane domu jeszcze się wczytują. */
   notReady?: boolean
+  /** Własne priorytety domu na start. */
+  customPriorities?: CustomPriority[]
 }) {
   const [day] = useState(() => today ?? getToday())
   const [userName, setUserName] = useState(mockUserName)
   const [houseName, setHouseName] = useState('Dom na Leśnej')
   const [tasks, setTasks] = useState(() => mockTasks(day))
   const [categories, setCategories] = useState(mockCategories)
+  const [customPriorities, setCustomPriorities] = useState(initialPriorities)
+  const priorities = useMemo(() => allPriorities(customPriorities), [customPriorities])
   const [events, setEvents] = useState(() => mockEvents(day))
   const [eventTypes, setEventTypes] = useState(() => (noEventTypes ? [] : mockEventTypes))
   const [notifications, setNotifications] = useState(mockNotifications)
@@ -74,6 +80,8 @@ export function MockStoreProvider({
       houseName,
       tasks,
       categories,
+      customPriorities,
+      priorities,
       events,
       eventTypes,
       members: noMembers ? [] : mockMembers,
@@ -88,6 +96,7 @@ export function MockStoreProvider({
       changeEvents,
       undo,
       setCategories,
+      setCustomPriorities,
       setEvents,
       setEventTypes,
       setNotifications,
@@ -101,6 +110,8 @@ export function MockStoreProvider({
       houseName,
       tasks,
       categories,
+      customPriorities,
+      priorities,
       events,
       eventTypes,
       notifications,

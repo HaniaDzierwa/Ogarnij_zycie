@@ -38,12 +38,12 @@ Nie zmieniaj stosu bez pytania Hani.
 
 ## Słownictwo (spójne w całej aplikacji)
 
-- **Kategoria** (nie „pokój”, nie „lista”). Domyślne: Zakupy, Dom, Zdrowie, Urzędy, Auto, Rodzina; usunięcie kategorii przenosi zadania do „Bez kategorii”.
-- **Priorytety: Pilne · Ważne · Przy okazji** – wszędzie te trzy nazwy (etykiety, grupy, filtry, Start). Nie używaj „wysoki/średni/niski”.
+- **Kategoria** (nie „pokój”, nie „lista”). Domyślne: Zakupy, Dom, Zdrowie, Urzędy, Auto, Rodzina. Kategorie zmienia się tylko w Ustawienia → Zadania → Kategorie (nazwa, kolor, nowa, usuń); **nie można usunąć kategorii, do której są przypięte zadania** (Kosz się nie liczy – takie zadania przechodzą do „Bez kategorii”).
+- **Priorytety: Pilne · Ważne · Przy okazji** – trzy wbudowane (nie do usunięcia), wszędzie te nazwy (etykiety, grupy, filtry, Start). Nie używaj „wysoki/średni/niski”. Dom może dodać **własne priorytety** (Ustawienia → Zadania → Priorytety: nazwa, kolor, miejsce w kolejności) – pojawiają się w filtrze „Pokaż”, grupach i arkuszu; własnego z przypiętymi zadaniami nie da się usunąć. Kafelek i sekcja „Pilne” na Starcie – tylko wbudowane Pilne.
 - **Termin** to nie status. „DZIŚ” przy niezrobionym zadaniu = czerwona plakietka; pozostałe terminy (JUTRO, DO 15 PAŹ) zwykłym mosiężnym tekstem.
 - „Ogarnięte” = zrobione. „Już ogarnięte” = sekcja zrobionych.
 - „Domownik”, „Wspólny dom”, „Zaproś domownika”, „Dołącz do domu”.
-- Filtr „Pokaż”: Wszystkie · Pilne · Ważne · Przy okazji (bez „Na dziś” i bez „Ogarnięte” – ogarnięte mają własną zakładkę).
+- Filtr „Pokaż”: Wszystkie · priorytety w kolejności (wbudowane i własne) – bez „Na dziś” i bez „Ogarnięte” (ogarnięte mają własną zakładkę). Panel „Filtry” tylko filtruje – bez edycji i dodawania kategorii.
 - Zakładki na ekranie Zadania: „Do zrobienia” i „Ogarnięte”.
 - „Kosz”: **jeden wspólny** na zadania i wydarzenia; usunięte czekają 30 dni na przywrócenie, potem znikają same. Stałe wejście tylko w Ustawienia → Porządki → Kosz (bez ikon kosza na ekranach Zadania i Kalendarz); na co dzień pomyłki naprawia pasek „Cofnij”.
 

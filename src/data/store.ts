@@ -8,9 +8,11 @@ import type {
   CalendarEvent,
   Category,
   CleanupDays,
+  CustomPriority,
   EventType,
   Member,
   NotificationSettings,
+  PriorityDef,
   Task,
 } from './types.ts'
 
@@ -32,6 +34,10 @@ export type Store = {
   houseName: string
   tasks: Task[]
   categories: Category[]
+  /** Własne priorytety domu (do zapisu). */
+  customPriorities: CustomPriority[]
+  /** Wszystkie priorytety w kolejności: wbudowane i własne (allPriorities). */
+  priorities: PriorityDef[]
   events: CalendarEvent[]
   eventTypes: EventType[]
   members: Member[]
@@ -50,6 +56,7 @@ export type Store = {
   changeEvents: (text: string, update: (events: CalendarEvent[]) => CalendarEvent[]) => void
   undo: () => void
   setCategories: (update: (categories: Category[]) => Category[]) => void
+  setCustomPriorities: (update: (list: CustomPriority[]) => CustomPriority[]) => void
   setEvents: (update: (events: CalendarEvent[]) => CalendarEvent[]) => void
   setEventTypes: (update: (types: EventType[]) => EventType[]) => void
   setNotifications: (update: (n: NotificationSettings) => NotificationSettings) => void

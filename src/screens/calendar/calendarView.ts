@@ -9,6 +9,7 @@ import {
   type DateKey,
 } from '../../data/dates.ts'
 import { plural } from '../../data/plural.ts'
+import { shade } from '../../theme'
 import type { CalendarItem } from '../../data/selectors.ts'
 import type { EventType } from '../../data/types.ts'
 
@@ -79,12 +80,7 @@ export const TYPE_SWATCHES = [
   { color: '#7A6A5C', name: 'orzechowy' },
 ] as const
 
-/** Rozjaśnienie (f > 0) albo przyciemnienie (f < 0) koloru '#RRGGBB'. */
-export function shade(hex: string, f: number): string {
-  const n = parseInt(hex.slice(1), 16)
-  const mix = (c: number) => Math.round(f > 0 ? c + (255 - c) * f : c * (1 + f))
-  return `rgb(${mix(n >> 16)}, ${mix((n >> 8) & 255)}, ${mix(n & 255)})`
-}
+export { shade }
 
 /** Nowy rodzaj wydarzenia: kropka, tło i tekst wyliczone z wybranego koloru. */
 export function customType(id: string, name: string, color: string): EventType {

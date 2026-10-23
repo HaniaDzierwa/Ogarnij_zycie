@@ -23,6 +23,7 @@ import { plural } from '../data/plural.ts'
 import {
   calendarItems,
   eventTypeOf,
+  priorityOf,
   doneOn,
   openTasks,
   upcomingEvents,
@@ -34,7 +35,15 @@ import { useItemSheets } from './shared/useItemSheets.tsx'
 
 /** 2 Start (Kategorie.dc.html, StartDzien / StartNoc). Podgląd pory: `?pora=dzien|noc`. */
 export function StartScreen() {
-  const { today, userName, tasks, events, categories, eventTypes } = useStore()
+  const {
+    today,
+    userName,
+    tasks,
+    events,
+    categories,
+    eventTypes,
+    priorities: prioList,
+  } = useStore()
   const [params] = useSearchParams()
   const pora = params.get('pora')
   const day = pora === 'dzien' ? true : pora === 'noc' ? false : isDaytime()
@@ -48,7 +57,12 @@ export function StartScreen() {
   const urgentToday = urgent.filter((t) => t.due && diffDays(today, t.due) <= 0)
   // „Ogarnięte dziś” = ogarnięte dzisiaj (wg doneAt) / (te + niezrobione z terminem na dziś lub po terminie)
   const done = doneOn(tasks, today)
-  const items = calendarItems(tasks, events, categoryName, (t) => priorities[t.priority].label)
+  const items = calendarItems(
+    tasks,
+    events,
+    categoryName,
+    (t) => priorityOf(prioList, t.priority).label,
+  )
   const week = weekDays(today)
   const weekLeft = items.filter((i) => i.date >= today && i.date <= week[6])
   const dueNow = open.filter((t) => t.due && t.due <= today)

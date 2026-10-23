@@ -5,6 +5,20 @@ import type { DateKey } from './dates.ts'
 
 export type Category = { id: string; name: string; color: string; order: number }
 
+/** Własny priorytet domu (wbudowane Pilne · Ważne · Przy okazji są w kodzie). */
+export type CustomPriority = { id: string; name: string; color: string; order: number }
+
+/** Priorytet do wyświetlenia – wbudowany albo własny, z kolorami. */
+export type PriorityDef = {
+  id: string
+  label: string
+  line: string
+  bg: string
+  fg: string
+  order: number
+  builtIn: boolean
+}
+
 export type Subtask = { id: string; title: string; done: boolean }
 
 export type Task = {

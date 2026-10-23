@@ -6,6 +6,7 @@ import { toKey, type Stamp } from '../data/dates.ts'
 import type {
   CalendarEvent,
   Category,
+  CustomPriority,
   CleanupDays,
   EventType,
   Member,
@@ -14,7 +15,7 @@ import type {
   Subtask,
   Task,
 } from '../data/types.ts'
-import { builtInEventTypes, defaultCategories, type Priority } from '../theme'
+import { builtInEventTypes, DEFAULT_PRIORITY, defaultCategories } from '../theme'
 
 // ── Ścieżki ────────────────────────────────────────────────────────────────
 
@@ -23,6 +24,8 @@ export const paths = {
   house: (houseId: string) => `houses/${houseId}`,
   members: (houseId: string) => `houses/${houseId}/members`,
   categories: (houseId: string) => `houses/${houseId}/categories`,
+  /** Własne priorytety (wbudowane są w kodzie). */
+  priorities: (houseId: string) => `houses/${houseId}/priorities`,
   tasks: (houseId: string) => `houses/${houseId}/tasks`,
   eventTypes: (houseId: string) => `houses/${houseId}/eventTypes`,
   events: (houseId: string) => `houses/${houseId}/events`,
@@ -39,7 +42,6 @@ export const LIMITS = {
   subtasks: 50,
 } as const
 
-export const PRIORITIES: readonly Priority[] = ['high', 'mid', 'low']
 export const REMINDS: readonly Remind[] = ['none', 'day', 'week']
 
 // ── Czas: aplikacja „RRRR-MM-DDTHH:MM” (czas lokalny) ↔ Timestamp w bazie ─
@@ -90,6 +92,8 @@ export type MemberDoc = {
 
 export type CategoryDoc = Omit<Category, 'id'> & Changed
 
+export type PriorityDoc = Omit<CustomPriority, 'id'> & Changed
+
 export type TaskDoc = Omit<Task, 'id' | 'doneAt' | 'deletedAt'> & {
   doneAt: Timestamp | null
   deletedAt: Timestamp | null
@@ -129,7 +133,8 @@ export function taskFromDoc(id: string, d: Partial<TaskDoc>): Task {
     id,
     title: d.title ?? '',
     categoryId: d.categoryId ?? null,
-    priority: PRIORITIES.includes(d.priority as Priority) ? (d.priority as Priority) : 'mid',
+    // wbudowany albo własny – nieznany id pokaże się jako „Ważne” (priorityOf)
+    priority: typeof d.priority === 'string' && d.priority ? d.priority : DEFAULT_PRIORITY,
     due: d.due ?? null,
     done: !!d.done,
     subtasks: (d.subtasks ?? []).map((s: Subtask) => ({
@@ -193,6 +198,14 @@ export function categoryToDoc(c: Category, uid: string): CategoryDoc {
 
 export function categoryFromDoc(id: string, d: Partial<CategoryDoc>): Category {
   return { id, name: d.name ?? '', color: d.color ?? '#9AA59D', order: d.order ?? 0 }
+}
+
+export function priorityToDoc(p: CustomPriority, uid: string): PriorityDoc {
+  return { name: p.name, color: p.color, order: p.order, ...changed(uid) }
+}
+
+export function priorityFromDoc(id: string, d: Partial<PriorityDoc>): CustomPriority {
+  return { id, name: d.name ?? '', color: d.color ?? '#9AA59D', order: d.order ?? 100 }
 }
 
 export function eventTypeToDoc(t: EventType, uid: string): EventTypeDoc {

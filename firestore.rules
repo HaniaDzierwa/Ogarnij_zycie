@@ -84,6 +84,16 @@ service cloud.firestore {
         && signed(d);
     }
 
+    // Własny priorytet (wbudowane Pilne · Ważne · Przy okazji są w aplikacji). `order` – miejsce
+    // w kolejności, także ułamek (wstawiony między dwa inne).
+    function validPriority(d) {
+      return d.keys().hasOnly(['name', 'color', 'order', 'updatedAt', 'updatedBy'])
+        && text(d.name, 40)
+        && str(d.color, 30)
+        && d.order is number
+        && signed(d);
+    }
+
     function validSubtasks(list) {
       return list is list && list.size() <= 50;
     }
@@ -93,7 +103,8 @@ service cloud.firestore {
           'createdBy', 'doneAt', 'doneBy', 'deleted', 'deletedAt', 'deletedBy', 'updatedAt', 'updatedBy'])
         && text(d.title, 200)
         && strOrNull(d.categoryId, 100)
-        && d.priority in ['high', 'mid', 'low']
+        // wbudowany (high / mid / low) albo id własnego priorytetu
+        && text(d.priority, 100)
         && (d.due == null || isDay(d.due))
         && d.done is bool
         && validSubtasks(d.subtasks)
@@ -282,6 +293,14 @@ service cloud.firestore {
       match /categories/{id} {
         allow read: if isMember(houseId);
         allow create, update: if isMemberAfter(houseId) && validCategory(request.resource.data);
+        allow delete: if isMember(houseId);
+      }
+
+      // ── Własne priorytety ─────────────────────────────────────────────────
+
+      match /priorities/{id} {
+        allow read: if isMember(houseId);
+        allow create, update: if isMemberAfter(houseId) && validPriority(request.resource.data);
         allow delete: if isMember(houseId);
       }
 
