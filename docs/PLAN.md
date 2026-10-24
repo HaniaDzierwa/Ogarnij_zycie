@@ -92,8 +92,8 @@ Cel: wszystkie ekrany z projektu w aplikacji, na przykładowych danych (w pamię
 
 1. **Zaproszenie:** jednorazowy link i 6 cyfr (ważne 10 min) – zapisane w Firestore (`invites/{kod}`); „Dołącz do domu” realizuje je, reguły Firestore sprawdzają ważność i jednorazowość. **Bez kodu QR i bez skanowania** (decyzja Hani 2026-10-20) – na „Zaproś domownika” znika obrazek QR, na „Dołącz do domu” skaner z ramką aparatu.
 2. **Dołączanie:** po kodzie albo linku „Znaleziono dom” z nazwą domu i domownikami, imię nowego domownika, „Dołącz jako …” → dom widoczny od razu.
-3. **Zakres:** domownik widzi wszystko albo wybrane kategorie i kalendarz; reguły to wymuszają.
-   - Ekran Domownicy: dotknięcie domownika → arkusz: zmiana zakresu (Wszystko / Wybrane) i „Usuń z domu” – tylko założyciel domu; każdy domownik może sam „Opuścić dom”; zapraszać może każdy (decyzja Hani 2026-10-18).
+3. **Wspólne i prywatne** (decyzja Hani 2026-10-25 – zamiast zakresu „Wszystko / Wybrane” ustawianego domownikowi): każde zadanie i każde wydarzenie jest **„Wspólne”** (widzą wszyscy domownicy) albo **„Tylko ja”** (widzi tylko autor). Nowe – domyślnie „Wspólne”. Zmienić może tylko autor (arkusz zadania / wydarzenia). Reguły to wymuszają: prywatnych nie da się odczytać z innego konta. Z „Zaproś domownika” znika „Co zobaczy domownik”, z „Znaleziono dom” – opis zakresu.
+   - Ekran Domownicy: dotknięcie domownika → arkusz (imię, rola, od kiedy w domu); „Usuń z domu” – tylko założyciel; każdy domownik (oprócz założyciela, póki są inni) może sam „Opuścić dom”; zapraszać może każdy (decyzje Hani 2026-10-18 i 2026-10-25). Prywatne zadania i wydarzenia osoby, która wychodzi, nie są widoczne dla pozostałych.
 4. **Konflikty:** nowsza zmiana wygrywa; usunięte zawsze można przywrócić z Kosza.
 5. Reguły + testy reguł w emulatorze (Hania uruchamia na komputerze z Javą 21), wgranie reguł, publikacja wersji testowej.
 
@@ -101,6 +101,8 @@ Cel: wszystkie ekrany z projektu w aplikacji, na przykładowych danych (w pamię
 - [ ] Zadanie dodane na jednym telefonie pojawia się na drugim w kilka sekund
 - [ ] Zmiany offline na obu telefonach łączą się bez utraty danych
 - [ ] Osoba spoza domu nie widzi danych, nawet znając identyfikator
+- [ ] Zadanie / wydarzenie „Tylko ja” nie pojawia się na telefonie drugiego domownika; po zmianie na „Wspólne” – pojawia się
+- [ ] Usunięty z domu albo po „Opuść dom” – nie widzi już danych domu, wraca do „Pierwsze uruchomienie”
 - [ ] Zużyty albo przeterminowany kod nie działa
 
 ## Etap 5 – Kategorie, Kalendarz, Start i wspólne testowanie (dawniej 4, 5, 6)

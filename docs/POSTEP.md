@@ -23,8 +23,8 @@ Kolejność etapów zmieniona 2026-10-20 (decyzja Hani: testować dopiero we dwo
 | 2 Zaproś domownika: prawdziwy kod 6 cyfr i link zapisane w bazie, odliczanie, „Nowy kod”; bez kodu QR | zrobione – testy reguł przeszły u Hani (38/38) |
 | 3 Dołącz do domu: kod / link (bez skanera) → „Znaleziono dom” (nazwa domu, domownicy) → „Dołącz jako …”; reguły: dołączenie tylko z ważnym, nieużytym kodem | zrobione (kod) – razem z krokiem 2 |
 | 3a Wstawka (decyzja Hani 2026-10-20): Ustawienia → Zadania → Kategorie i Priorytety (własne priorytety), panel „Filtry” bez edycji | zrobione – testy reguł przeszły u Hani (39/39) |
-| 4 Domownicy: lista z bazy; arkusz domownika – zakres (Wszystko / Wybrane), „Usuń z domu” (założyciel), „Opuść dom” | do zrobienia (następny) |
-| 5 Zakres „Wybrane” w regułach i w aplikacji (domownik widzi tylko wybrane kategorie i/lub kalendarz) | do zrobienia |
+| 4 Wspólne / „Tylko ja”: wybór w nowym zadaniu i wydarzeniu oraz w arkuszach (zmienia tylko autor), prywatne w osobnym miejscu bazy widoczne tylko dla autora (reguły); z zaproszenia znika „Co zobaczy domownik” | do zrobienia (następny) |
+| 5 Domownicy: arkusz domownika, „Usuń z domu” (założyciel), „Opuść dom”; usunięty / po wyjściu wraca do „Pierwsze uruchomienie” | do zrobienia |
 | 6 Testy reguł (Hania – Java 21), wgranie reguł, wersja testowa, demo we dwoje, odbiór | do zrobienia |
 
 ## Etap 3 – kroki
@@ -189,3 +189,4 @@ Wersja testowa: https://ogarnij-zycie--test-56tdtc0y.web.app (kanał `test`, odn
 - 2026-10-24 · Etap 4 · Wstawka: Hania – testy reguł (39) przeszły na nowych wersjach bibliotek. Następnie: wgranie reguł (za zgodą Hani), wersja testowa.
 - 2026-10-24 · Etap 4 · Wstawka: za zgodą Hani Claude wgrał reguły i indeksy (własne priorytety – „released rules”); dane w bazie bez zmian. Wersja testowa z kategoriami i priorytetami w Ustawieniach: https://ogarnij-zycie--test-56tdtc0y.web.app (do 2026-11-23). Czeka sprawdzenie u Hani na telefonie.
 - 2026-10-24 · Etap 4 · Wstawka: Hania sprawdziła na telefonie – „wszystko fajnie działa”. Wstawka zakończona; dalej krok 4 (arkusz domownika).
+- 2026-10-25 · Plan · Decyzja Hani: zamiast zakresu „Wszystko / Wybrane” ustawianego domownikowi – każdy sam decyduje przy zadaniu i wydarzeniu: „Wspólne” (domyślnie) albo „Tylko ja”; zmienia tylko autor. Domownicy: „Opuść dom” i „Usuń z domu” (tylko założyciel). PLAN.md (etap 4, pkt 3 i odbiór) i kroki 4–5 przebudowane.
