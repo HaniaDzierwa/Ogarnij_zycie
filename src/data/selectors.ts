@@ -79,6 +79,9 @@ export function subtaskProgress(task: Task): number | null {
 }
 
 /** Wpis w kalendarzu: wydarzenie albo termin niezrobionego zadania. */
+/** Dopisek przy „Tylko ja” w kalendarzu i na Starcie. */
+export const PRIVATE_NOTE = 'Tylko ja'
+
 export type CalendarItem = {
   id: string
   title: string
@@ -105,7 +108,9 @@ export function calendarItems(
       typeId: 'task',
       from: null,
       to: null,
-      note: `${categoryName(t.categoryId)} · ${priorityLabel(t)}`,
+      note: [categoryName(t.categoryId), priorityLabel(t), t.private && PRIVATE_NOTE]
+        .filter(Boolean)
+        .join(' · '),
       taskId: t.id,
     }))
   const evs: CalendarItem[] = liveEvents(events).map((e) => ({
@@ -115,7 +120,7 @@ export function calendarItems(
     typeId: e.typeId,
     from: e.from,
     to: e.to,
-    note: [e.note, remindNote(e.remind)].filter(Boolean).join(' · '),
+    note: [e.private && PRIVATE_NOTE, e.note, remindNote(e.remind)].filter(Boolean).join(' · '),
   }))
   return [...deadlines, ...evs].sort(
     (a, b) => a.date.localeCompare(b.date) || (a.from ?? '').localeCompare(b.from ?? ''),

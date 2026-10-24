@@ -168,6 +168,8 @@ houses/{houseId}/priorities/{id}    name, color, order(liczba, może być ułame
 houses/{houseId}/tasks/{id}         title, categoryId|null, priority(high|mid|low|id własnego), due('RRRR-MM-DD'|null), done,
                                     subtasks[{id,title,done}], note (notatka, do 500), createdBy, doneAt(Timestamp|null), doneBy,
                                     deleted, deletedAt(Timestamp|null), deletedBy, updatedAt, updatedBy
+houses/{houseId}/private/{uid}/tasks/{id}    jak tasks – „Tylko ja”: widzi i zmienia tylko autor (decyzja Hani 2026-10-25)
+houses/{houseId}/private/{uid}/events/{id}   jak events – „Tylko ja”
 houses/{houseId}/eventTypes/{id}    name, dot, bg, fg, icon, system, updatedAt, updatedBy
                                     (wbudowane id: task, birthday, party, event, doctor)
 houses/{houseId}/events/{id}        title, date('RRRR-MM-DD'), allDay, from|null, to|null, typeId, remind(none|day|week),

@@ -33,6 +33,8 @@ export type Task = {
   note: string
   /** uid domownika, który dodał zadanie. */
   createdBy: string
+  /** „Tylko ja” – widzi tylko autor (w bazie w osobnym miejscu); false – „Wspólne”. */
+  private: boolean
   /** Kiedy ogarnięte: 'RRRR-MM-DDTHH:MM' (czas lokalny). */
   doneAt: string | null
   /** uid domownika, który ogarnął. */
@@ -67,6 +69,8 @@ export type CalendarEvent = {
   remind: Remind
   /** uid domownika, który dodał wydarzenie. */
   createdBy: string
+  /** „Tylko ja” – widzi tylko autor (w bazie w osobnym miejscu); false – „Wspólne”. */
+  private: boolean
   /** „Luźna” notatka / dopisek pod tytułem, np. „Co roku”, „Przynieść wino” (do 500 znaków). */
   note: string
   /** Usunięte (miękko, jak zadania w koszu). */

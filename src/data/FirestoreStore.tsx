@@ -48,7 +48,7 @@ const typeOrder = (a: EventType, b: EventType) => {
 }
 
 /** Części danych domu czytane na żywo: dom, zadania, kategorie, wydarzenia, rodzaje, domownicy. */
-const HOUSE_PARTS = 7
+const HOUSE_PARTS = 9
 
 const reportError = (e: unknown) => console.error('Nie udało się zapisać zmian w Firestore', e)
 
@@ -69,10 +69,26 @@ function HouseData({ children }: { children: ReactNode }) {
   const houseId = profile?.houseId ?? null
   const [day] = useState(getToday)
 
-  const [tasks, setTasksState] = useState<Task[]>([])
+  // wspólne i „Tylko ja” przychodzą z dwóch miejsc w bazie; ekrany widzą jedną listę
+  const [sharedTasks, setSharedTasks] = useState<Task[]>([])
+  const [ownTasks, setOwnTasks] = useState<Task[]>([])
+  const tasks = useMemo(() => [...sharedTasks, ...ownTasks].sort(byId), [sharedTasks, ownTasks])
+  const setTasksState = useCallback((list: Task[]) => {
+    setSharedTasks(list.filter((t) => !t.private))
+    setOwnTasks(list.filter((t) => t.private))
+  }, [])
   const [categories, setCategoriesState] = useState<Category[]>([])
   const [customPriorities, setPrioritiesState] = useState<CustomPriority[]>([])
-  const [events, setEventsState] = useState<CalendarEvent[]>([])
+  const [sharedEvents, setSharedEvents] = useState<CalendarEvent[]>([])
+  const [ownEvents, setOwnEvents] = useState<CalendarEvent[]>([])
+  const events = useMemo(
+    () => [...sharedEvents, ...ownEvents].sort(byId),
+    [sharedEvents, ownEvents],
+  )
+  const setEventsState = useCallback((list: CalendarEvent[]) => {
+    setSharedEvents(list.filter((e) => !e.private))
+    setOwnEvents(list.filter((e) => e.private))
+  }, [])
   const [eventTypes, setEventTypesState] = useState<EventType[]>([])
   const [members, setMembers] = useState<Member[]>([])
   const [houseName, setHouseNameState] = useState('')
@@ -119,10 +135,18 @@ function HouseData({ children }: { children: ReactNode }) {
       onSnapshot(
         collection(db, paths.tasks(houseId)),
         (snap) => {
-          setTasksState(snap.docs.map((d) => taskFromDoc(d.id, d.data())).sort(byId))
+          setSharedTasks(snap.docs.map((d) => taskFromDoc(d.id, d.data())))
           mark('tasks')
         },
         failed('tasks'),
+      ),
+      onSnapshot(
+        collection(db, paths.privateTasks(houseId, uid)),
+        (snap) => {
+          setOwnTasks(snap.docs.map((d) => taskFromDoc(d.id, d.data(), true)))
+          mark('privateTasks')
+        },
+        failed('privateTasks'),
       ),
       onSnapshot(
         collection(db, paths.categories(houseId)),
@@ -145,10 +169,18 @@ function HouseData({ children }: { children: ReactNode }) {
       onSnapshot(
         collection(db, paths.events(houseId)),
         (snap) => {
-          setEventsState(snap.docs.map((d) => eventFromDoc(d.id, d.data())).sort(byId))
+          setSharedEvents(snap.docs.map((d) => eventFromDoc(d.id, d.data())))
           mark('events')
         },
         failed('events'),
+      ),
+      onSnapshot(
+        collection(db, paths.privateEvents(houseId, uid)),
+        (snap) => {
+          setOwnEvents(snap.docs.map((d) => eventFromDoc(d.id, d.data(), true)))
+          mark('privateEvents')
+        },
+        failed('privateEvents'),
       ),
       onSnapshot(
         collection(db, paths.eventTypes(houseId)),
@@ -181,15 +213,17 @@ function HouseData({ children }: { children: ReactNode }) {
       ),
     ]
     return () => subs.forEach((unsub) => unsub())
-  }, [houseId])
+  }, [houseId, uid])
 
   /** Zmiana listy: od razu na ekranie, w tle zapis różnic do Firestore. */
   const makeSetter = useCallback(
-    <T extends { id: string }>(
+    <T extends { id: string; private?: boolean }>(
       key: keyof typeof latest.current,
       setState: (v: T[]) => void,
       path: (h: string) => string,
       toDoc: (x: T, uid: string) => Record<string, unknown>,
+      /** Lista z „Tylko ja”: prywatne do osobnego miejsca; zmiana wspólne ↔ prywatne = przeniesienie. */
+      privatePath?: (h: string, uid: string) => string,
     ) =>
       (update: (list: T[]) => T[]) => {
         if (!houseId) return
@@ -197,21 +231,27 @@ function HouseData({ children }: { children: ReactNode }) {
         const next = update(prev)
         ;(latest.current[key] as unknown as T[]) = next
         setState(next)
-        syncCollection({
-          db,
-          path: path(houseId),
-          prev,
-          next,
-          toDoc: (x) => toDoc(x, uid),
-          onError: reportError,
-        })
+        const sync = (where: string, keep: (x: T) => boolean) =>
+          syncCollection({
+            db,
+            path: where,
+            prev: prev.filter(keep),
+            next: next.filter(keep),
+            toDoc: (x) => toDoc(x, uid),
+            onError: reportError,
+          })
+        if (!privatePath) sync(path(houseId), () => true)
+        else {
+          sync(path(houseId), (x) => !x.private)
+          sync(privatePath(houseId, uid), (x) => !!x.private)
+        }
       },
     [houseId, uid],
   )
 
   const setTasks = useMemo(
-    () => makeSetter<Task>('tasks', setTasksState, paths.tasks, taskToDoc),
-    [makeSetter],
+    () => makeSetter<Task>('tasks', setTasksState, paths.tasks, taskToDoc, paths.privateTasks),
+    [makeSetter, setTasksState],
   )
   const setCategories = useMemo(
     () => makeSetter<Category>('categories', setCategoriesState, paths.categories, categoryToDoc),
@@ -229,8 +269,15 @@ function HouseData({ children }: { children: ReactNode }) {
   )
   const priorities = useMemo(() => allPriorities(customPriorities), [customPriorities])
   const setEvents = useMemo(
-    () => makeSetter<CalendarEvent>('events', setEventsState, paths.events, eventToDoc),
-    [makeSetter],
+    () =>
+      makeSetter<CalendarEvent>(
+        'events',
+        setEventsState,
+        paths.events,
+        eventToDoc,
+        paths.privateEvents,
+      ),
+    [makeSetter, setEventsState],
   )
   const setEventTypes = useMemo(
     () => makeSetter<EventType>('eventTypes', setEventTypesState, paths.eventTypes, eventTypeToDoc),

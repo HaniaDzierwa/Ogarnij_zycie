@@ -29,6 +29,9 @@ export const paths = {
   tasks: (houseId: string) => `houses/${houseId}/tasks`,
   eventTypes: (houseId: string) => `houses/${houseId}/eventTypes`,
   events: (houseId: string) => `houses/${houseId}/events`,
+  /** „Tylko ja”: zadania i wydarzenia widoczne tylko dla autora (decyzja Hani 2026-10-25). */
+  privateTasks: (houseId: string, uid: string) => `houses/${houseId}/private/${uid}/tasks`,
+  privateEvents: (houseId: string, uid: string) => `houses/${houseId}/private/${uid}/events`,
   /** Zaproszenie do domu: kod 6 cyfr. */
   invite: (code: string) => `invites/${code}`,
 } as const
@@ -94,14 +97,15 @@ export type CategoryDoc = Omit<Category, 'id'> & Changed
 
 export type PriorityDoc = Omit<CustomPriority, 'id'> & Changed
 
-export type TaskDoc = Omit<Task, 'id' | 'doneAt' | 'deletedAt'> & {
+// „private” nie jest polem dokumentu – wynika z miejsca w bazie (paths.privateTasks / privateEvents)
+export type TaskDoc = Omit<Task, 'id' | 'private' | 'doneAt' | 'deletedAt'> & {
   doneAt: Timestamp | null
   deletedAt: Timestamp | null
 } & Changed
 
 export type EventTypeDoc = Omit<EventType, 'id'> & Changed
 
-export type EventDoc = Omit<CalendarEvent, 'id' | 'deletedAt'> & {
+export type EventDoc = Omit<CalendarEvent, 'id' | 'private' | 'deletedAt'> & {
   deletedAt: Timestamp | null
 } & Changed
 
@@ -128,9 +132,10 @@ export function taskToDoc(t: Task, uid: string): TaskDoc {
   }
 }
 
-export function taskFromDoc(id: string, d: Partial<TaskDoc>): Task {
+export function taskFromDoc(id: string, d: Partial<TaskDoc>, isPrivate = false): Task {
   return {
     id,
+    private: isPrivate,
     title: d.title ?? '',
     categoryId: d.categoryId ?? null,
     // wbudowany albo własny – nieznany id pokaże się jako „Ważne” (priorityOf)
@@ -172,9 +177,10 @@ export function eventToDoc(e: CalendarEvent, uid: string): EventDoc {
   }
 }
 
-export function eventFromDoc(id: string, d: Partial<EventDoc>): CalendarEvent {
+export function eventFromDoc(id: string, d: Partial<EventDoc>, isPrivate = false): CalendarEvent {
   return {
     id,
+    private: isPrivate,
     title: d.title ?? '',
     date: d.date ?? '',
     allDay: d.allDay ?? true,

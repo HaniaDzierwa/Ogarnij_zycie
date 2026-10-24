@@ -5,7 +5,6 @@ import { PlusIcon } from '../../components/icons.tsx'
 import { TabBar } from '../../components/TabBar.tsx'
 import { Card, Screen, SectionLabel } from '../../components/ui.tsx'
 import { useStore } from '../../data/store.ts'
-import type { Category, Member } from '../../data/types.ts'
 import { colors, fonts } from '../../theme'
 
 /**
@@ -14,7 +13,7 @@ import { colors, fonts } from '../../theme'
  * (teksty #4–6). Podgląd pustego domu: `?stan=sam`.
  */
 export function MembersScreen() {
-  const { members, currentUid, categories } = useStore()
+  const { members, currentUid } = useStore()
   const [params] = useSearchParams()
   const others = params.get('stan') === 'sam' ? [] : members.filter((m) => m.uid !== currentUid)
 
@@ -115,7 +114,7 @@ export function MembersScreen() {
                     color: colors.muted,
                   }}
                 >
-                  {scopeLabel(m, categories)}
+                  {m.role === 'owner' ? 'ZAŁOŻYCIEL DOMU' : 'DOMOWNIK'}
                 </span>
               </span>
               <span style={{ fontFamily: fonts.serif, fontSize: 14, color: colors.brass700 }}>
@@ -147,15 +146,4 @@ export function MembersScreen() {
       <TabBar active="ustawienia" />
     </Screen>
   )
-}
-
-/** „WSZYSTKIE KATEGORIE I KALENDARZ” albo wybrane kategorie (zakres – etap 4). */
-function scopeLabel(m: Member, categories: Category[]): string {
-  const cats = m.scope.all
-    ? 'WSZYSTKIE KATEGORIE'
-    : categories
-        .filter((c) => m.scope.categoryIds.includes(c.id))
-        .map((c) => c.name.toUpperCase())
-        .join(', ') || 'BEZ KATEGORII'
-  return m.scope.calendar ? `${cats} I KALENDARZ` : cats
 }

@@ -3,15 +3,7 @@ import { Link, useNavigate } from 'react-router'
 import { paths } from '../../app/screens.ts'
 import { Accent, Header } from '../../components/Header.tsx'
 import { CheckIcon } from '../../components/icons.tsx'
-import {
-  BottomActions,
-  Card,
-  Chip,
-  Dot,
-  PrimaryButton,
-  Screen,
-  SectionLabel,
-} from '../../components/ui.tsx'
+import { BottomActions, Card, PrimaryButton, Screen, SectionLabel } from '../../components/ui.tsx'
 import { useStore } from '../../data/store.ts'
 import { INVITE_MINUTES } from '../../firebase/model.ts'
 import { JoinError, useHouse, type InviteState, type Scope } from '../../house/house.ts'
@@ -19,22 +11,16 @@ import { colors, fonts, shadows } from '../../theme'
 
 const VALID_MS = INVITE_MINUTES * 60 * 1000
 
-/** Zmiana zakresu tworzy nowe zaproszenie – chwilę czekamy, aż skończysz klikać. */
-const SCOPE_SETTLE_MS = 700
+/** Domownik widzi wszystko, co wspólne – prywatne („Tylko ja”) ustawia każdy sam (decyzja Hani 2026-10-25). */
+const ALL: Scope = { all: true, categoryIds: [], calendar: true }
 
-const CALENDAR = { id: 'cal', name: 'Kalendarz', color: colors.brass300 }
-
-/**
- * 5c–d Zaproś domownika (Zaproszenie.dc.html, ZaproszenieGotowe.dc.html) z tekstami z TEKSTY.md
- * (#10–15) i jednorazowym linkiem. Podgląd stanu „jest z Wami”: `?etap=dolaczyla`.
- */
 /**
  * 5c–d Zaproś domownika (Zaproszenie.dc.html, ZaproszenieGotowe.dc.html) z tekstami z TEKSTY.md
  * (#10–15), bez kodu QR. Zaproszenie (6 cyfr + link) zapisane w Firestore; gdy ktoś go użyje –
- * „… jest z Wami”. „Nowy kod” i zmiana zakresu zastępują stare zaproszenie nowym.
+ * „… jest z Wami”. „Nowy kod” zastępuje stare zaproszenie nowym.
  */
 export function InviteScreen() {
-  const { categories, members, houseName } = useStore()
+  const { members, houseName } = useStore()
   const house = useHouse()
   const navigate = useNavigate()
   const [invite, setInvite] = useState<InviteState | null>(null)
@@ -42,33 +28,12 @@ export function InviteScreen() {
   /** Każda zmiana = nowe zaproszenie („Nowy kod”, „Zaproś kolejną osobę”). */
   const [round, setRound] = useState(0)
   const [now, setNow] = useState(() => Date.now())
-  const [scopeAll, setScopeAll] = useState(true)
-  // domyślnie przy „Wybrane”: dwie pierwsze kategorie (Zakupy, Dom) i Kalendarz
-  const [picked, setPicked] = useState<Record<string, boolean>>(() => ({
-    ...Object.fromEntries(categories.slice(0, 2).map((c) => [c.id, true])),
-    cal: true,
-  }))
   const [copied, setCopied] = useState(false)
 
   useEffect(() => {
     const t = setInterval(() => setNow(Date.now()), 1000)
     return () => clearInterval(t)
   }, [])
-
-  const options = [...categories.map((c) => ({ id: c.id, name: c.name, color: c.color })), CALENDAR]
-  const chosen = options.filter((o) => picked[o.id])
-  const scope: Scope = scopeAll
-    ? { all: true, categoryIds: [], calendar: true }
-    : {
-        all: false,
-        categoryIds: chosen.filter((o) => o.id !== CALENDAR.id).map((o) => o.id),
-        calendar: !!picked[CALENDAR.id],
-      }
-  const noScope = !scopeAll && chosen.length === 0
-  const scopeKey = noScope ? '' : JSON.stringify(scope)
-  const scopeShort = scopeAll
-    ? 'WSZYSTKIE KATEGORIE I KALENDARZ'
-    : chosen.map((o) => o.name.toUpperCase()).join(' · ')
 
   // aktualne wartości dla zapisu zaproszenia (bez tworzenia nowego przy każdej zmianie imion)
   const latest = useRef({ houseName, memberNames: members.map((m) => m.name) })
@@ -77,56 +42,50 @@ export function InviteScreen() {
   }, [houseName, members])
   /** Kod, który trzeba usunąć, gdy powstaje nowy (niewykorzystany). */
   const open = useRef<string | null>(null)
-  /** Zakres przy poprzednim kodzie – po jego zmianie nowy kod po chwili, „Nowy kod” od razu. */
-  const lastScope = useRef<string | null>(null)
 
   useEffect(() => {
-    if (!scopeKey) return
     let alive = true
     let unwatch = () => {}
-    const settle = lastScope.current !== null && lastScope.current !== scopeKey
-    lastScope.current = scopeKey
-    const start = setTimeout(
-      async () => {
-        const old = open.current
-        open.current = null
-        if (old) house.cancelInvite(old).catch(() => {})
-        setInvite(null)
-        setError(null)
-        setCopied(false)
-        try {
-          const code = await house.createInvite({ scope: JSON.parse(scopeKey), ...latest.current })
-          // w międzyczasie zmieniony zakres – ten kod już niepotrzebny
-          if (!alive) return void house.cancelInvite(code).catch(() => {})
-          open.current = code
-          unwatch = house.watchInvite(code, (s) => {
-            if (!alive) return
-            if (s?.usedBy) open.current = null
-            setInvite(s)
-            setNow(Date.now())
-          })
-        } catch (e) {
-          if (alive)
-            setError(
-              e instanceof JoinError && e.code === 'offline'
-                ? 'Brak internetu – zaproszenie wymaga połączenia'
-                : 'Nie udało się utworzyć kodu',
-            )
-        }
-      },
-      settle ? SCOPE_SETTLE_MS : 0,
-    )
+    const start = setTimeout(async () => {
+      const old = open.current
+      open.current = null
+      if (old) house.cancelInvite(old).catch(() => {})
+      setInvite(null)
+      setError(null)
+      setCopied(false)
+      try {
+        const code = await house.createInvite({ scope: ALL, ...latest.current })
+        // w międzyczasie wyjście z ekranu albo „Nowy kod” – ten kod już niepotrzebny
+        if (!alive) return void house.cancelInvite(code).catch(() => {})
+        open.current = code
+        unwatch = house.watchInvite(code, (s) => {
+          if (!alive) return
+          if (s?.usedBy) open.current = null
+          setInvite(s)
+          setNow(Date.now())
+        })
+      } catch (e) {
+        if (alive)
+          setError(
+            e instanceof JoinError && e.code === 'offline'
+              ? 'Brak internetu – zaproszenie wymaga połączenia'
+              : 'Nie udało się utworzyć kodu',
+          )
+      }
+    }, 0)
     return () => {
       alive = false
       clearTimeout(start)
       unwatch()
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- nowy kod tylko przy zmianie zakresu lub „Nowy kod”
-  }, [scopeKey, round, house.createInvite])
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- nowy kod tylko przy „Nowy kod”
+  }, [round, house.createInvite])
 
   const left = invite ? Math.max(0, invite.createdAt + VALID_MS - now) : VALID_MS
   const expired = !!invite && left === 0
-  const mmss = `${Math.floor(left / 60000)}:${String(Math.floor((left % 60000) / 1000)).padStart(2, '0')}`
+  // pełne sekundy w górę – tuż po utworzeniu „10:00”, nie „9:59”
+  const secs = Math.ceil(left / 1000)
+  const mmss = `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}`
   const joinedUid = invite?.usedBy ?? null
   const joined = !!joinedUid
   const joinedName = members.find((m) => m.uid === joinedUid)?.name ?? 'Nowy domownik'
@@ -219,11 +178,7 @@ export function InviteScreen() {
                 {error ? (
                   <strong style={{ color: '#A4492F' }}>{error}</strong>
                 ) : !invite ? (
-                  noScope ? (
-                    'Zaznacz, co zobaczy domownik'
-                  ) : (
-                    'Tworzę kod…'
-                  )
+                  'Tworzę kod…'
                 ) : expired ? (
                   <strong style={{ color: '#A4492F' }}>Kod wygasł</strong>
                 ) : (
@@ -235,7 +190,6 @@ export function InviteScreen() {
               <button
                 type="button"
                 onClick={() => setRound((r) => r + 1)}
-                disabled={noScope}
                 style={{
                   height: 36,
                   padding: '0 8px',
@@ -276,72 +230,6 @@ export function InviteScreen() {
               <strong>Czekam na drugi telefon…</strong> Kod działa raz i wygasa po 10 minutach.
             </span>
           </div>
-
-          <Section label="CO ZOBACZY DOMOWNIK">
-            <Card style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: 14 }}>
-              <div
-                role="radiogroup"
-                aria-label="Co zobaczy domownik"
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-                  gap: 4,
-                  padding: 3,
-                  borderRadius: 18,
-                  background: colors.sand,
-                }}
-              >
-                {[
-                  { all: true, name: 'Wszystko' },
-                  { all: false, name: 'Wybrane' },
-                ].map((o) => {
-                  const on = scopeAll === o.all
-                  return (
-                    <button
-                      key={o.name}
-                      type="button"
-                      role="radio"
-                      aria-checked={on}
-                      onClick={() => setScopeAll(o.all)}
-                      style={{
-                        height: 38,
-                        border: 0,
-                        borderRadius: 15,
-                        fontSize: 14,
-                        fontWeight: 800,
-                        background: on ? colors.white : 'transparent',
-                        color: on ? colors.green900 : colors.muted,
-                        boxShadow: on ? '0 1px 3px rgba(31,61,46,0.15)' : 'none',
-                      }}
-                    >
-                      {o.name}
-                    </button>
-                  )
-                })}
-              </div>
-              {!scopeAll && (
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                  {options.map((o) => (
-                    <Chip
-                      key={o.id}
-                      on={!!picked[o.id]}
-                      onClick={() => setPicked((p) => ({ ...p, [o.id]: !p[o.id] }))}
-                      dot={<Dot color={picked[o.id] ? colors.brass300 : o.color} />}
-                    >
-                      {o.name}
-                    </Chip>
-                  ))}
-                </div>
-              )}
-              <span style={{ fontSize: 13, lineHeight: 1.45, color: colors.muted }}>
-                {scopeAll
-                  ? 'Wszystkie kategorie zadań i cały kalendarz. Możesz to zmienić później.'
-                  : chosen.length
-                    ? 'Domownik zobaczy tylko zaznaczone. Resztę zostawiasz dla siebie.'
-                    : 'Zaznacz przynajmniej jedną rzecz.'}
-              </span>
-            </Card>
-          </Section>
 
           <Section label="JAK DOŁĄCZYĆ">
             <Card
@@ -438,19 +326,6 @@ export function InviteScreen() {
             </span>
           </Card>
           <Card radius={22}>
-            <Row label="Widzi">
-              <span
-                style={{
-                  fontSize: 12,
-                  fontWeight: 800,
-                  letterSpacing: '0.8px',
-                  color: colors.muted,
-                  textAlign: 'right',
-                }}
-              >
-                {scopeShort}
-              </span>
-            </Row>
             <Row label="Domownicy" last>
               <span style={{ display: 'flex', gap: 4 }}>
                 {[

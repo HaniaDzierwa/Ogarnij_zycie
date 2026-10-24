@@ -4,13 +4,7 @@ import { paths } from '../app/screens.ts'
 import { Accent, Header } from '../components/Header.tsx'
 import { Logo } from '../components/Logo.tsx'
 import { BottomActions, Card, Screen } from '../components/ui.tsx'
-import {
-  JoinError,
-  joinErrorMessage,
-  useHouse,
-  type InvitePreview,
-  type Scope,
-} from '../house/house.ts'
+import { JoinError, joinErrorMessage, useHouse, type InvitePreview } from '../house/house.ts'
 import { colors, fonts } from '../theme'
 
 const label = {
@@ -24,15 +18,6 @@ const label = {
 function formatCode(v: string): string {
   const d = v.replace(/\D/g, '').slice(0, 6)
   return d.length > 3 ? `${d.slice(0, 3)} ${d.slice(3)}` : d
-}
-
-/** Co zobaczy domownik – z zaproszenia (nazw kategorii dołączający jeszcze nie zna). */
-function scopeText(scope: Scope): string {
-  if (scope.all) return 'wszystkie kategorie i kalendarz'
-  const cats = scope.categoryIds.length
-  if (!cats) return 'tylko kalendarz'
-  const what = cats === 1 ? '1 kategoria' : `${cats} ${cats < 5 ? 'kategorie' : 'kategorii'}`
-  return scope.calendar ? `${what} i kalendarz` : what
 }
 
 const messageOf = (e: unknown) => joinErrorMessage(e instanceof JoinError ? e.code : 'unknown')
@@ -224,7 +209,7 @@ export function JoinScreen() {
                   </span>
                 ))}
               </span>
-              {who} · {scopeText(found.scope)}
+              {who}
             </span>
           </Card>
           <Card style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '16px 18px' }}>

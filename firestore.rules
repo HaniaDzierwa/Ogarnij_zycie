@@ -5,7 +5,7 @@ rules_version = '2';
 // dom zakłada się tylko dla siebie; każda zmiana podpisana zalogowanym użytkownikiem (updatedBy)
 // i czasem serwera (updatedAt); poprawne typy i limity (src/firebase/model.ts → LIMITS).
 // Testy: tests/rules/firestore.rules.test.ts (`npm run test:reguly`, emulator – Java 21).
-// Etap 4: zaproszenia i dołączanie (zrobione); dalej – zakres „Wybrane”, usuwanie domowników.
+// Etap 4: zaproszenia i dołączanie; „Tylko ja” (prywatne zadania i wydarzenia); dalej – usuwanie domowników.
 
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -309,8 +309,9 @@ service cloud.firestore {
       match /tasks/{id} {
         allow read: if isMember(houseId);
         allow create, update: if isMemberAfter(houseId) && validTask(request.resource.data);
-        // na zawsze – tylko z kosza („Opróżnij kosz”)
-        allow delete: if isMember(houseId) && resource.data.deleted == true;
+        // na zawsze – tylko z kosza („Opróżnij kosz”); autor – także przeniesienie do „Tylko ja”
+        allow delete: if isMember(houseId)
+          && (resource.data.deleted == true || resource.data.createdBy == me());
       }
 
       // ── Rodzaje wydarzeń ──────────────────────────────────────────────────
@@ -330,7 +331,23 @@ service cloud.firestore {
       match /events/{id} {
         allow read: if isMember(houseId);
         allow create, update: if isMemberAfter(houseId) && validEvent(request.resource.data);
-        allow delete: if isMember(houseId) && resource.data.deleted == true;
+        allow delete: if isMember(houseId)
+          && (resource.data.deleted == true || resource.data.createdBy == me());
+      }
+
+      // ── „Tylko ja”: zadania i wydarzenia widoczne tylko dla autora (decyzja Hani 2026-10-25) ──
+      // Zapisuje, czyta i usuwa wyłącznie sam autor, dopóki jest domownikiem; inni domownicy nie widzą.
+
+      match /private/{uid}/tasks/{id} {
+        allow read, delete: if isMember(houseId) && uid == me();
+        allow create, update: if isMemberAfter(houseId) && uid == me()
+          && validTask(request.resource.data) && request.resource.data.createdBy == me();
+      }
+
+      match /private/{uid}/events/{id} {
+        allow read, delete: if isMember(houseId) && uid == me();
+        allow create, update: if isMemberAfter(houseId) && uid == me()
+          && validEvent(request.resource.data) && request.resource.data.createdBy == me();
       }
     }
 

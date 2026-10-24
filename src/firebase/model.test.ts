@@ -57,6 +57,19 @@ describe('zadania', () => {
   })
 })
 
+describe('„Tylko ja”', () => {
+  test('prywatność wynika z miejsca w bazie – nie jest polem dokumentu', () => {
+    const task = { ...mockTasks(DAY)[0], private: true }
+    const doc = taskToDoc(task, 'hania')
+    expect('private' in doc).toBe(false)
+    expect(taskFromDoc(task.id, { ...doc }, true)).toEqual(task)
+    expect(taskFromDoc(task.id, { ...doc }).private).toBe(false)
+    expect(paths.privateTasks('dom1', 'hania')).toBe('houses/dom1/private/hania/tasks')
+    const ev = { ...mockEvents(DAY)[0], private: true }
+    expect(eventFromDoc(ev.id, { ...eventToDoc(ev, 'hania') }, true)).toEqual(ev)
+  })
+})
+
 describe('priorytety', () => {
   test('własny priorytet i zadanie z nim przechodzą do bazy i z powrotem', () => {
     const p = { id: 'p1', name: 'Na weekend', color: '#3F7A7A', order: 25 }

@@ -196,6 +196,18 @@ export function TaskRow({
                     {due}
                   </span>
                 ))}
+              {task.private && (
+                <span
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 800,
+                    letterSpacing: '0.8px',
+                    color: colors.muted,
+                  }}
+                >
+                  TYLKO JA
+                </span>
+              )}
               {task.done && doneByLabel && (
                 <span
                   style={{

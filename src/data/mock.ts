@@ -117,6 +117,7 @@ export function mockTasks(today: DateKey): Task[] {
     subtasks: (s.subs ?? []).map(([t, d], j) => ({ id: `t${i + 1}s${j + 1}`, title: t, done: d })),
     note: '',
     createdBy: s.by ?? 'hania',
+    private: false,
     doneAt: s.done ? stamp(addDays(today, -s.done[0]), s.done[1]) : null,
     doneBy: s.done ? s.done[2] : null,
     deleted: !!s.deleted,
@@ -164,6 +165,7 @@ export function mockEvents(today: DateKey): CalendarEvent[] {
     // Tekst przypomnienia dopisuje kalendarz z pola remind.
     note: note.startsWith('Przypomnienie') ? '' : note,
     createdBy: 'hania',
+    private: false,
     deleted: !!deleted,
     deletedAt: deleted ? stamp(addDays(today, -deleted[0]), '12:00') : null,
     deletedBy: deleted ? deleted[1] : null,

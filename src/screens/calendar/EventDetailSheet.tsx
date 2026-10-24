@@ -8,6 +8,7 @@ import { colors, fonts, priorities } from '../../theme'
 import { Group } from './EventSheet.tsx'
 import { label, timeInput } from './formStyles.ts'
 import { useBufferedText } from '../../components/useBufferedText.ts'
+import { VisibilityField } from '../../components/VisibilityField.tsx'
 
 /**
  * Arkusz wydarzenia – jak arkusz zadania: edycja w miejscu (zmiany zapisują się od razu),
@@ -231,6 +232,12 @@ export function EventDetailSheet({
       </Group>
 
       <NoteField id="wyd-notatka" value={note.text} onChange={note.change} />
+
+      <VisibilityField
+        value={event.private}
+        authorUid={event.createdBy}
+        onChange={(p) => onChange((e) => ({ ...e, private: p }))}
+      />
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: 8, marginTop: 2 }}>
         <button

@@ -198,8 +198,11 @@ describe('dane domu', () => {
     await assertFails(getDocs(collection(db('obcy'), paths.categories('dom1'))))
     await assertFails(getDocs(collection(db('obcy'), paths.events('dom1'))))
   })
-  test('na zawsze można usunąć tylko zadanie z kosza („Opróżnij kosz”)', async () => {
-    await assertFails(deleteDoc(doc(db('hania'), taskPath('dom1'))))
+  test('usunąć na zawsze: zadanie z kosza („Opróżnij kosz”) albo własne (przeniesienie do „Tylko ja”)', async () => {
+    await invite()
+    await join('ola')
+    // cudzego, niewyrzuconego – nie
+    await assertFails(deleteDoc(doc(db('ola'), taskPath('dom1'))))
     const trashed = sampleTask({ deleted: true, deletedAt: '2026-10-09T12:00', deletedBy: 'hania' })
     await setDoc(doc(db('hania'), taskPath('dom1')), taskToDoc(trashed, 'hania'))
     await assertSucceeds(deleteDoc(doc(db('hania'), taskPath('dom1'))))
@@ -431,5 +434,61 @@ describe('dołączanie', () => {
     await assertFails(
       updateDoc(doc(db('hania'), paths.invite(CODE)), { usedBy: 'hania', usedAt: new Date() }),
     )
+  })
+})
+
+// ── „Tylko ja” (etap 4, decyzja Hani 2026-10-25) ───────────────────────────
+
+describe('„Tylko ja”: prywatne zadania i wydarzenia', () => {
+  beforeEach(async () => {
+    await seed()
+    await invite()
+    await join('ola')
+  })
+  const own = (as: string, uid = as, id = 'p1') =>
+    doc(db(as), `${paths.privateTasks('dom1', uid)}/${id}`)
+  const ownEvent = (as: string, uid = as) => doc(db(as), `${paths.privateEvents('dom1', uid)}/w1`)
+  const event = (by: string) => ({ ...mockEvents(DAY)[0], id: 'w1', createdBy: by, private: true })
+
+  test('autor zapisuje i czyta swoje prywatne; inny domownik i obcy – nic', async () => {
+    await assertSucceeds(setDoc(own('hania'), taskToDoc(sampleTask({ private: true }), 'hania')))
+    await assertSucceeds(getDoc(own('hania')))
+    await assertSucceeds(getDocs(collection(db('hania'), paths.privateTasks('dom1', 'hania'))))
+    await assertFails(getDoc(own('ola', 'hania')))
+    await assertFails(getDocs(collection(db('ola'), paths.privateTasks('dom1', 'hania'))))
+    await assertFails(getDoc(own('obcy', 'hania')))
+    await assertFails(deleteDoc(own('ola', 'hania')))
+    await assertFails(
+      setDoc(own('ola', 'hania'), taskToDoc(sampleTask({ title: 'X', createdBy: 'ola' }), 'ola')),
+    )
+  })
+  test('prywatne tylko jako autor (createdBy = ja) i tylko w domu, do którego należę', async () => {
+    await assertFails(
+      setDoc(own('ola', 'ola'), taskToDoc(sampleTask({ createdBy: 'hania' }), 'ola')),
+    )
+    await assertFails(
+      setDoc(
+        doc(db('obcy'), `${paths.privateTasks('dom1', 'obcy')}/p1`),
+        taskToDoc(sampleTask({ createdBy: 'obcy' }), 'obcy'),
+      ),
+    )
+  })
+  test('wspólne → „Tylko ja” (autor): usunięcie ze wspólnych + zapis w prywatnych jedną paczką', async () => {
+    const fs = db('hania')
+    const batch = writeBatch(fs)
+    batch.delete(doc(fs, taskPath('dom1')))
+    batch.set(
+      doc(fs, `${paths.privateTasks('dom1', 'hania')}/z1`),
+      taskToDoc(sampleTask(), 'hania'),
+    )
+    await assertSucceeds(batch.commit())
+    // Ola już go nie widzi we wspólnych
+    expect((await getDoc(doc(db('ola'), taskPath('dom1')))).exists()).toBe(false)
+  })
+  test('prywatne wydarzenia: autor tak, inny domownik nie', async () => {
+    await assertSucceeds(setDoc(ownEvent('ola'), eventToDoc(event('ola'), 'ola')))
+    await assertFails(getDoc(ownEvent('hania', 'ola')))
+    await assertFails(getDocs(collection(db('hania'), paths.privateEvents('dom1', 'ola'))))
+    await assertSucceeds(deleteDoc(ownEvent('ola')))
   })
 })

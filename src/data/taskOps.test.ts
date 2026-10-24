@@ -25,6 +25,7 @@ const task: Task = {
     { id: 'b', title: 'Zapakować', done: false },
   ],
   createdBy: 'hania',
+  private: false,
   doneAt: null,
   doneBy: null,
   deleted: false,

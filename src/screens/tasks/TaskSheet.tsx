@@ -7,6 +7,7 @@ import type { Category, Subtask, Task } from '../../data/types.ts'
 import { colors, DEFAULT_PRIORITY, fonts, type Priority } from '../../theme'
 import { NewCategoryButton, NewCategoryForm } from './NewCategoryForm.tsx'
 import { PriorityPicker } from './PriorityPicker.tsx'
+import { VisibilityField } from '../../components/VisibilityField.tsx'
 
 const PRESETS = ['Bez terminu', 'Dziś', 'Jutro', 'W tym tygodniu'] as const
 type Preset = (typeof PRESETS)[number]
@@ -15,7 +16,7 @@ type DueChoice = Preset | 'Inna data'
 /** Nowe zadanie z formularza (resztę pól – kto, kiedy – uzupełnia ekran). */
 export type TaskDraft = Pick<
   Task,
-  'title' | 'categoryId' | 'priority' | 'due' | 'subtasks' | 'note'
+  'title' | 'categoryId' | 'priority' | 'due' | 'subtasks' | 'note' | 'private'
 >
 
 function presetDate(p: Preset, today: DateKey): DateKey | null {
@@ -42,6 +43,8 @@ export function TaskSheet({ onClose, categories, today, onAddCategory, onSave }:
   const [title, setTitle] = useState('')
   const [categoryId, setCategoryId] = useState<string | null>(categories[0]?.id ?? null)
   const [priority, setPriority] = useState<Priority>(DEFAULT_PRIORITY)
+  // nowe – domyślnie „Wspólne” (decyzja Hani 2026-10-25)
+  const [isPrivate, setPrivate] = useState(false)
   const [choice, setChoice] = useState<DueChoice>('Bez terminu')
   const [customDate, setCustomDate] = useState<DateKey>(addDays(today, 7))
   const [steps, setSteps] = useState<Subtask[]>([])
@@ -60,7 +63,15 @@ export function TaskSheet({ onClose, categories, today, onAddCategory, onSave }:
   const submit = () => {
     const t = title.trim()
     if (!t) return
-    onSave({ title: t, categoryId, priority, due, subtasks: steps, note: note.trim() })
+    onSave({
+      title: t,
+      categoryId,
+      priority,
+      due,
+      subtasks: steps,
+      note: note.trim(),
+      private: isPrivate,
+    })
   }
 
   return (
@@ -255,6 +266,8 @@ export function TaskSheet({ onClose, categories, today, onAddCategory, onSave }:
       </Group>
 
       <NoteField id="notatka-zadania" value={note} onChange={setNote} />
+
+      <VisibilityField value={isPrivate} onChange={setPrivate} />
 
       <PrimaryButton onClick={submit}>Dodaj zadanie</PrimaryButton>
     </Sheet>

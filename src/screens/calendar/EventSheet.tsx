@@ -6,6 +6,7 @@ import { colors, fonts } from '../../theme'
 import { REMINDS } from '../../data/eventOps.ts'
 import { TYPE_SWATCHES } from './calendarView.ts'
 import { label, timeInput } from './formStyles.ts'
+import { VisibilityField } from '../../components/VisibilityField.tsx'
 
 /** Nowe wydarzenie z formularza (id nadaje ekran). */
 export type EventDraft = Omit<CalendarEvent, 'id' | 'createdBy'>
@@ -38,6 +39,8 @@ export function EventSheet({
   const [note, setNote] = useState('')
   const [newTypeOpen, setNewTypeOpen] = useState(false)
   const [typeName, setTypeName] = useState('')
+  // nowe – domyślnie „Wspólne” (decyzja Hani 2026-10-25)
+  const [isPrivate, setPrivate] = useState(false)
   const [typeColor, setTypeColor] = useState<string>(TYPE_SWATCHES[0].color)
 
   const d = parseKey(day)
@@ -63,6 +66,7 @@ export function EventSheet({
       typeId,
       remind,
       note: note.trim(),
+      private: isPrivate,
       deleted: false,
       deletedAt: null,
       deletedBy: null,
@@ -288,6 +292,8 @@ export function EventSheet({
       </Group>
 
       <NoteField id="notatka-wydarzenia" value={note} onChange={setNote} />
+
+      <VisibilityField value={isPrivate} onChange={setPrivate} />
 
       <PrimaryButton onClick={submit}>Dodaj do kalendarza</PrimaryButton>
     </Sheet>

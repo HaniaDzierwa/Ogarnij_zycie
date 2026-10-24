@@ -8,6 +8,7 @@ import type { Category, Task } from '../../data/types.ts'
 import { colors, fonts, priorities } from '../../theme'
 import { useBufferedText } from '../../components/useBufferedText.ts'
 import { PriorityPicker } from './PriorityPicker.tsx'
+import { VisibilityField } from '../../components/VisibilityField.tsx'
 import { DoneBox, SubtaskToggle } from './TaskRow.tsx'
 
 const PRESETS = ['Bez terminu', 'Dziś', 'Jutro', 'W tym tygodniu'] as const
@@ -353,6 +354,12 @@ export function TaskDetailSheet({
       </div>
 
       <NoteField id="det-notatka" value={note.text} onChange={note.change} />
+
+      <VisibilityField
+        value={task.private}
+        authorUid={task.createdBy}
+        onChange={(p) => onChange((t) => ({ ...t, private: p }))}
+      />
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: 8, marginTop: 2 }}>
         <button

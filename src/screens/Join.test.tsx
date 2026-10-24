@@ -25,7 +25,7 @@ test('Dołącz: 6 cyfr (bez skanera), teksty bez Wi‑Fi, podpowiedź o linku', 
   typeCode(valid)
   expect(await screen.findByText('ZNALEZIONO DOM')).toBeDefined()
   expect(screen.getByText('na Leśnej')).toBeDefined()
-  expect(screen.getByText(/Hania i Krzyś · wszystkie kategorie i kalendarz/)).toBeDefined()
+  expect(screen.getByText(/^Hania i Krzyś$/)).toBeDefined()
 })
 
 test('zły, przeterminowany albo użyty kod – komunikat, bez „Znaleziono dom”', async () => {

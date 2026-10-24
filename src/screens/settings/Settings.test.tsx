@@ -49,11 +49,11 @@ test('Porządki → Kosz i Wspólny dom → Domownicy', () => {
   expect(router.state.location.pathname).toBe('/ustawienia/domownicy')
 })
 
-test('Domownicy: lista z zakresem i „Zaproś”, bez synchronizacji (Firebase robi to sam)', () => {
+test('Domownicy: lista z rolą i „Zaproś”, bez synchronizacji (Firebase robi to sam)', () => {
   const router = renderAt('/ustawienia/domownicy')
   expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Wspólny dom')
   expect(screen.getByText('Krzyś')).toBeDefined()
-  expect(screen.getByText('WSZYSTKIE KATEGORIE I KALENDARZ')).toBeDefined()
+  expect(screen.getByText('DOMOWNIK')).toBeDefined()
   for (const gone of [
     'ONLINE · ZSYNCHRONIZOWANO',
     'DO WYSŁANIA',
@@ -86,7 +86,7 @@ test('plakietka OFFLINE tylko bez internetu; online – nic', () => {
 const codeShown = () => screen.getByTestId('kod').textContent!
 const waitForCode = () => waitFor(() => expect(codeShown()).toMatch(/^\d{3} \d{3}$/))
 
-test('Zaproś: kod 6 cyfr (bez QR), ważność 10 min, zakres „Wybrane” daje nowy kod', async () => {
+test('Zaproś: kod 6 cyfr (bez QR), ważność 10 min, bez wyboru „Co zobaczy domownik”', async () => {
   renderAt('/ustawienia/domownicy/zapros')
   expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Zaproś domownika')
   expect(screen.getByText('JEDNORAZOWY KOD')).toBeDefined()
@@ -99,15 +99,9 @@ test('Zaproś: kod 6 cyfr (bez QR), ważność 10 min, zakres „Wybrane” daje
   expect(screen.queryByText(/Skanuje/)).toBeNull()
   expect(screen.getByRole('button', { name: /Wyślij link wiadomością/ })).toBeDefined()
 
-  const first = codeShown()
-  fireEvent.click(screen.getByRole('radio', { name: 'Wybrane' }))
-  expect(screen.getByRole('button', { name: 'Kalendarz' }).getAttribute('aria-pressed')).toBe(
-    'true',
-  )
-  fireEvent.click(screen.getByRole('button', { name: 'Zdrowie' }))
-  expect(screen.getByRole('button', { name: 'Zdrowie' }).getAttribute('aria-pressed')).toBe('true')
-  await waitFor(() => expect(codeShown()).not.toBe(first), { timeout: 3000 })
-  await waitForCode()
+  // każdy sam decyduje „Wspólne / Tylko ja” przy zadaniu (decyzja Hani 2026-10-25)
+  expect(screen.queryByText('CO ZOBACZY DOMOWNIK')).toBeNull()
+  expect(screen.queryByRole('radio', { name: 'Wybrane' })).toBeNull()
 })
 
 test('Zaproś: po 10 minutach kod wygasa, „Nowy kod” daje kolejne 10 minut', async () => {
@@ -127,7 +121,7 @@ test('Zaproś: gdy domownik użyje kodu – „Krzyś jest z Wami”, „Gotowe�
   const router = renderApp('/ustawienia/domownicy/zapros', { inviteUsedBy: 'krzys' })
   expect(await screen.findByText(/Zmiany pojawią się u Was w kilka sekund/)).toBeDefined()
   expect(screen.getByText('jest z Wami').parentElement!.textContent).toBe('Krzyś jest z Wami')
-  expect(screen.getByText('WSZYSTKIE KATEGORIE I KALENDARZ')).toBeDefined()
+  expect(screen.queryByText('Widzi')).toBeNull()
   fireEvent.click(screen.getByRole('link', { name: /Gotowe/ }))
   expect(router.state.location.pathname).toBe('/ustawienia/domownicy')
 })
