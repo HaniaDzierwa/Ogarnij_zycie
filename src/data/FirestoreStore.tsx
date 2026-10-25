@@ -329,6 +329,7 @@ function HouseData({ children }: { children: ReactNode }) {
       members,
       notifications: userDoc.notif,
       cleanupDays: userDoc.cleanupDays,
+      taskReminderTime: userDoc.taskReminderTime,
       toast,
       who: () => ({ uid, at: nowStamp(day) }),
       // imię jest w profilu i na liście domowników – zmiana w obu miejscach jednym zapisem
@@ -354,6 +355,7 @@ function HouseData({ children }: { children: ReactNode }) {
       setNotifications: (update: (n: NotificationSettings) => NotificationSettings) =>
         updateUser({ notif: update(userDoc.notif) }),
       setCleanupDays: (cleanupDays: CleanupDays) => updateUser({ cleanupDays }),
+      setTaskReminderTime: (taskReminderTime: string) => updateUser({ taskReminderTime }),
     }),
     [
       day,

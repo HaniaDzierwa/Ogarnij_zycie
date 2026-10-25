@@ -158,6 +158,33 @@ export function clearCandidates(tasks: Task[], today: DateKey, option: ClearOpti
 
 export const TRASH_DAYS = 30
 
+/**
+ * Sprzątanie (Ustawienia → Porządki): ogarnięte starsze niż `cleanupDays` do Kosza; z Kosza
+ * na zawsze to, co leży dłużej niż 30 dni. Zwraca null, gdy nie ma nic do zrobienia.
+ * Robi to Worker raz dziennie, a zapasowo aplikacja przy uruchomieniu (etap 6).
+ */
+export function autoCleanup(
+  tasks: Task[],
+  events: CalendarEvent[],
+  today: DateKey,
+  cleanupDays: number | null,
+  who: { uid: string; at: string },
+): { tasks: Task[]; events: CalendarEvent[] } | null {
+  const expired = (deletedAt: string | null) =>
+    !!deletedAt && diffDays(stampDay(deletedAt), today) > TRASH_DAYS
+  const stale = (t: Task) =>
+    cleanupDays !== null && t.done && !t.deleted && doneDaysAgo(t, today) > cleanupDays
+  const nextTasks = tasks
+    .filter((t) => !(t.deleted && expired(t.deletedAt)))
+    .map((t) => (stale(t) ? { ...t, deleted: true, deletedAt: who.at, deletedBy: who.uid } : t))
+  const nextEvents = events.filter((e) => !(e.deleted && expired(e.deletedAt)))
+  const changed =
+    nextTasks.length !== tasks.length ||
+    nextEvents.length !== events.length ||
+    nextTasks.some((t, i) => t !== tasks[i])
+  return changed ? { tasks: nextTasks, events: nextEvents } : null
+}
+
 /** Wpis w koszu: zadanie albo wydarzenie z kalendarza. */
 export type TrashItem = {
   id: string

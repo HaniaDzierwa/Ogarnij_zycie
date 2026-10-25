@@ -10,10 +10,20 @@ Aktualny etap: **4 – Wspólny dom** (w toku)
 | 3 Zadania | zakończony (odbiór razem z etapem 5) | 2026-10-25 |
 | 4 Wspólny dom (dawniej 8) | zakończony | 2026-10-25 |
 | 5 Kategorie, Kalendarz, Start i wspólne testowanie (dawniej 4–6 + odbiór 3) | zakończony | 2026-10-25 |
-| 6 Ustawienia i push (dawniej 7) | następny | – |
+| 6 Ustawienia i push (dawniej 7) | w toku | – |
 | 7 Testy i publikacja (dawniej 9) | – | – |
 
 Kolejność etapów zmieniona 2026-10-20 (decyzja Hani: testować dopiero we dwoje) – szczegóły w PLAN.md. Wpisy w dzienniku sprzed tej daty używają dawnej numeracji.
+
+## Etap 6 – kroki (Ustawienia i powiadomienia push)
+
+| Krok | Status |
+| --- | --- |
+| 1 Ustawienia: godzina przypomnienia o terminach (domyślnie 18:00); zapasowe sprzątanie przy uruchomieniu (ogarnięte → Kosz wg Porządków, Kosz → na zawsze po 30 dniach) | zrobione |
+| 2 Zgoda na powiadomienia (karta po pierwszym uruchomieniu i przy przełączniku), subskrypcja Web Push przy koncie, instrukcja „Dodaj do ekranu głównego” na iPhonie | do zrobienia (następny) |
+| 3 Instrukcja dla Hani (docs/FIREBASE.md): konto Cloudflare, klucze VAPID, konto serwisowe Firebase – sekrety tylko w Cloudflare | do zrobienia |
+| 4 Cloudflare Worker (cron co minutę): terminy, wydarzenia, poranne 8:00, zmiany domowników, codzienne sprzątanie | do zrobienia |
+| 5 Testy, demo na Androidzie i iPhonie, odbiór | do zrobienia |
 
 ## Etap 5 – kroki (Kategorie, Kalendarz, Start, testowanie we dwoje)
 
@@ -219,3 +229,4 @@ Wersja testowa: https://ogarnij-zycie--test-56tdtc0y.web.app (kanał `test`, odn
 - 2026-10-25 · Etap 5 · Hania: zwijanie arkusza przeciągnięciem – „super działa”.
 - 2026-10-25 · Etap 5 · Hania: dzień w „Nowe wydarzenie” i arkusze do odczytu z „Edytuj / Zapisz” – „działa”.
 - 2026-10-25 · Etap 5 · Odbiór (z odbiorem etapu 3): zadania (nic nie znika, gesty, „Cofnij”, powrót z Kosza), filtry i liczniki (też testy 96 kombinacji), wydarzenia u domowników i powrót z Kosza na swój dzień, liczby na Starcie. Hania: „uwag już nie ma”, „akceptuję”. Etapy 3 i 5 zakończone.
+- 2026-10-25 · Etap 6 · Start etapu (kroki w tabeli „Etap 6 – kroki”). Krok 1: Ustawienia → Powiadomienia → pod „Terminy zadań” pole „Godzina przypomnienia” (co 15 min, domyślnie 18:00 – Hania potwierdziła), opis „Dzień przed terminem o …”; zapis w profilu (`taskReminderTime`). Zapasowe sprzątanie przy uruchomieniu (raz na otwarcie i dom, po wczytaniu danych): ogarnięte starsze niż ustawienie z Porządków (7 / 30 dni) – do Kosza, z Kosza – na zawsze po 30 dniach (zadania i wydarzenia, także „Tylko ja”); „Nigdy” – ogarnięte zostają. Bez zmian w regułach. Testy: 300. · Sprawdzenie: Ustawienia → godzina przypomnienia → zmień; wyłącz „Terminy zadań” – pole znika.

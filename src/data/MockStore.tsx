@@ -49,6 +49,7 @@ export function MockStoreProvider({
   const [eventTypes, setEventTypes] = useState(() => (noEventTypes ? [] : mockEventTypes))
   const [notifications, setNotifications] = useState(mockNotifications)
   const [cleanupDays, setCleanupDays] = useState<CleanupDays>(30)
+  const [taskReminderTime, setTaskReminderTime] = useState('18:00')
   const { toast, show, undo } = useUndoToast()
 
   const who = useCallback(() => ({ uid: currentUid, at: nowStamp(day) }), [day, currentUid])
@@ -90,6 +91,7 @@ export function MockStoreProvider({
       members: noMembers ? [] : mockMembers,
       notifications,
       cleanupDays,
+      taskReminderTime,
       toast,
       who,
       setUserName,
@@ -104,6 +106,7 @@ export function MockStoreProvider({
       setEventTypes,
       setNotifications,
       setCleanupDays,
+      setTaskReminderTime,
     }),
     [
       day,
@@ -120,6 +123,7 @@ export function MockStoreProvider({
       eventTypes,
       notifications,
       cleanupDays,
+      taskReminderTime,
       toast,
       who,
       changeTasks,

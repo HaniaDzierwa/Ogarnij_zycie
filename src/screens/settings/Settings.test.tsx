@@ -151,3 +151,13 @@ test('Wspólny dom: nazwa domu do zmiany; pusta wraca do „Nasz dom”', () => 
   fireEvent.blur(input)
   expect(input.value).toBe('Nasz dom')
 })
+
+test('Terminy zadań: godzina przypomnienia pod przełącznikiem (domyślnie 18:00)', () => {
+  renderAt('/ustawienia')
+  const time = screen.getByLabelText('Godzina przypomnienia') as HTMLInputElement
+  expect(time.value).toBe('18:00')
+  fireEvent.change(time, { target: { value: '19:30' } })
+  expect(screen.getByText('Dzień przed terminem o 19:30')).toBeDefined()
+  fireEvent.click(screen.getByRole('switch', { name: /Terminy zadań/ }))
+  expect(screen.queryByLabelText('Godzina przypomnienia')).toBeNull()
+})

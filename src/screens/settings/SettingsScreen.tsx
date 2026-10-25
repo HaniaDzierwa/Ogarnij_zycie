@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react'
+import { Fragment, useState, type ReactNode } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { paths } from '../../app/screens.ts'
 import { useAuth } from '../../auth/auth.ts'
@@ -49,7 +49,11 @@ export function SettingsScreen() {
   const trash = trashItems(tasks, events, today)
 
   const notifs: { id: keyof NotificationSettings; name: string; hint: string }[] = [
-    { id: 'tasks', name: 'Terminy zadań', hint: 'Dzień przed terminem' },
+    {
+      id: 'tasks',
+      name: 'Terminy zadań',
+      hint: `Dzień przed terminem o ${store.taskReminderTime}`,
+    },
     {
       id: 'events',
       name: 'Wydarzenia z kalendarza',
@@ -308,14 +312,48 @@ export function SettingsScreen() {
       <Section label="POWIADOMIENIA">
         <Card radius={22}>
           {notifs.map((n, i) => (
-            <ToggleRow
-              key={n.id}
-              name={n.name}
-              hint={n.hint}
-              on={notifications[n.id]}
-              onToggle={() => store.setNotifications((s) => ({ ...s, [n.id]: !s[n.id] }))}
-              last={i === notifs.length - 1}
-            />
+            <Fragment key={n.id}>
+              <ToggleRow
+                name={n.name}
+                hint={n.hint}
+                on={notifications[n.id]}
+                onToggle={() => store.setNotifications((s) => ({ ...s, [n.id]: !s[n.id] }))}
+                last={i === notifs.length - 1}
+              />
+              {/* godzina przypomnienia o terminach – pod przełącznikiem (decyzja Hani 2026-10-18) */}
+              {n.id === 'tasks' && notifications.tasks && (
+                <label
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: 12,
+                    padding: '0 18px 12px',
+                    borderBottom: `1px solid ${colors.line}`,
+                  }}
+                >
+                  <span style={{ fontSize: 14, color: colors.muted2 }}>Godzina przypomnienia</span>
+                  <input
+                    type="time"
+                    step={900}
+                    value={store.taskReminderTime}
+                    onChange={(e) => e.target.value && store.setTaskReminderTime(e.target.value)}
+                    style={{
+                      height: 44,
+                      border: `1px solid ${colors.border}`,
+                      borderRadius: 14,
+                      padding: '0 12px',
+                      fontFamily: fonts.serif,
+                      fontSize: 18,
+                      fontWeight: 600,
+                      color: colors.green900,
+                      background: colors.white,
+                      outlineColor: colors.green900,
+                    }}
+                  />
+                </label>
+              )}
+            </Fragment>
           ))}
         </Card>
       </Section>
