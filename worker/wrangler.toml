@@ -7,7 +7,8 @@
 name = "ogarnij-zycie-powiadomienia"
 main = "src/index.ts"
 compatibility_date = "2026-10-01"
-compatibility_flags = ["nodejs_compat"]
+# bez anonimowych statystyk wranglera
+send_metrics = false
 
 [triggers]
 crons = ["* * * * *"]
