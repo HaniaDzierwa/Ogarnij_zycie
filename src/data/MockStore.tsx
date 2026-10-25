@@ -23,6 +23,7 @@ export function MockStoreProvider({
   noEventTypes = false,
   notReady = false,
   customPriorities: initialPriorities = [],
+  currentUid = mockCurrentUid,
 }: {
   children: ReactNode
   today?: DateKey
@@ -34,6 +35,8 @@ export function MockStoreProvider({
   notReady?: boolean
   /** Własne priorytety domu na start. */
   customPriorities?: CustomPriority[]
+  /** Kto jest zalogowany (domyślnie Hania – założycielka; np. 'krzys' – domownik). */
+  currentUid?: string
 }) {
   const [day] = useState(() => today ?? getToday())
   const [userName, setUserName] = useState(mockUserName)
@@ -48,7 +51,7 @@ export function MockStoreProvider({
   const [cleanupDays, setCleanupDays] = useState<CleanupDays>(30)
   const { toast, show, undo } = useUndoToast()
 
-  const who = useCallback(() => ({ uid: mockCurrentUid, at: nowStamp(day) }), [day])
+  const who = useCallback(() => ({ uid: currentUid, at: nowStamp(day) }), [day, currentUid])
 
   const changeTasks = useCallback(
     (text: string, update: (t: Task[]) => Task[]) => {
@@ -76,7 +79,7 @@ export function MockStoreProvider({
       ready: !notReady,
       today: day,
       userName,
-      currentUid: mockCurrentUid,
+      currentUid,
       houseName,
       tasks,
       categories,
@@ -104,6 +107,7 @@ export function MockStoreProvider({
     }),
     [
       day,
+      currentUid,
       noMembers,
       notReady,
       userName,

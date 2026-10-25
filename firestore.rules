@@ -5,7 +5,7 @@ rules_version = '2';
 // dom zakłada się tylko dla siebie; każda zmiana podpisana zalogowanym użytkownikiem (updatedBy)
 // i czasem serwera (updatedAt); poprawne typy i limity (src/firebase/model.ts → LIMITS).
 // Testy: tests/rules/firestore.rules.test.ts (`npm run test:reguly`, emulator – Java 21).
-// Etap 4: zaproszenia i dołączanie; „Tylko ja” (prywatne zadania i wydarzenia); dalej – usuwanie domowników.
+// Etap 4: zaproszenia i dołączanie; „Tylko ja” (prywatne zadania i wydarzenia); „Opuść dom” i „Usuń z domu”.
 
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -285,7 +285,11 @@ service cloud.firestore {
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name'])
           && str(request.resource.data.name, 40);
 
-        allow delete: if false; // etap 4
+        // „Opuść dom” – każdy sam siebie; „Usuń z domu” – tylko założyciel, innego domownika
+        // (decyzje Hani 2026-10-18 i 2026-10-25). Założyciel wychodzi tylko z pustego domu – pilnuje aplikacja.
+        allow delete: if isMember(houseId)
+          && (uid == me()
+            || get(/databases/$(database)/documents/houses/$(houseId)).data.ownerUid == me());
       }
 
       // ── Kategorie ─────────────────────────────────────────────────────────

@@ -212,6 +212,11 @@ export function JoinScreen() {
               {who}
             </span>
           </Card>
+          {house.profile?.houseId && (
+            <span style={{ fontSize: 14, lineHeight: 1.45, color: colors.muted2 }}>
+              Masz już swój dom – dołączając, opuścisz go.
+            </span>
+          )}
           <Card style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '16px 18px' }}>
             <label htmlFor="imie" style={label}>
               JAK MAJĄ CIĘ WIDZIEĆ DOMOWNICY?

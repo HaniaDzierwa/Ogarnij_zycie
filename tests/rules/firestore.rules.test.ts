@@ -492,3 +492,51 @@ describe('„Tylko ja”: prywatne zadania i wydarzenia', () => {
     await assertSucceeds(deleteDoc(ownEvent('ola')))
   })
 })
+
+// ── „Opuść dom” i „Usuń z domu” (etap 4, krok 5) ───────────────────────────
+
+describe('wychodzenie i usuwanie domowników', () => {
+  beforeEach(async () => {
+    await seed()
+    await invite()
+    await join('ola')
+    await invite('555555')
+    await join('ewa', '555555')
+  })
+  const member = (as: string, uid: string) => doc(db(as), `${paths.members('dom1')}/${uid}`)
+
+  test('„Opuść dom”: domownik wypisuje siebie i czyści dom w profilu jedną paczką', async () => {
+    const fs = db('ola')
+    const batch = writeBatch(fs)
+    batch.delete(doc(fs, `${paths.members('dom1')}/ola`))
+    batch.update(doc(fs, paths.user('ola')), { houseId: null })
+    await assertSucceeds(batch.commit())
+    await assertFails(getDocs(collection(db('ola'), paths.tasks('dom1'))))
+  })
+  test('„Usuń z domu”: założycielka usuwa domownika; ten traci dostęp', async () => {
+    await assertSucceeds(deleteDoc(member('hania', 'ola')))
+    await assertFails(getDocs(collection(db('ola'), paths.tasks('dom1'))))
+  })
+  test('zwykły domownik nie usuwa innych (ani założycielki); obcy – nikogo', async () => {
+    await assertFails(deleteDoc(member('ola', 'ewa')))
+    await assertFails(deleteDoc(member('ola', 'hania')))
+    await assertFails(deleteDoc(member('obcy', 'ola')))
+  })
+  test('dołączenie do innego domu = wyjście z obecnego w tej samej paczce', async () => {
+    await invite('666666', 'obcy', 'dom2')
+    const fs = db('ola')
+    const batch = writeBatch(fs)
+    batch.delete(doc(fs, `${paths.members('dom1')}/ola`))
+    for (const op of joinHouseOps({
+      code: '666666',
+      invite: { houseId: 'dom2', scope: ALL },
+      uid: 'ola',
+      userName: 'Ola',
+      hasProfile: true,
+    }))
+      batch.set(doc(fs, op.path), op.data, { merge: !!op.merge })
+    await assertSucceeds(batch.commit())
+    await assertFails(getDocs(collection(db('ola'), paths.tasks('dom1'))))
+    await assertSucceeds(getDocs(collection(db('ola'), paths.tasks('dom2'))))
+  })
+})

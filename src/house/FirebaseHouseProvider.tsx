@@ -5,8 +5,10 @@ import {
   deleteDoc,
   doc,
   getDocFromServer,
+  getDocs,
   onSnapshot,
   setDoc,
+  updateDoc,
   writeBatch,
 } from 'firebase/firestore'
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
@@ -71,6 +73,24 @@ export function FirebaseHouseProvider({ children }: { children: ReactNode }) {
   }, [uid])
 
   const current = loaded && loaded.uid === uid ? loaded : null
+  const houseId = current?.profile?.houseId ?? null
+
+  // Usunięty z domu przez założyciela (albo dom zniknął): mojego wpisu domownika już nie ma
+  // na serwerze – profil bez domu, aplikacja wraca do „Pierwsze uruchomienie”.
+  useEffect(() => {
+    if (!uid || !houseId) return
+    const leave = () => updateDoc(doc(db, paths.user(uid)), { houseId: null }).catch(() => {})
+    return onSnapshot(
+      doc(db, `${paths.members(houseId)}/${uid}`),
+      (snap) => {
+        // z pamięci telefonu (np. bez internetu) nie wyciągamy wniosków
+        if (!snap.exists() && !snap.metadata.fromCache) leave()
+      },
+      (e) => {
+        if (e instanceof FirebaseError && e.code === 'permission-denied') leave()
+      },
+    )
+  }, [uid, houseId])
 
   const api = useMemo<HouseApi>(
     () => ({
@@ -149,6 +169,13 @@ export function FirebaseHouseProvider({ children }: { children: ReactNode }) {
         if (!uid) throw new Error('joinHouse() bez zalogowania')
         const d = await readInvite(code)
         const batch = writeBatch(db)
+        // dołączenie do innego domu = wyjście z obecnego (założyciel – tylko gdy jest w nim sam)
+        if (houseId && houseId !== d.houseId) {
+          const members = await getDocs(collection(db, paths.members(houseId))).catch(() => null)
+          const me = members?.docs.find((m) => m.id === uid)
+          if (me?.data().role === 'owner' && members!.size > 1) throw new JoinError('owner')
+          if (me) batch.delete(me.ref)
+        }
         for (const op of joinHouseOps({
           code,
           invite: { houseId: d.houseId, scope: d.scope },
@@ -168,8 +195,24 @@ export function FirebaseHouseProvider({ children }: { children: ReactNode }) {
           throw e
         }
       },
+
+      removeMember: async (memberUid) => {
+        if (!houseId) return
+        await deleteDoc(doc(db, `${paths.members(houseId)}/${memberUid}`))
+      },
+
+      leaveHouse: async () => {
+        if (!uid || !houseId) return
+        const batch = writeBatch(db)
+        batch.delete(doc(db, `${paths.members(houseId)}/${uid}`))
+        batch.update(doc(db, paths.user(uid)), { houseId: null })
+        // bez internetu zapis czeka w telefonie – profil bez domu i tak od razu
+        const committed = batch.commit()
+        committed.catch(() => {})
+        await Promise.race([committed, new Promise((r) => setTimeout(r, 1500))])
+      },
     }),
-    [current, uid],
+    [current, uid, houseId],
   )
 
   return <HouseContext.Provider value={api}>{children}</HouseContext.Provider>

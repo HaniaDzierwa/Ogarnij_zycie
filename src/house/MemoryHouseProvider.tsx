@@ -14,6 +14,7 @@ import { MINUTE, sampleInvites, type MemoryInvite } from './memoryInvites.ts'
  * Profil w pamięci (testy): na start z domem (albo `noHouse` – świeże konto bez profilu).
  * `onCreate` / `onJoin` – podgląd tego, co zapisałyby „Załóż nowy dom” / „Dołącz jako …”.
  * `inviteUsedBy` – ten domownik (uid) „dołącza” chwilę po utworzeniu zaproszenia.
+ * `onRemoveMember` – podgląd „Usuń z domu” (lista domowników jest w magazynie danych).
  */
 export function MemoryHouseProvider({
   children,
@@ -21,12 +22,14 @@ export function MemoryHouseProvider({
   onCreate,
   onJoin,
   inviteUsedBy,
+  onRemoveMember,
 }: {
   children: ReactNode
   noHouse?: boolean
   onCreate?: (houseName: string, userName: string) => void
   onJoin?: (code: string, userName: string) => void
   inviteUsedBy?: string
+  onRemoveMember?: (uid: string) => void
 }) {
   const [profile, setProfile] = useState<Profile | null>(
     noHouse ? null : { name: 'Hania', houseId: 'dom1' },
@@ -98,7 +101,13 @@ export function MemoryHouseProvider({
         onJoin?.(code, userName.trim())
         setProfile({ name: userName.trim(), houseId: inv.houseId })
       },
+      removeMember: async (uid) => {
+        onRemoveMember?.(uid)
+      },
+      leaveHouse: async () => {
+        setProfile((p) => (p ? { ...p, houseId: null } : p))
+      },
     }
-  }, [profile, onCreate, onJoin, inviteUsedBy])
+  }, [profile, onCreate, onJoin, inviteUsedBy, onRemoveMember])
   return <HouseContext.Provider value={api}>{children}</HouseContext.Provider>
 }

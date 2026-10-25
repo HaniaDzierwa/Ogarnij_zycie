@@ -27,7 +27,7 @@ export type InvitePreview = {
 }
 
 /** Dlaczego nie da się dołączyć – komunikat dobiera ekran. */
-export type JoinErrorCode = 'not-found' | 'expired' | 'used' | 'offline' | 'unknown'
+export type JoinErrorCode = 'not-found' | 'expired' | 'used' | 'offline' | 'owner' | 'unknown'
 
 export class JoinError extends Error {
   code: JoinErrorCode
@@ -58,6 +58,10 @@ export type HouseApi = {
   findInvite: (code: string) => Promise<InvitePreview>
   /** „Dołącz jako …” – rzuca JoinError. */
   joinHouse: (code: string, userName: string) => Promise<void>
+  /** „Usuń z domu” (tylko założyciel): domownik traci dostęp; jego telefon sam wraca do „Witaj”. */
+  removeMember: (uid: string) => Promise<void>
+  /** „Opuść dom”: wypisanie siebie z domu, profil bez domu („Pierwsze uruchomienie”). */
+  leaveHouse: () => Promise<void>
 }
 
 /** Nazwa domu, gdy pole zostanie puste. */
@@ -74,6 +78,8 @@ export function joinErrorMessage(code: JoinErrorCode): string {
       return 'Ten kod został już użyty. Poproś o nowy kod.'
     case 'offline':
       return 'Brak internetu – dołączanie wymaga połączenia.'
+    case 'owner':
+      return 'Jesteś założycielem domu, w którym są inni domownicy – nie możesz go opuścić.'
     default:
       return 'Nie udało się dołączyć. Spróbuj jeszcze raz.'
   }
