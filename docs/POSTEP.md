@@ -23,7 +23,7 @@ Funkcje są w aplikacji; etap = sprawdzenie na prawdziwych danych, poprawki z uw
 | --- | --- |
 | 1 Testy automatyczne odbioru: każda kombinacja filtrów (Pokaż × kategoria × grupowanie, także własne priorytety i „Tylko ja”) daje poprawną listę i liczniki; liczby na Starcie = lista zadań; wydarzenie z Kosza wraca na swój dzień | zrobione |
 | 2 Tydzień używania we dwoje (Hania + domownik) – uwagi w tabeli „Uwagi Hani” jako „poprawka teraz” / „później” | w toku |
-| 3 Poprawki „teraz” z uwag | w toku – 3 uwagi z 2026-10-25 zrobione |
+| 3 Poprawki „teraz” z uwag | 3 uwagi z 2026-10-25 zrobione i sprawdzone u Hani; kolejne – na bieżąco |
 | 4 Wersja testowa, odbiór etapu 5 (z odbiorem etapu 3) | do zrobienia |
 
 ## Etap 4 – kroki (Wspólny dom)
@@ -84,8 +84,8 @@ Wersja testowa: https://ogarnij-zycie--test-56tdtc0y.web.app (kanał `test`, odn
 | Data | Etap | Uwaga | Kiedy | Status |
 | --- | --- | --- | --- | --- |
 | 2026-10-25 | 5 | Gest: przeciągnięcie w dół zwija arkusz z zadaniem lub wydarzeniem. | teraz | zrobione – Hania: „super działa” |
-| 2026-10-25 | 5 | Panel nowego wydarzenia ma pokazywać datę wydarzenia z możliwością zmiany. | teraz | zrobione – do sprawdzenia |
-| 2026-10-25 | 5 | Otwarte zadanie / wydarzenie najpierw do odczytu; w prawym górnym rogu „Edytuj” → tryb edycji z ładnym, widocznym „Zapisz” u góry; „Usuń” i „Ogarnij” na dole mniejsze. | teraz | zrobione – do sprawdzenia |
+| 2026-10-25 | 5 | Panel nowego wydarzenia ma pokazywać datę wydarzenia z możliwością zmiany. | teraz | zrobione – Hania: „działa” |
+| 2026-10-25 | 5 | Otwarte zadanie / wydarzenie najpierw do odczytu; w prawym górnym rogu „Edytuj” → tryb edycji z ładnym, widocznym „Zapisz” u góry; „Usuń” i „Ogarnij” na dole mniejsze. | teraz | zrobione – Hania: „działa” |
 | 2026-10-20 | 4 | Bez kodu QR: na „Zaproś domownika” tylko 6 cyfr i link, na „Dołącz do domu” bez skanera (skoro nie ma QR, nie trzeba go skanować). | teraz | zapisane – ekrany w krokach 2–3 |
 | 2026-10-20 | 2 | Błąd po ponownym zalogowaniu: „Cannot read properties of undefined (reading dot)”. | teraz | zrobione – Hania: „działa ok” |
 | 2026-10-20 | 2 | Zadania i wydarzenia: „luźna” notatka, którą zawsze można dodać. | teraz | zrobione – do sprawdzenia |
@@ -217,3 +217,4 @@ Wersja testowa: https://ogarnij-zycie--test-56tdtc0y.web.app (kanał `test`, odn
 - 2026-10-25 · Etap 5 · Krok 3 (uwagi Hani): (1) „Nowe wydarzenie” – pole DZIEŃ (domyślnie dzień z kalendarza, do zmiany); po dodaniu kalendarz przechodzi na dzień wydarzenia. (2) Arkusz zadania i wydarzenia najpierw do odczytu: opis (kategoria / rodzaj, priorytet, termin / dzień i godzina, przypomnienie, kto widzi, notatka), kroki zadania da się odhaczać; „Edytuj” (obrys, prawy górny róg) → edycja na kopii roboczej z wyraźnym zielonym „Zapisz” u góry i „Anuluj”; „Zapisz” zapisuje wszystko naraz (dodany niezrobiony krok przywraca ogarnięte zadanie – z „Cofnij”); zamknięcie albo „Anuluj” ze zmianami pyta „Odrzucić zmiany?” (Anuluj / Odrzuć); pusta nazwa – „Zapisz” nieaktywne. Na dole mniejsze „Usuń” i „Ogarnij/Przywróć” (wydarzenie: „Gotowe”). CLAUDE.md i DESIGN.md zaktualizowane. Testy: 293. · Sprawdzenie: zadanie → odczyt → Edytuj → zmień priorytet → Zapisz; zmień nazwę i dotknij obok → „Odrzucić zmiany?”; „+” → Wydarzenie → zmień DZIEŃ → po dodaniu kalendarz na tym dniu.
 - 2026-10-25 · Etap 5 · Krok 3 (uwaga Hani): przeciągnięcie arkusza w dół go zwija (wspólny arkusz – zadanie, wydarzenie, „Nowe zadanie”, „Nowe wydarzenie”). Arkusz jedzie za palcem; zwija się po ok. 110 px albo po szybkim ruchu, krótszy ruch – wraca na miejsce. Działa, gdy treść arkusza jest przewinięta na samą górę (inaczej ruch w dół przewija treść); w notatce (polu tekstowym) nie działa. W edycji ze zmianami – pytanie „Odrzucić zmiany?”. Testy: 296. · Sprawdzenie: otwórz zadanie → przeciągnij za górną kreskę w dół.
 - 2026-10-25 · Etap 5 · Hania: zwijanie arkusza przeciągnięciem – „super działa”.
+- 2026-10-25 · Etap 5 · Hania: dzień w „Nowe wydarzenie” i arkusze do odczytu z „Edytuj / Zapisz” – „działa”.
