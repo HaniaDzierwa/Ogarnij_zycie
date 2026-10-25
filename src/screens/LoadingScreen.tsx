@@ -1,3 +1,4 @@
+import { useEffect, useState, type CSSProperties } from 'react'
 import { useNavigate, useSearchParams } from 'react-router'
 import { paths } from '../app/screens.ts'
 import { RIDGE_FAR, RIDGE_NEAR } from '../components/Header.tsx'
@@ -11,7 +12,33 @@ import { colors, dayHeader, fonts } from '../theme'
  * Na starcie aplikacji (`waiting`) widać go, dopóki wczytuje się konto, i znika sam.
  * Pod `/ladowanie` (podgląd) dotknięcie przechodzi do logowania.
  */
+/**
+ * Ciągłość animacji: gdy ekran ładowania pokaże się ponownie zaraz po zniknięciu (kolejny etap
+ * wczytywania, przejście między ekranami), animacje biegną dalej od tego samego miejsca, zamiast
+ * zaczynać od nowa (Android – uwaga Hani 2026-10-25). Po dłuższej przerwie – od początku.
+ */
+let startedAt = 0
+let hiddenAt = 0
+const CONTINUE_WITHIN_MS = 2000
+
+function animationOffset(now: number): number {
+  if (!startedAt || (hiddenAt && now - hiddenAt > CONTINUE_WITHIN_MS)) startedAt = now
+  hiddenAt = 0
+  return now - startedAt
+}
+
+/** Opóźnienie animacji + wspólne przesunięcie ekranu ładowania. */
+const delay = (ms: number) => `calc(var(--od, 0ms) + ${ms}ms)`
+
 export function LoadingScreen({ waiting = false }: { waiting?: boolean }) {
+  // ujemne opóźnienie animacji = „już trwa od …” (CSS: animation-delay: var(--od))
+  const [offset] = useState(() => animationOffset(Date.now()))
+  useEffect(
+    () => () => {
+      hiddenAt = Date.now()
+    },
+    [],
+  )
   const [params] = useSearchParams()
   const navigate = useNavigate()
   const pora = params.get('pora')
@@ -31,6 +58,7 @@ export function LoadingScreen({ waiting = false }: { waiting?: boolean }) {
       }
       onClick={() => !waiting && navigate(paths.logowanie)}
       style={{
+        ...({ '--od': `${-offset}ms` } as CSSProperties),
         position: 'fixed',
         inset: 0,
         border: 0,
@@ -78,7 +106,7 @@ export function LoadingScreen({ waiting = false }: { waiting?: boolean }) {
             fontSize: 15,
             lineHeight: 1.4,
             color: day ? colors.muted2 : colors.onDarkMuted,
-            animationDelay: '120ms',
+            animationDelay: delay(120),
           }}
         >
           Zadania, zakupy i kalendarz całego domu
@@ -94,7 +122,7 @@ export function LoadingScreen({ waiting = false }: { waiting?: boolean }) {
                 height: 8,
                 borderRadius: 4,
                 background: accent,
-                animationDelay: `${i * 180}ms`,
+                animationDelay: delay(i * 180),
               }}
             />
           ))}
@@ -130,7 +158,7 @@ export function LoadingScreen({ waiting = false }: { waiting?: boolean }) {
               height="8"
               rx="1.2"
               fill={colors.brass300}
-              style={{ animationDelay: '600ms' }}
+              style={{ animationDelay: delay(600) }}
             />
           </>
         )}
@@ -178,7 +206,7 @@ function Sky({ day }: { day: boolean }) {
             [180, 112, 1.1, 1200],
             [352, 160, 1.4, 600],
             [36, 168, 1.2, 1000],
-          ].map(([cx, cy, r, delay]) => (
+          ].map(([cx, cy, r, ms]) => (
             <circle
               key={`${cx}-${cy}`}
               className="loading-star"
@@ -186,7 +214,7 @@ function Sky({ day }: { day: boolean }) {
               cy={cy}
               r={r}
               fill={colors.brass300}
-              style={{ animationDelay: `${delay}ms` }}
+              style={{ animationDelay: delay(ms) }}
             />
           ))}
         </g>

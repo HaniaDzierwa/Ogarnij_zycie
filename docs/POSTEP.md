@@ -93,6 +93,7 @@ Wersja testowa: https://ogarnij-zycie--test-56tdtc0y.web.app (kanał `test`, odn
 
 | Data | Etap | Uwaga | Kiedy | Status |
 | --- | --- | --- | --- | --- |
+| 2026-10-25 | 6 | Android: animacja ekranu ładowania się zacina, jakby się ciągle odświeżała (na iPhonie dobrze). | teraz | poprawione – do sprawdzenia |
 | 2026-10-25 | 6 | Animacja otwierania i zamykania arkusza z zadaniem / wydarzeniem. | teraz | zrobione – do sprawdzenia |
 | 2026-10-25 | 5 | Gest: przeciągnięcie w dół zwija arkusz z zadaniem lub wydarzeniem. | teraz | zrobione – Hania: „super działa” |
 | 2026-10-25 | 5 | Panel nowego wydarzenia ma pokazywać datę wydarzenia z możliwością zmiany. | teraz | zrobione – Hania: „działa” |
@@ -243,3 +244,4 @@ Wersja testowa: https://ogarnij-zycie--test-56tdtc0y.web.app (kanał `test`, odn
 - 2026-10-25 · Etap 6 · Hania – testy reguł (wpisy dla powiadomień) przeszły („reguły git”).
 - 2026-10-25 · Etap 6 · Indeks dla wpisów „co się stało” zbudowany – przebiegi Workera bez błędów. Hania: „6 wszystko działa”. Czeka „akceptuję”.
 - 2026-10-25 · Etap 6 · Uwaga Hani: animacja zamykania arkusza (otwieranie – wysuwanie z dołu – było). Zamknięcie: arkusz zjeżdża w dół (0,22 s), tło gaśnie – po dotknięciu obok, przeciągnięciu w dół (od miejsca, gdzie jest palec), „Gotowe”, „Ogarnij/Przywróć”, „Dodaj zadanie”, „Dodaj do kalendarza” (zapis po animacji). W edycji ze zmianami – bez zjazdu: arkusz zostaje i pyta „Odrzucić zmiany?”. Przy „ograniczaniu ruchu” w telefonie – bez animacji. Wspólny arkusz, więc tak samo Kategorie, Priorytety, Domownik, Wyczyść, Kosz.
+- 2026-10-25 · Etap 6 · Poprawka (Android, uwaga Hani): ekran ładowania tworzył się od nowa na każdym etapie wczytywania (konto → profil → dane domu), więc jego animacja startowała od początku kilka razy – na wolniejszym wczytywaniu wyglądało to jak ciągłe odświeżanie. Teraz: jeden ekran ładowania dla wszystkich etapów (RequireAuth w jednym miejscu) i ciągłość animacji – gdy ekran pojawi się znów w ciągu 2 s, animacje biegną dalej (wspólne przesunięcie --od), a nie od początku. Testy: 331.

@@ -182,6 +182,19 @@ button {
 .loading-window {
   animation: loading-window 3s ease-in-out infinite;
 }
+/* Ekran ładowania – wspólne przesunięcie animacji (--od ustawia LoadingScreen), żeby po
+   ponownym pokazaniu ekranu animacje biegły dalej, a nie od początku. */
+.loading-pop,
+.loading-rise,
+.loading-sun,
+.loading-rays,
+.loading-moon,
+.loading-star,
+.loading-dot,
+.loading-window {
+  animation-delay: var(--od, 0ms);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .loading-pop,
   .loading-rise,

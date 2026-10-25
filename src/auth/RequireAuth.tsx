@@ -7,10 +7,14 @@ import { LoadingScreen } from '../screens/LoadingScreen.tsx'
 import { useAuth } from './auth.ts'
 
 /**
- * Ekran tylko dla zalogowanych. Dopóki wczytuje się konto – ekran ładowania; bez konta –
- * logowanie z zapamiętanym adresem (`?dalej=`), żeby po zalogowaniu wrócić tutaj.
+ * Ekran tylko dla zalogowanych. Dopóki wczytuje się konto, profil i dane domu – ekran ładowania;
+ * bez konta – logowanie z zapamiętanym adresem (`?dalej=`), żeby po zalogowaniu wrócić tutaj.
  * `house`: 'required' – ekrany domu (bez domu → Pierwsze uruchomienie); 'firstRun' – Pierwsze
  * uruchomienie (z domem → Start); 'any' – Dołącz do domu.
+ *
+ * Wszystkie etapy czekania pokazują TEN SAM ekran ładowania (to samo miejsce w drzewie) – inaczej
+ * przy każdym etapie animacja zaczynałaby się od nowa (na Androidzie wyglądało to jak ciągłe
+ * odświeżanie – uwaga Hani 2026-10-25).
  */
 export function RequireAuth({
   children,
@@ -19,28 +23,23 @@ export function RequireAuth({
   children: ReactNode
   house?: 'required' | 'firstRun' | 'any'
 }) {
-  const { user, ready } = useAuth()
+  const auth = useAuth()
+  const { ready: houseReady, profile } = useHouse()
+  const { ready: dataReady } = useStore()
   const location = useLocation()
-  if (!ready) return <LoadingScreen waiting />
-  if (!user) {
+
+  const loading = <LoadingScreen waiting />
+  if (!auth.ready) return loading
+  if (!auth.user) {
     const back = encodeURIComponent(location.pathname + location.search)
     return <Navigate to={`${paths.logowanie}?dalej=${back}`} replace />
   }
-  return house === 'any' ? children : <RequireHouse mode={house}>{children}</RequireHouse>
-}
-
-function RequireHouse({ children, mode }: { children: ReactNode; mode: 'required' | 'firstRun' }) {
-  const { ready, profile } = useHouse()
-  if (!ready) return <LoadingScreen waiting />
+  if (house === 'any') return children
+  if (!houseReady) return loading
   const hasHouse = !!profile?.houseId
-  if (mode === 'required' && !hasHouse) return <Navigate to={paths.pierwsze} replace />
-  if (mode === 'firstRun' && hasHouse) return <Navigate to={paths.start} replace />
-  return mode === 'required' ? <WaitForData>{children}</WaitForData> : children
-}
-
-/** Dane domu jeszcze nie przyszły (np. tuż po zalogowaniu) – ekran ładowania zamiast pustych list. */
-function WaitForData({ children }: { children: ReactNode }) {
-  const { ready } = useStore()
-  if (!ready) return <LoadingScreen waiting />
+  if (house === 'required' && !hasHouse) return <Navigate to={paths.pierwsze} replace />
+  if (house === 'firstRun' && hasHouse) return <Navigate to={paths.start} replace />
+  // dane domu jeszcze nie przyszły (np. tuż po zalogowaniu) – ładowanie zamiast pustych list
+  if (house === 'required' && !dataReady) return loading
   return children
 }
