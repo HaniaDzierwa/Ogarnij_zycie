@@ -25,7 +25,7 @@ Kolejność etapów zmieniona 2026-10-20 (decyzja Hani: testować dopiero we dwo
 | 3a Wstawka (decyzja Hani 2026-10-20): Ustawienia → Zadania → Kategorie i Priorytety (własne priorytety), panel „Filtry” bez edycji | zrobione – testy reguł przeszły u Hani (39/39) |
 | 4 Wspólne / „Tylko ja”: wybór w nowym zadaniu i wydarzeniu oraz w arkuszach (zmienia tylko autor), prywatne w osobnym miejscu bazy widoczne tylko dla autora (reguły); z zaproszenia znika „Co zobaczy domownik” | zrobione – testy reguł przeszły u Hani |
 | 5 Domownicy: arkusz domownika, „Usuń z domu” (założyciel), „Opuść dom”; usunięty / po wyjściu wraca do „Pierwsze uruchomienie” | zrobione – testy reguł przeszły u Hani |
-| 6 Testy reguł (Hania – Java 21), wgranie reguł, wersja testowa, demo we dwoje, odbiór | do zrobienia (następny) |
+| 6 Testy reguł (Hania – Java 21), wgranie reguł, wersja testowa, demo we dwoje, odbiór | zrobione – odbiór 2026-10-25 |
 
 ## Etap 3 – kroki
 
@@ -197,3 +197,4 @@ Wersja testowa: https://ogarnij-zycie--test-56tdtc0y.web.app (kanał `test`, odn
 - 2026-10-25 · Etap 4 · Krok 5: Hania – testy reguł przeszły. Następnie: wgranie reguł (za zgodą Hani), wersja testowa, odbiór etapu 4.
 - 2026-10-25 · Etap 4 · Krok 6: za zgodą Hani Claude wgrał reguły (domownicy – released rules); dane bez zmian. Wersja testowa: https://ogarnij-zycie--test-56tdtc0y.web.app (do 2026-11-24). Czeka demo we dwoje i odbiór etapu 4.
 - 2026-10-25 · Etap 4 · Krok 6: Hania po demo we dwoje: „ok działa”. Czeka „akceptuję” do zamknięcia etapu 4.
+- 2026-10-25 · Etap 4 · Odbiór: synchronizacja między telefonami, zmiany offline, ochrona przed obcymi (testy reguł), zużyty / przeterminowany kod, „Tylko ja”, „Opuść dom” / „Usuń z domu”. Hania: „akceptuję”. Etap 4 zakończony.

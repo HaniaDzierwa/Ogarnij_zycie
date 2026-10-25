@@ -97,13 +97,13 @@ Cel: wszystkie ekrany z projektu w aplikacji, na przykładowych danych (w pamię
 4. **Konflikty:** nowsza zmiana wygrywa; usunięte zawsze można przywrócić z Kosza.
 5. Reguły + testy reguł w emulatorze (Hania uruchamia na komputerze z Javą 21), wgranie reguł, publikacja wersji testowej.
 
-**Odbiór:**
-- [ ] Zadanie dodane na jednym telefonie pojawia się na drugim w kilka sekund
-- [ ] Zmiany offline na obu telefonach łączą się bez utraty danych
-- [ ] Osoba spoza domu nie widzi danych, nawet znając identyfikator
-- [ ] Zadanie / wydarzenie „Tylko ja” nie pojawia się na telefonie drugiego domownika; po zmianie na „Wspólne” – pojawia się
-- [ ] Usunięty z domu albo po „Opuść dom” – nie widzi już danych domu, wraca do „Pierwsze uruchomienie”
-- [ ] Zużyty albo przeterminowany kod nie działa
+**Odbiór:** (zaakceptowany przez Hanię 2026-10-25)
+- [x] Zadanie dodane na jednym telefonie pojawia się na drugim w kilka sekund
+- [x] Zmiany offline na obu telefonach łączą się bez utraty danych
+- [x] Osoba spoza domu nie widzi danych, nawet znając identyfikator
+- [x] Zadanie / wydarzenie „Tylko ja” nie pojawia się na telefonie drugiego domownika; po zmianie na „Wspólne” – pojawia się
+- [x] Usunięty z domu albo po „Opuść dom” – nie widzi już danych domu, wraca do „Pierwsze uruchomienie”
+- [x] Zużyty albo przeterminowany kod nie działa
 
 ## Etap 5 – Kategorie, Kalendarz, Start i wspólne testowanie (dawniej 4, 5, 6)
 
