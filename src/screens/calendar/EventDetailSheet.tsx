@@ -1,25 +1,42 @@
 import { useState } from 'react'
-import { CheckIcon, EventTypeIcon, TrashIcon } from '../../components/icons.tsx'
+import {
+  DetailActions,
+  DetailTopBar,
+  DiscardDialog,
+  InfoRow,
+  NoteText,
+} from '../../components/DetailSheet.tsx'
+import { CheckIcon, EventTypeIcon } from '../../components/icons.tsx'
 import { Chip, Dot, NoteField, Sheet } from '../../components/ui.tsx'
-import { REMINDS, setAllDay } from '../../data/eventOps.ts'
+import { DAYS, MONTHS_GEN, parseKey, type DateKey } from '../../data/dates.ts'
+import { eventEditOf, REMINDS, setAllDay, type EventEdit } from '../../data/eventOps.ts'
 import { eventTypeOf } from '../../data/selectors.ts'
 import type { CalendarEvent, EventType } from '../../data/types.ts'
-import { colors, fonts, priorities } from '../../theme'
+import { colors, fonts } from '../../theme'
 import { Group } from './EventSheet.tsx'
 import { label, timeInput } from './formStyles.ts'
-import { useBufferedText } from '../../components/useBufferedText.ts'
 import { VisibilityField } from '../../components/VisibilityField.tsx'
 
+/** „Piątek, 16 października” */
+function dayName(k: DateKey): string {
+  const d = parseKey(k)
+  return `${DAYS[d.getDay()]}, ${d.getDate()} ${MONTHS_GEN[d.getMonth()]}`
+}
+
+/** „Cały dzień”, „19:00–21:00”, „od 19:00”. */
+const hours = (e: EventEdit) =>
+  e.allDay || !e.from ? 'Cały dzień' : e.to ? `${e.from}–${e.to}` : `od ${e.from}`
+
 /**
- * Arkusz wydarzenia – jak arkusz zadania: edycja w miejscu (zmiany zapisują się od razu),
- * na dole „Usuń” i „Gotowe”.
+ * Arkusz wydarzenia – jak arkusz zadania: najpierw do odczytu, „Edytuj” → edycja (także dzień)
+ * z „Zapisz” u góry; na dole „Usuń” i „Gotowe” (uwagi Hani 2026-10-25).
  */
 export function EventDetailSheet({
   event,
   eventTypes,
   status,
   meta,
-  onChange,
+  onSave,
   onDelete,
   onClose,
 }: {
@@ -29,263 +46,265 @@ export function EventDetailSheet({
   status: string
   /** „Dodane: Hania” */
   meta: string
-  onChange: (update: (e: CalendarEvent) => CalendarEvent) => void
-  /** Usuń – z bieżącą nazwą (także tą właśnie wpisaną). */
-  onDelete: (title: string) => void
+  /** „Zapisz” w trybie edycji. */
+  onSave: (edit: EventEdit) => void
+  onDelete: () => void
   onClose: () => void
 }) {
-  const [originalTitle] = useState(event.title)
+  const [draft, setDraft] = useState<EventEdit | null>(null)
+  const [base, setBase] = useState<EventEdit | null>(null)
+  const [discard, setDiscard] = useState<'close' | 'cancel' | null>(null)
+  const editing = draft !== null
+  const dirty = editing && JSON.stringify(draft) !== JSON.stringify(base)
   const type = eventTypeOf(eventTypes, event.typeId)
 
-  // nazwa i notatka – zapis po chwili przerwy w pisaniu (nie po każdej literze)
-  const title = useBufferedText(event.title, (v) => onChange((e) => ({ ...e, title: v })))
-  const note = useBufferedText(event.note, (v) => onChange((e) => ({ ...e, note: v })))
-  const remove = () => {
-    title.flush()
-    note.flush()
-    onDelete(title.text.trim() || event.title)
+  const startEdit = () => {
+    const e = eventEditOf(event)
+    setDraft(e)
+    setBase(e)
   }
-
-  const close = () => {
-    // pusta nazwa nie zostaje – wraca poprzednia
-    if (!title.text.trim()) {
-      title.discard()
-      if (!event.title.trim()) onChange((e) => ({ ...e, title: originalTitle }))
-    } else title.flush()
-    note.flush()
-    onClose()
+  const stopEdit = () => {
+    setDraft(null)
+    setBase(null)
   }
+  const save = () => {
+    if (!draft?.title.trim()) return
+    // godzina „od” jest wymagana przy wydarzeniu z godziną – bez niej: cały dzień
+    const fixed = !draft.allDay && !draft.from ? setAllDay(draft, true) : draft
+    onSave({ ...fixed, title: draft.title.trim(), note: draft.note.trim() })
+    stopEdit()
+  }
+  const requestClose = () => (dirty ? setDiscard('close') : onClose())
+  const cancelEdit = () => (dirty ? setDiscard('cancel') : stopEdit())
+  const change = (fn: (d: EventEdit) => EventEdit) => setDraft((d) => (d ? fn(d) : d))
 
   return (
-    <Sheet open onClose={close} label="Wydarzenie">
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          marginBottom: -6,
-        }}
-      >
-        <span
-          style={{ fontSize: 11, fontWeight: 800, letterSpacing: '1.6px', color: colors.brass700 }}
-        >
-          {status}
-        </span>
-        <button
-          type="button"
-          onClick={close}
-          style={{
-            height: 36,
-            padding: '0 4px 0 12px',
-            border: 0,
-            background: 'transparent',
-            color: colors.green900,
-            fontSize: 14,
-            fontWeight: 800,
-          }}
-        >
-          Gotowe
-        </button>
-      </div>
-
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        <span
-          style={{
-            width: 42,
-            height: 42,
-            borderRadius: 14,
-            background: type.bg,
-            color: type.fg,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flex: 'none',
-          }}
-        >
-          <EventTypeIcon icon={type.icon} />
-        </span>
-        <label htmlFor="wyd-nazwa" className="sr-only">
-          Nazwa wydarzenia
-        </label>
-        <input
-          id="wyd-nazwa"
-          type="text"
-          value={title.text}
-          onChange={(e) => title.change(e.target.value)}
-          style={{
-            flex: 1,
-            minWidth: 0,
-            height: 48,
-            border: 0,
-            borderBottom: `1px solid ${colors.borderSoft}`,
-            padding: '0 2px',
-            background: 'transparent',
-            fontFamily: fonts.serif,
-            fontSize: 22,
-            fontWeight: 500,
-            color: colors.green900,
-            outlineColor: colors.green900,
-          }}
-        />
-      </div>
-
-      <Group label="RODZAJ">
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-          {eventTypes
-            .filter((t) => !t.system)
-            .map((t) => {
-              const on = event.typeId === t.id
-              return (
-                <Chip
-                  key={t.id}
-                  on={on}
-                  onClick={() => onChange((e) => ({ ...e, typeId: t.id }))}
-                  dot={<Dot color={on ? colors.brass300 : t.fg} />}
-                >
-                  {t.name}
-                </Chip>
-              )
-            })}
-        </div>
-      </Group>
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-        <label htmlFor="wyd-dzien" style={label}>
-          DZIEŃ
-        </label>
-        <input
-          id="wyd-dzien"
-          type="date"
-          value={event.date}
-          onChange={(e) => e.target.value && onChange((x) => ({ ...x, date: e.target.value }))}
-          style={{ ...timeInput, fontFamily: fonts.sans, fontSize: 16, fontWeight: 600 }}
-        />
-      </div>
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <label
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: 12,
-            minHeight: 44,
-          }}
-        >
-          <span style={label}>CAŁY DZIEŃ</span>
-          <input
-            type="checkbox"
-            checked={event.allDay}
-            onChange={() => onChange((e) => setAllDay(e, !e.allDay))}
-            style={{ width: 22, height: 22, accentColor: colors.green900 }}
-          />
-        </label>
-        {!event.allDay && (
-          <div
-            style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 10 }}
-          >
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              <label htmlFor="wyd-od" style={label}>
-                OD
-              </label>
-              <input
-                id="wyd-od"
-                type="time"
-                step={300}
-                value={event.from ?? ''}
-                // pusta godzina „od” nie zostaje – wydarzenie z godziną musi ją mieć
-                onChange={(e) =>
-                  e.target.value && onChange((x) => ({ ...x, from: e.target.value }))
-                }
-                style={timeInput}
-              />
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              <label htmlFor="wyd-do" style={label}>
-                DO <span style={{ fontWeight: 600, letterSpacing: '0.4px' }}>(opcjonalnie)</span>
-              </label>
-              <input
-                id="wyd-do"
-                type="time"
-                step={300}
-                value={event.to ?? ''}
-                onChange={(e) => onChange((x) => ({ ...x, to: e.target.value || null }))}
-                style={timeInput}
-              />
-            </div>
-          </div>
-        )}
-      </div>
-
-      <Group label="PRZYPOMNIJ">
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-          {REMINDS.map((r) => (
-            <Chip
-              key={r.id}
-              on={event.remind === r.id}
-              onClick={() => onChange((e) => ({ ...e, remind: r.id }))}
-            >
-              {r.name}
-            </Chip>
-          ))}
-        </div>
-      </Group>
-
-      <NoteField id="wyd-notatka" value={note.text} onChange={note.change} />
-
-      <VisibilityField
-        value={event.private}
-        authorUid={event.createdBy}
-        onChange={(p) => onChange((e) => ({ ...e, private: p }))}
+    <Sheet open onClose={requestClose} label="Wydarzenie">
+      <DetailTopBar
+        status={status}
+        editing={editing}
+        canSave={!!draft?.title.trim()}
+        onEdit={startEdit}
+        onSave={save}
+        onCancel={cancelEdit}
       />
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: 8, marginTop: 2 }}>
-        <button
-          type="button"
-          onClick={remove}
-          style={{
-            height: 54,
-            border: '1px solid #E7B8A8',
-            borderRadius: 27,
-            background: colors.white,
-            color: priorities.high.line,
-            fontSize: 16,
-            fontWeight: 800,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 8,
+      {draft ? (
+        <>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <label htmlFor="wyd-nazwa" style={label}>
+              NAZWA
+            </label>
+            <input
+              id="wyd-nazwa"
+              type="text"
+              autoFocus
+              maxLength={200}
+              value={draft.title}
+              onChange={(e) => change((d) => ({ ...d, title: e.target.value }))}
+              style={{
+                height: 52,
+                border: `1px solid ${colors.border}`,
+                borderRadius: 14,
+                padding: '0 14px',
+                background: colors.white,
+                fontFamily: fonts.serif,
+                fontSize: 22,
+                fontWeight: 500,
+                color: colors.green900,
+                outlineColor: colors.green900,
+                minWidth: 0,
+              }}
+            />
+          </div>
+
+          <Group label="RODZAJ">
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              {eventTypes
+                .filter((t) => !t.system)
+                .map((t) => {
+                  const on = draft.typeId === t.id
+                  return (
+                    <Chip
+                      key={t.id}
+                      on={on}
+                      onClick={() => change((d) => ({ ...d, typeId: t.id }))}
+                      dot={<Dot color={on ? colors.brass300 : t.fg} />}
+                    >
+                      {t.name}
+                    </Chip>
+                  )
+                })}
+            </div>
+          </Group>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <label htmlFor="wyd-dzien" style={label}>
+              DZIEŃ
+            </label>
+            <input
+              id="wyd-dzien"
+              type="date"
+              value={draft.date}
+              onChange={(e) => e.target.value && change((d) => ({ ...d, date: e.target.value }))}
+              style={{ ...timeInput, fontFamily: fonts.sans, fontSize: 16, fontWeight: 600 }}
+            />
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <label
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 12,
+                minHeight: 44,
+              }}
+            >
+              <span style={label}>CAŁY DZIEŃ</span>
+              <input
+                type="checkbox"
+                checked={draft.allDay}
+                onChange={() => change((d) => setAllDay(d, !d.allDay))}
+                style={{ width: 22, height: 22, accentColor: colors.green900 }}
+              />
+            </label>
+            {!draft.allDay && (
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+                  gap: 10,
+                }}
+              >
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <label htmlFor="wyd-od" style={label}>
+                    OD
+                  </label>
+                  <input
+                    id="wyd-od"
+                    type="time"
+                    step={300}
+                    value={draft.from ?? ''}
+                    onChange={(e) => change((d) => ({ ...d, from: e.target.value || null }))}
+                    style={timeInput}
+                  />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <label htmlFor="wyd-do" style={label}>
+                    DO{' '}
+                    <span style={{ fontWeight: 600, letterSpacing: '0.4px' }}>(opcjonalnie)</span>
+                  </label>
+                  <input
+                    id="wyd-do"
+                    type="time"
+                    step={300}
+                    value={draft.to ?? ''}
+                    onChange={(e) => change((d) => ({ ...d, to: e.target.value || null }))}
+                    style={timeInput}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+          <Group label="PRZYPOMNIJ">
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              {REMINDS.map((r) => (
+                <Chip
+                  key={r.id}
+                  on={draft.remind === r.id}
+                  onClick={() => change((d) => ({ ...d, remind: r.id }))}
+                >
+                  {r.name}
+                </Chip>
+              ))}
+            </div>
+          </Group>
+
+          <NoteField
+            id="wyd-notatka"
+            value={draft.note}
+            onChange={(note) => change((d) => ({ ...d, note }))}
+          />
+
+          <VisibilityField
+            value={draft.private}
+            authorUid={event.createdBy}
+            onChange={(p) => change((d) => ({ ...d, private: p }))}
+          />
+        </>
+      ) : (
+        <>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <span
+              style={{
+                width: 42,
+                height: 42,
+                borderRadius: 14,
+                background: type.bg,
+                color: type.fg,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flex: 'none',
+              }}
+            >
+              <EventTypeIcon icon={type.icon} />
+            </span>
+            <h2
+              style={{
+                margin: 0,
+                flex: 1,
+                minWidth: 0,
+                fontFamily: fonts.serif,
+                fontSize: 24,
+                fontWeight: 500,
+                lineHeight: 1.2,
+                color: colors.green900,
+                overflowWrap: 'anywhere',
+              }}
+            >
+              {event.title}
+            </h2>
+          </div>
+
+          <div>
+            <InfoRow label="RODZAJ">
+              <Dot color={type.fg} />
+              {type.name}
+            </InfoRow>
+            <InfoRow label="DZIEŃ">{dayName(event.date)}</InfoRow>
+            <InfoRow label="GODZINA">{hours(event)}</InfoRow>
+            <InfoRow label="PRZYPOMNIJ">
+              {REMINDS.find((r) => r.id === event.remind)?.name ?? 'Brak'}
+            </InfoRow>
+            <InfoRow label="KTO WIDZI">{event.private ? 'Tylko ja' : 'Wspólne'}</InfoRow>
+          </div>
+
+          <NoteText text={event.note} />
+
+          <DetailActions
+            onDelete={onDelete}
+            primary={{ label: 'Gotowe', icon: <CheckIcon size={16} />, onClick: onClose }}
+          />
+        </>
+      )}
+
+      <span style={{ fontSize: 12, color: colors.muted, textAlign: 'center' }}>{meta}</span>
+
+      {discard && (
+        <DiscardDialog
+          what="wydarzeniu"
+          onKeep={() => setDiscard(null)}
+          onDiscard={() => {
+            const then = discard
+            setDiscard(null)
+            stopEdit()
+            if (then === 'close') onClose()
           }}
-        >
-          <TrashIcon />
-          Usuń
-        </button>
-        <button
-          type="button"
-          onClick={close}
-          style={{
-            height: 54,
-            border: 0,
-            borderRadius: 27,
-            background: colors.green900,
-            color: colors.cream,
-            fontSize: 16,
-            fontWeight: 800,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 8,
-          }}
-        >
-          <span style={{ color: colors.brass300, display: 'flex' }}>
-            <CheckIcon size={18} />
-          </span>
-          Gotowe
-        </button>
-      </div>
-      <span style={{ fontSize: 12, color: colors.muted, textAlign: 'center' }}>
-        {meta} · zmiany zapisują się od razu
-      </span>
+        />
+      )}
     </Sheet>
   )
 }

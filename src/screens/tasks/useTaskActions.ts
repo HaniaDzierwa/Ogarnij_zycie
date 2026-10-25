@@ -2,11 +2,13 @@ import { newId } from '../../data/ids.ts'
 import { useStore } from '../../data/store.ts'
 import {
   addSubtask,
+  editTask,
   markDone,
   markOpen,
   moveToTrash,
   removeSubtask,
   toggleSubtask,
+  type TaskEdit,
 } from '../../data/taskOps.ts'
 import type { Task } from '../../data/types.ts'
 
@@ -44,6 +46,8 @@ export function useTaskActions() {
     trash,
     /** Edycja w miejscu (bez paska „Cofnij”). */
     edit: (t: Task, fn: (t: Task) => Task) => store.setTasks(update(t.id, fn)),
+    /** „Zapisz” w arkuszu zadania – gdy kroki ogarniają / przywracają zadanie, z „Cofnij”. */
+    save: (t: Task, e: TaskEdit) => changeSteps(t, (x) => editTask(x, e, store.who())),
     toggleSub: (t: Task, sid: string) => changeSteps(t, (x) => toggleSubtask(x, sid, store.who())),
     removeSub: (t: Task, sid: string) => changeSteps(t, (x) => removeSubtask(x, sid, store.who())),
     addSub: (t: Task, title: string) =>

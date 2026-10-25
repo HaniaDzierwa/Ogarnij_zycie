@@ -102,7 +102,9 @@ test('Priorytety: własny z zadaniem nie do usunięcia; bez zadań – usuwa si�
   router.navigate('/zadania')
   fireEvent.click(await screen.findByText('Przegląd techniczny'))
   const detail = screen.getByRole('dialog')
+  fireEvent.click(within(detail).getByRole('button', { name: 'Edytuj' }))
   fireEvent.click(within(detail).getByRole('radio', { name: 'Kiedyś' }))
+  fireEvent.click(within(detail).getByRole('button', { name: 'Zapisz' }))
   click('Zamknij')
 
   router.navigate('/ustawienia/priorytety')

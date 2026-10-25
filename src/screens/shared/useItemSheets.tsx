@@ -61,10 +61,12 @@ export function useItemSheets(
           eventTypes={eventTypes}
           status={`${typeName(eventDetail.typeId)} · ${dayLabel(eventDetail.date)}`.toUpperCase()}
           meta={`Dodane: ${memberName(eventDetail.createdBy)}`}
-          onChange={(fn) =>
-            store.setEvents((list) => list.map((x) => (x.id === eventDetail.id ? fn(x) : x)))
+          onSave={(e) =>
+            store.setEvents((list) =>
+              list.map((x) => (x.id === eventDetail.id ? { ...x, ...e } : x)),
+            )
           }
-          onDelete={(title) => removeEvent({ ...eventDetail, title })}
+          onDelete={() => removeEvent(eventDetail)}
           onClose={() => {
             setEventId(null)
             opts.onCloseEvent?.(eventDetail)
@@ -87,12 +89,10 @@ export function useItemSheets(
               ? `Ogarnięte: ${memberName(taskDetail.doneBy)}`
               : `Dodane: ${memberName(taskDetail.createdBy)}`
           }
-          onChange={(fn) => taskActions.edit(taskDetail, fn)}
+          onSave={(e) => taskActions.save(taskDetail, e)}
           onToggleDone={() => taskActions.toggleDone(taskDetail)}
           onToggleSub={(sid) => taskActions.toggleSub(taskDetail, sid)}
-          onRemoveSub={(sid) => taskActions.removeSub(taskDetail, sid)}
-          onAddSub={(title) => taskActions.addSub(taskDetail, title)}
-          onTrash={(title) => trashTask({ ...taskDetail, title })}
+          onTrash={() => trashTask(taskDetail)}
           onClose={() => {
             setTaskId(null)
             opts.onCloseTask?.(taskDetail)

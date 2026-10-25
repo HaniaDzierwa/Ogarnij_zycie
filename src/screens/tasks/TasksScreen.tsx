@@ -555,12 +555,10 @@ export function TasksScreen() {
               ? `Ogarnięte: ${doneBy(detail)}`
               : `Dodane: ${member(detail.createdBy)?.name ?? ''}`
           }
-          onChange={(fn) => actions.edit(detail, fn)}
+          onSave={(e) => actions.save(detail, e)}
           onToggleDone={() => toggleDone(detail)}
           onToggleSub={(sid) => actions.toggleSub(detail, sid)}
-          onRemoveSub={(sid) => actions.removeSub(detail, sid)}
-          onAddSub={(title) => actions.addSub(detail, title)}
-          onTrash={(title) => trash({ ...detail, title })}
+          onTrash={() => trash(detail)}
           onClose={() => setDetailId(null)}
         />
       )}

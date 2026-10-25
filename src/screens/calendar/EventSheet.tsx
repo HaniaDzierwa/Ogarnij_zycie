@@ -31,6 +31,8 @@ export function EventSheet({
 }) {
   const types = eventTypes.filter((t) => !t.system)
   const [title, setTitle] = useState('')
+  // dzień z kalendarza, do zmiany w arkuszu (uwaga Hani 2026-10-25)
+  const [date, setDate] = useState<DateKey>(day)
   const [typeId, setTypeId] = useState(types[0]?.id ?? '')
   const [allDay, setAllDay] = useState(false)
   const [from, setFrom] = useState('18:00')
@@ -43,7 +45,7 @@ export function EventSheet({
   const [isPrivate, setPrivate] = useState(false)
   const [typeColor, setTypeColor] = useState<string>(TYPE_SWATCHES[0].color)
 
-  const d = parseKey(day)
+  const d = parseKey(date)
   const dayLabel = `${DAYS[d.getDay()]}, ${d.getDate()} ${MONTHS_GEN[d.getMonth()]}`.toUpperCase()
 
   const addType = () => {
@@ -59,7 +61,7 @@ export function EventSheet({
     const timed = !allDay && !!from
     onSave({
       title: t,
-      date: day,
+      date,
       allDay: !timed,
       from: timed ? from : null,
       to: timed && to ? to : null,
@@ -90,6 +92,19 @@ export function EventSheet({
         onChange={(e) => setTitle(e.target.value)}
         onKeyDown={(e) => e.key === 'Enter' && submit()}
       />
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <label htmlFor="nowe-wydarzenie-dzien" style={label}>
+          DZIEŃ
+        </label>
+        <input
+          id="nowe-wydarzenie-dzien"
+          type="date"
+          value={date}
+          onChange={(e) => e.target.value && setDate(e.target.value)}
+          style={{ ...timeInput, fontFamily: fonts.sans, fontSize: 16, fontWeight: 600 }}
+        />
+      </div>
 
       <Group label="RODZAJ">
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>

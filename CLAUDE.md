@@ -50,7 +50,7 @@ Nie zmieniaj stosu bez pytania Hani.
 ## Interakcje na liście zadań (ustalone)
 
 - Kwadracik po lewej (pole 56 px × cała wysokość wiersza) = ogarnięte / przywróć.
-- Klik w treść zadania = arkusz zadania (edycja w miejscu, na dole „Usuń” i „Ogarnij/Przywróć”).
+- Klik w treść zadania = arkusz zadania **do odczytu** (odhaczanie kroków działa; na dole mniejsze „Usuń” i „Ogarnij/Przywróć”). W prawym górnym rogu „Edytuj” → tryb edycji z wyraźnym „Zapisz” u góry (i „Anuluj”); zamknięcie z niezapisanymi zmianami pyta „Odrzucić zmiany?”. Tak samo arkusz wydarzenia (decyzja Hani 2026-10-25).
 - Przeciągnięcie w prawo = ogarnij (w zakładce Ogarnięte: przywróć); w lewo = do kosza. Próg ok. 90 px.
 - Każde usunięcie zadania lub wydarzenia (gest, „Usuń” w arkuszu) najpierw pyta „Usunąć zadanie?” / „Usunąć wydarzenie?” (Anuluj / Usuń). Usunięte trafiają do Kosza.
 - Każda taka akcja pokazuje pasek „… · COFNIJ” (ok. 4,5 s).

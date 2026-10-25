@@ -518,6 +518,8 @@ export function CalendarScreen() {
               { ...draft, id: newId('e'), createdBy: store.currentUid },
             ])
             setSheetOpen(false)
+            // dzień zmieniony w arkuszu – kalendarz pokazuje dzień nowego wydarzenia
+            pick(draft.date)
           }}
         />
       )}

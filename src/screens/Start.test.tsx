@@ -67,7 +67,7 @@ test('Pilne: dotknięcie otwiera arkusz zadania, kwadracik ogarnia z „Cofnij�
   fireEvent.click(rows('Pilne')[1])
   const sheet = screen.getByRole('dialog', { name: 'Zadanie' })
   expect(within(sheet).getByText('DO ZROBIENIA · ZDROWIE')).toBeDefined()
-  fireEvent.click(within(sheet).getAllByRole('button', { name: 'Gotowe' })[0])
+  fireEvent.click(within(sheet).getByRole('button', { name: 'Zamknij' }))
 
   fireEvent.click(screen.getByRole('button', { name: 'Ogarnij: Wykupić receptę' }))
   expect(screen.getByRole('status').textContent).toContain('Ogarnięte: Wykupić receptę')
@@ -92,10 +92,12 @@ test('Najbliższe wydarzenia: dwa najbliższe; dotknięcie – arkusz wydarzenia
   expect(ev[0].textContent).toContain('jutro')
   fireEvent.click(ev[0])
   const sheet = screen.getByRole('dialog', { name: 'Wydarzenie' })
-  fireEvent.change(within(sheet).getByLabelText('Nazwa wydarzenia'), {
+  fireEvent.click(within(sheet).getByRole('button', { name: 'Edytuj' }))
+  fireEvent.change(within(sheet).getByLabelText('NAZWA'), {
     target: { value: 'Kino z Krzysiem i Olą' },
   })
-  fireEvent.click(within(sheet).getAllByRole('button', { name: 'Gotowe' })[0])
+  fireEvent.click(within(sheet).getByRole('button', { name: 'Zapisz' }))
+  fireEvent.click(within(sheet).getByRole('button', { name: 'Gotowe' }))
   expect(section('Najbliższe wydarzenia').textContent).toContain('Kino z Krzysiem i Olą')
 })
 

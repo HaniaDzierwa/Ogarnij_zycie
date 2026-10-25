@@ -29,9 +29,15 @@ test('arkusz własnego zadania: przełączenie na „Tylko ja” i z powrotem', 
   renderApp('/zadania')
   fireEvent.click(screen.getByText('Baterie AA do pilota'))
   const detail = screen.getByRole('dialog', { name: 'Zadanie' })
-  fireEvent.click(within(detail).getByRole('radio', { name: 'Tylko ja' }))
+  const setVisibility = (name: string) => {
+    fireEvent.click(within(detail).getByRole('button', { name: 'Edytuj' }))
+    fireEvent.click(within(detail).getByRole('radio', { name }))
+    fireEvent.click(within(detail).getByRole('button', { name: 'Zapisz' }))
+  }
+  setVisibility('Tylko ja')
+  expect(within(detail).getByText('Tylko ja')).toBeDefined()
   expect(screen.getAllByText('TYLKO JA')).toHaveLength(1)
-  fireEvent.click(within(detail).getByRole('radio', { name: 'Wspólne' }))
+  setVisibility('Wspólne')
   expect(screen.queryByText('TYLKO JA')).toBeNull()
 })
 
@@ -39,6 +45,7 @@ test('cudze wspólne zadanie: bez przełącznika, „Zmienić może tylko Krzyś
   renderApp('/zadania')
   fireEvent.click(screen.getByText('Zebranie w szkole'))
   const detail = screen.getByRole('dialog', { name: 'Zadanie' })
+  fireEvent.click(within(detail).getByRole('button', { name: 'Edytuj' }))
   expect(within(detail).queryByRole('radio', { name: 'Tylko ja' })).toBeNull()
   expect(within(detail).getByText(/Zmienić może tylko Krzyś/)).toBeDefined()
 })

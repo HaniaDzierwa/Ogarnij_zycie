@@ -1,9 +1,11 @@
 import { expect, test } from 'vitest'
 import {
   addSubtask,
+  editTask,
   markDone,
   moveToTrash,
   removeSubtask,
+  taskEditOf,
   restoreFromTrash,
   toggleDone,
   toggleSubtask,
@@ -73,4 +75,24 @@ test('kosz: przeniesienie i przywrócenie zachowuje kategorię, priorytet i krok
     task.priority,
     task.subtasks,
   ])
+})
+
+test('„Zapisz” w arkuszu: zmienia pola; dodany niezrobiony krok przywraca ogarnięte zadanie', () => {
+  const done = markDone(
+    { ...task, subtasks: task.subtasks.map((s) => ({ ...s, done: true })) },
+    who,
+  )
+  const e = taskEditOf(done)
+  const saved = editTask(
+    done,
+    {
+      ...e,
+      title: 'Prezent dla mamy',
+      subtasks: [...e.subtasks, { id: 'c', title: 'Kartka', done: false }],
+    },
+    who,
+  )
+  expect([saved.title, saved.done, saved.doneBy]).toEqual(['Prezent dla mamy', false, null])
+  // bez zmian w krokach – stan ogarnięcia zostaje
+  expect(editTask(done, { ...e, note: 'x' }, who).done).toBe(true)
 })

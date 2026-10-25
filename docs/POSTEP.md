@@ -22,8 +22,8 @@ Funkcje są w aplikacji; etap = sprawdzenie na prawdziwych danych, poprawki z uw
 | Krok | Status |
 | --- | --- |
 | 1 Testy automatyczne odbioru: każda kombinacja filtrów (Pokaż × kategoria × grupowanie, także własne priorytety i „Tylko ja”) daje poprawną listę i liczniki; liczby na Starcie = lista zadań; wydarzenie z Kosza wraca na swój dzień | zrobione |
-| 2 Tydzień używania we dwoje (Hania + domownik) – uwagi w tabeli „Uwagi Hani” jako „poprawka teraz” / „później” | w toku (następny) |
-| 3 Poprawki „teraz” z uwag | do zrobienia |
+| 2 Tydzień używania we dwoje (Hania + domownik) – uwagi w tabeli „Uwagi Hani” jako „poprawka teraz” / „później” | w toku |
+| 3 Poprawki „teraz” z uwag | w toku – 2 uwagi z 2026-10-25 zrobione |
 | 4 Wersja testowa, odbiór etapu 5 (z odbiorem etapu 3) | do zrobienia |
 
 ## Etap 4 – kroki (Wspólny dom)
@@ -83,6 +83,8 @@ Wersja testowa: https://ogarnij-zycie--test-56tdtc0y.web.app (kanał `test`, odn
 
 | Data | Etap | Uwaga | Kiedy | Status |
 | --- | --- | --- | --- | --- |
+| 2026-10-25 | 5 | Panel nowego wydarzenia ma pokazywać datę wydarzenia z możliwością zmiany. | teraz | zrobione – do sprawdzenia |
+| 2026-10-25 | 5 | Otwarte zadanie / wydarzenie najpierw do odczytu; w prawym górnym rogu „Edytuj” → tryb edycji z ładnym, widocznym „Zapisz” u góry; „Usuń” i „Ogarnij” na dole mniejsze. | teraz | zrobione – do sprawdzenia |
 | 2026-10-20 | 4 | Bez kodu QR: na „Zaproś domownika” tylko 6 cyfr i link, na „Dołącz do domu” bez skanera (skoro nie ma QR, nie trzeba go skanować). | teraz | zapisane – ekrany w krokach 2–3 |
 | 2026-10-20 | 2 | Błąd po ponownym zalogowaniu: „Cannot read properties of undefined (reading dot)”. | teraz | zrobione – Hania: „działa ok” |
 | 2026-10-20 | 2 | Zadania i wydarzenia: „luźna” notatka, którą zawsze można dodać. | teraz | zrobione – do sprawdzenia |
@@ -211,3 +213,4 @@ Wersja testowa: https://ogarnij-zycie--test-56tdtc0y.web.app (kanał `test`, odn
 - 2026-10-25 · Etap 4 · Odbiór: synchronizacja między telefonami, zmiany offline, ochrona przed obcymi (testy reguł), zużyty / przeterminowany kod, „Tylko ja”, „Opuść dom” / „Usuń z domu”. Hania: „akceptuję”. Etap 4 zakończony.
 - 2026-10-25 · Etap 5 · Start etapu: kroki w tabeli „Etap 5 – kroki”.
 - 2026-10-25 · Etap 5 · Krok 1: testy odbioru. (a) Wszystkie kombinacje filtrów – 6 × Pokaż (z dwoma własnymi priorytetami) × 8 kategorii (z „Bez kategorii”) × 2 grupowania = 96 przypadków na danych z „Tylko ja”, ogarniętymi, koszem i priorytetem, którego już nie ma: lista = wyliczenie „na piechotę”, każde zadanie raz i we właściwej grupie, bez pustych grup, kolejność priorytetów, liczniki (otwarte, pilne, ogarnięte, przy kategoriach) niezależne od filtrów – wszystkie przeszły bez poprawek w kodzie. (b) Start = Zadania: liczby „Do zrobienia” i „Pilne” zgodne z nagłówkiem Zadań na starcie, po ogarnięciu i po dodaniu pilnego zadania. (c) Wydarzenie z Kosza po „Przywróć” wraca na swój dzień w Kalendarzu. · Sprawdzenie: `npm test` – 290.
+- 2026-10-25 · Etap 5 · Krok 3 (uwagi Hani): (1) „Nowe wydarzenie” – pole DZIEŃ (domyślnie dzień z kalendarza, do zmiany); po dodaniu kalendarz przechodzi na dzień wydarzenia. (2) Arkusz zadania i wydarzenia najpierw do odczytu: opis (kategoria / rodzaj, priorytet, termin / dzień i godzina, przypomnienie, kto widzi, notatka), kroki zadania da się odhaczać; „Edytuj” (obrys, prawy górny róg) → edycja na kopii roboczej z wyraźnym zielonym „Zapisz” u góry i „Anuluj”; „Zapisz” zapisuje wszystko naraz (dodany niezrobiony krok przywraca ogarnięte zadanie – z „Cofnij”); zamknięcie albo „Anuluj” ze zmianami pyta „Odrzucić zmiany?” (Anuluj / Odrzuć); pusta nazwa – „Zapisz” nieaktywne. Na dole mniejsze „Usuń” i „Ogarnij/Przywróć” (wydarzenie: „Gotowe”). CLAUDE.md i DESIGN.md zaktualizowane. Testy: 293. · Sprawdzenie: zadanie → odczyt → Edytuj → zmień priorytet → Zapisz; zmień nazwę i dotknij obok → „Odrzucić zmiany?”; „+” → Wydarzenie → zmień DZIEŃ → po dodaniu kalendarz na tym dniu.

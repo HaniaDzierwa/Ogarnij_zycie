@@ -23,10 +23,10 @@ Styl „domowy elegancki”: butelkowa zieleń, mosiądz i krem, szeryfowy Fraun
 | 2b Skróty ze Startu | `ZadaniaPilne`, `ZadaniaOgarniete`, `KalendarzImieniny`, `KalendarzUrodziny` | Zadania/Kalendarz otwarte z filtrem lub dniem |
 | 3 Zadania | `Zadania.dc.html` | Zakładki Do zrobienia / Ogarnięte, filtry, grupy, podzadania, gesty, arkusz zadania, arkusz „Nowe zadanie”, pasek „Cofnij”; wariant `demo` pokazuje stany |
 | 3a Gesty | `ZadaniaPrawo`, `ZadaniaLewo` | Odsłonięte tło przy przeciąganiu w prawo (ogarnij) i w lewo (do kosza) |
-| 3a Arkusz zadania | `ZadaniaArkusz` | Edycja w miejscu: nazwa, kategoria, priorytet, termin, kroki; Usuń / Ogarnij |
+| 3a Arkusz zadania | `ZadaniaArkusz` | **Najpierw do odczytu** (kategoria, priorytet, termin, kto widzi, kroki do odhaczania, notatka); „Edytuj” w prawym górnym rogu → edycja (nazwa, kategoria, priorytet, termin, kroki, notatka, kto widzi) z wyraźnym „Zapisz” u góry i „Anuluj”; zamknięcie bez zapisu – „Odrzucić zmiany?”; na dole mniejsze Usuń / Ogarnij (decyzja Hani 2026-10-25) |
 | 3a Wyczyść ogarnięte | `ZadaniaWyczysc` | Zakładka Ogarnięte + arkusz: starsze niż 7 dni / 30 dni / wszystkie |
 | 3a Kosz | `Kosz.dc.html` (+ `KoszPotwierdzenie`) | Wspólny kosz zadań i wydarzeń (wejście z Ustawień): chipy Wszystko / Zadania / Wydarzenia, licznik dni, Przywróć, Opróżnij kosz z potwierdzeniem |
-| 4a Kalendarz – usuwanie | `KalendarzLewo`, `KalendarzArkusz` | Przeciągnięcie wydarzenia w lewo = do kosza; klik w wydarzenie = arkusz wydarzenia. **Arkusz zostaje jak w aplikacji** (edycja w miejscu z polem DZIEŃ i „Gotowe”, nie „Edytuj wydarzenie / Zapisz zmiany” z projektu – decyzja Hani 2026-10-18) |
+| 4a Kalendarz – usuwanie | `KalendarzLewo`, `KalendarzArkusz` | Przeciągnięcie wydarzenia w lewo = do kosza; klik w wydarzenie = arkusz wydarzenia. Arkusz wydarzenia jak arkusz zadania: najpierw do odczytu (rodzaj, dzień, godzina, przypomnienie, kto widzi, notatka), „Edytuj” → edycja (także DZIEŃ) z „Zapisz”; na dole mniejsze Usuń / Gotowe (decyzja Hani 2026-10-25 – zastępuje edycję w miejscu z 2026-10-18). Nowe wydarzenie: pole DZIEŃ do zmiany (domyślnie dzień wybrany w kalendarzu); po dodaniu kalendarz pokazuje ten dzień |
 | 4 Kalendarz | `Kalendarz.dc.html` | Tydzień/miesiąc, agenda, arkusz nowego i edytowanego wydarzenia, przeciąganie w lewo, pasek „Cofnij”; wariant `demo` |
 | 5 Ustawienia | `Ustawienia.dc.html` | Ty, Wspólny dom, **Zadania (Kategorie, Priorytety – decyzja Hani 2026-10-20)**, Porządki (sprzątanie ogarniętych 7/30 dni/nigdy, Kosz), Powiadomienia, Wygląd (motyw – ukryty na start) |
 | 5g Kategorie | brak w projekcie (styl Kosza / Domowników) | Lista: kropka w kolorze, nazwa, liczba zadań; arkusz: nazwa, kolor, „Usuń kategorię” (zablokowane przy przypiętych zadaniach); „+ Nowa kategoria” |
@@ -111,7 +111,7 @@ Zakupy `#5E8C6A` · Dom `#B8925A` · Zdrowie `#A4492F` · Urzędy `#6E5F8C` · A
 | Gdzie / jak | Akcja |
 | --- | --- |
 | Kwadracik po lewej (pole 56 px × wysokość wiersza) | Ogarnięte – najpierw animacja: zielony kwadracik z ptaszkiem, treść blednie, po ~0,35 s zadanie przechodzi do Ogarniętych; w zakładce Ogarnięte – przywróć od razu |
-| Klik w treść zadania | Arkusz zadania (edycja w miejscu, zmiany zapisują się od razu) |
+| Klik w treść zadania | Arkusz zadania do odczytu; „Edytuj” → edycja, „Zapisz” zapisuje |
 | Przeciągnięcie w prawo (> ~90 px) | Ogarnij – tło `#1F3D2E`, ptaszek i napis w `#E8C98E`; w zakładce Ogarnięte: Przywróć – tło `#E8C98E` |
 | Przeciągnięcie w lewo (> ~90 px) | Do kosza – tło `#A4492F`, kosz i „Usuń” na biało; najpierw pytanie „Usunąć zadanie?” (Anuluj / Usuń) |
 | Strzałka „˅” (tylko gdy są kroki) | Rozwija podzadania |

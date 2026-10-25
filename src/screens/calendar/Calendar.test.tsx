@@ -66,7 +66,7 @@ describe('ekran Kalendarz', () => {
     expect(first.textContent).toContain('za 4 dni')
     fireEvent.click(first)
     const sheet = screen.getByRole('dialog', { name: 'Zadanie' })
-    fireEvent.click(within(sheet).getAllByRole('button', { name: 'Gotowe' })[0])
+    fireEvent.click(within(sheet).getByRole('button', { name: 'Zamknij' }))
     expect(agenda().textContent).toContain('Wtorek, 13 października')
 
     fireEvent.click(screen.getByRole('button', { name: 'Następny tydzień' }))
@@ -113,6 +113,19 @@ describe('ekran Kalendarz', () => {
     expect(agenda().textContent).toContain('18:00')
   })
 
+  test('nowe wydarzenie: dzień do zmiany w arkuszu (domyślnie wybrany w kalendarzu)', () => {
+    renderAt('/kalendarz?nowe=wydarzenie')
+    const sheet = screen.getByRole('dialog', { name: 'Nowe wydarzenie' })
+    const day = within(sheet).getByLabelText('DZIEŃ') as HTMLInputElement
+    expect(day.value).toBe('2026-10-09')
+    fireEvent.change(day, { target: { value: '2026-10-21' } })
+    expect(within(sheet).getByText('ŚRODA, 21 PAŹDZIERNIKA')).toBeDefined()
+    fireEvent.change(within(sheet).getByLabelText('NAZWA'), { target: { value: 'Dentysta' } })
+    fireEvent.click(within(sheet).getByRole('button', { name: 'Dodaj do kalendarza' }))
+    expect(agenda().textContent).toContain('Środa, 21 października')
+    expect(agenda().textContent).toContain('Dentysta')
+  })
+
   test('menu „+” → „Wydarzenie w kalendarzu” otwiera arkusz na miejscu', () => {
     renderAt('/kalendarz?dzien=2026-10-10')
     fireEvent.click(screen.getByRole('button', { name: 'Dodaj' }))
@@ -125,18 +138,23 @@ describe('ekran Kalendarz', () => {
 describe('edycja i usuwanie – jak w Zadaniach', () => {
   const row = (title: string) => screen.getByRole('button', { name: new RegExp(`^${title}`) })
 
-  test('dotknięcie wydarzenia: arkusz z edycją w miejscu', () => {
+  test('dotknięcie wydarzenia: arkusz do odczytu, „Edytuj” → zmiany → „Zapisz”', () => {
     renderAt('/kalendarz?dzien=2026-10-10')
     fireEvent.click(row('Kino z Krzysiem'))
     const sheet = screen.getByRole('dialog', { name: 'Wydarzenie' })
     expect(within(sheet).getByText('WYDARZENIE · SOBOTA, 10 PAŹDZIERNIKA')).toBeDefined()
-    fireEvent.change(within(sheet).getByLabelText('Nazwa wydarzenia'), {
+    expect(within(sheet).getByText('Sobota, 10 października')).toBeDefined()
+    expect(within(sheet).queryByLabelText('NAZWA')).toBeNull()
+    fireEvent.click(within(sheet).getByRole('button', { name: 'Edytuj' }))
+    fireEvent.change(within(sheet).getByLabelText('NAZWA'), {
       target: { value: 'Kino z Krzysiem i Olą' },
     })
     fireEvent.click(within(sheet).getByRole('button', { name: 'Impreza' }))
     fireEvent.click(within(sheet).getByRole('button', { name: 'Brak' }))
     fireEvent.change(within(sheet).getByLabelText('OD'), { target: { value: '20:00' } })
-    fireEvent.click(within(sheet).getAllByRole('button', { name: 'Gotowe' })[1])
+    fireEvent.click(within(sheet).getByRole('button', { name: 'Zapisz' }))
+    expect(within(sheet).getByText(/20:00/)).toBeDefined()
+    fireEvent.click(within(sheet).getByRole('button', { name: 'Gotowe' }))
 
     expect(screen.queryByRole('dialog')).toBeNull()
     expect(row('Kino z Krzysiem i Olą').textContent).toBe('Kino z Krzysiem i OląIMPREZA20:00')
@@ -146,8 +164,10 @@ describe('edycja i usuwanie – jak w Zadaniach', () => {
     renderAt('/kalendarz?dzien=2026-10-10')
     fireEvent.click(row('Kino z Krzysiem'))
     const sheet = screen.getByRole('dialog', { name: 'Wydarzenie' })
+    fireEvent.click(within(sheet).getByRole('button', { name: 'Edytuj' }))
     fireEvent.change(within(sheet).getByLabelText('DZIEŃ'), { target: { value: '2026-10-12' } })
-    fireEvent.click(within(sheet).getAllByRole('button', { name: 'Gotowe' })[0])
+    fireEvent.click(within(sheet).getByRole('button', { name: 'Zapisz' }))
+    fireEvent.click(within(sheet).getByRole('button', { name: 'Gotowe' }))
     expect(agenda().textContent).toContain('Poniedziałek, 12 października')
     expect(agenda().textContent).toContain('Kino z Krzysiem')
   })
@@ -191,7 +211,7 @@ describe('edycja i usuwanie – jak w Zadaniach', () => {
     fireEvent.click(row('Wykupić receptę'))
     const sheet = screen.getByRole('dialog', { name: 'Zadanie' })
     expect(within(sheet).getByText('DO ZROBIENIA · ZDROWIE')).toBeDefined()
-    fireEvent.click(within(sheet).getAllByRole('button', { name: 'Gotowe' })[0])
+    fireEvent.click(within(sheet).getByRole('button', { name: 'Zamknij' }))
 
     fireEvent.click(screen.getByRole('button', { name: 'Ogarnij: Wykupić receptę' }))
     expect(agenda().textContent).not.toContain('Wykupić receptę')
@@ -238,18 +258,18 @@ describe('edycja i usuwanie – jak w Zadaniach', () => {
     const later = () => screen.getByRole('heading', { name: 'Później' }).closest('section')!
     fireEvent.click(within(later()).getByRole('button', { name: /^15 ?PAŹ ?Zapłacić/ }))
     expect(screen.getByRole('dialog', { name: 'Zadanie' })).toBeDefined()
-    fireEvent.click(
-      within(screen.getByRole('dialog')).getAllByRole('button', { name: 'Gotowe' })[0],
-    )
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Zamknij' }))
     fireEvent.click(screen.getByRole('button', { name: 'DZIŚ' }))
 
     // drugi „Zebranie w szkole” to wydarzenie (pierwszy – termin zadania)
     const rows = within(later()).getAllByRole('button', { name: /^13 ?PAŹ ?Zebranie/ })
     fireEvent.click(rows[1])
     const sheet = screen.getByRole('dialog', { name: 'Wydarzenie' })
-    fireEvent.change(within(sheet).getByLabelText('Nazwa wydarzenia'), {
+    fireEvent.click(within(sheet).getByRole('button', { name: 'Edytuj' }))
+    fireEvent.change(within(sheet).getByLabelText('NAZWA'), {
       target: { value: 'Zebranie z wychowawczynią' },
     })
+    fireEvent.click(within(sheet).getByRole('button', { name: 'Zapisz' }))
     fireEvent.click(within(sheet).getByRole('button', { name: 'Usuń' }))
     fireEvent.click(
       within(screen.getByRole('alertdialog', { name: 'Usunąć wydarzenie?' })).getByRole('button', {
@@ -269,7 +289,7 @@ describe('edycja i usuwanie – jak w Zadaniach', () => {
 })
 
 describe('notatka przy wydarzeniu', () => {
-  test('przy nowym wydarzeniu: widać ją w agendzie, w arkuszu – do edycji', () => {
+  test('przy nowym wydarzeniu: widać ją w agendzie i w arkuszu; zmiana przez „Edytuj”', () => {
     renderAt('/kalendarz?nowe=wydarzenie')
     const sheet = screen.getByRole('dialog', { name: 'Nowe wydarzenie' })
     fireEvent.change(within(sheet).getByLabelText('NAZWA'), { target: { value: 'Basen' } })
@@ -281,10 +301,13 @@ describe('notatka przy wydarzeniu', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /^Basen/ }))
     const detail = screen.getByRole('dialog', { name: 'Wydarzenie' })
+    expect(within(detail).getByText('Zabrać czepki')).toBeDefined()
+    fireEvent.click(within(detail).getByRole('button', { name: 'Edytuj' }))
     fireEvent.change(within(detail).getByLabelText(/NOTATKA/), {
       target: { value: 'Zabrać czepki i klapki' },
     })
-    fireEvent.click(within(detail).getAllByRole('button', { name: 'Gotowe' })[0])
+    fireEvent.click(within(detail).getByRole('button', { name: 'Zapisz' }))
+    fireEvent.click(within(detail).getByRole('button', { name: 'Gotowe' }))
     expect(agenda().textContent).toContain('ZABRAĆ CZEPKI I KLAPKI')
   })
 })

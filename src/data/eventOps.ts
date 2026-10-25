@@ -21,8 +21,29 @@ export function restoreEvent(event: CalendarEvent): CalendarEvent {
   return { ...event, deleted: false, deletedAt: null, deletedBy: null }
 }
 
+/** Pola zmieniane w arkuszu wydarzenia („Edytuj” → „Zapisz”). */
+export type EventEdit = Pick<
+  CalendarEvent,
+  'title' | 'typeId' | 'date' | 'allDay' | 'from' | 'to' | 'remind' | 'note' | 'private'
+>
+
+export const eventEditOf = (e: CalendarEvent): EventEdit => ({
+  title: e.title,
+  typeId: e.typeId,
+  date: e.date,
+  allDay: e.allDay,
+  from: e.from,
+  to: e.to,
+  remind: e.remind,
+  note: e.note,
+  private: e.private,
+})
+
 /** Cały dzień ⇄ godzina (domyślnie 18:00, jak w arkuszu nowego wydarzenia). */
-export function setAllDay(event: CalendarEvent, allDay: boolean): CalendarEvent {
+export function setAllDay<T extends Pick<CalendarEvent, 'allDay' | 'from' | 'to'>>(
+  event: T,
+  allDay: boolean,
+): T {
   return allDay
     ? { ...event, allDay: true, from: null, to: null }
     : { ...event, allDay: false, from: event.from ?? '18:00' }

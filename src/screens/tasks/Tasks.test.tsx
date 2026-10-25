@@ -78,29 +78,69 @@ test('w lewo = do kosza (przycisk dla czytników), pasek i licznik KOSZ', () => 
   expect(screen.queryByRole('link', { name: /KOSZ/ })).toBeNull()
 })
 
-test('klik w treść otwiera arkusz zadania; edycja w miejscu, „Gotowe” zamyka', () => {
+/** Otwiera arkusz zadania i przechodzi w „Edytuj”. */
+function editTask(title: string) {
+  click(`Otwórz zadanie ${title}`)
+  const sheet = screen.getByRole('dialog', { name: 'Zadanie' })
+  fireEvent.click(within(sheet).getByRole('button', { name: 'Edytuj' }))
+  return sheet
+}
+
+test('arkusz zadania: najpierw do odczytu, „Edytuj” → zmiany → „Zapisz”', () => {
   renderAt('/zadania')
   click('Otwórz zadanie Baterie AA do pilota')
   const sheet = screen.getByRole('dialog', { name: 'Zadanie' })
   expect(within(sheet).getByText('DO ZROBIENIA · ZAKUPY')).toBeDefined()
-  expect(within(sheet).getByText(/Dodane: Hania · zmiany zapisują się od razu/)).toBeDefined()
-  fireEvent.change(within(sheet).getByLabelText('Nazwa zadania'), {
+  expect(within(sheet).getByText('Dodane: Hania')).toBeDefined()
+  // odczyt: bez pól do wpisywania, z opisem
+  expect(within(sheet).queryByLabelText('NAZWA')).toBeNull()
+  expect(within(sheet).getByRole('heading', { name: 'Baterie AA do pilota' })).toBeDefined()
+  expect(within(sheet).getByText('PRIORYTET')).toBeDefined()
+
+  fireEvent.click(within(sheet).getByRole('button', { name: 'Edytuj' }))
+  expect(within(sheet).queryByRole('button', { name: 'Usuń' })).toBeNull()
+  fireEvent.change(within(sheet).getByLabelText('NAZWA'), {
     target: { value: 'Baterie AAA do pilota' },
   })
   fireEvent.click(within(sheet).getByRole('radio', { name: /Pilne/ }))
-  fireEvent.click(within(sheet).getByRole('button', { name: 'Gotowe' }))
+  fireEvent.click(within(sheet).getByRole('button', { name: 'Zapisz' }))
+  // po zapisie – znów odczyt, z nowymi danymi
+  expect(within(sheet).getByRole('heading', { name: 'Baterie AAA do pilota' })).toBeDefined()
+  expect(within(sheet).getByRole('button', { name: 'Edytuj' })).toBeDefined()
+  click('Zamknij')
   expect(screen.queryByRole('dialog')).toBeNull()
   expect(screen.getByText('Baterie AAA do pilota')).toBeDefined()
   expect(screen.getByText('5 pilnych')).toBeDefined()
 })
 
-test('arkusz: pusta nazwa po „Gotowe” wraca do poprzedniej', () => {
+test('arkusz: pusta nazwa – „Zapisz” nieaktywne; zamknięcie bez zapisu pyta „Odrzucić zmiany?”', () => {
   renderAt('/zadania')
-  click('Otwórz zadanie Baterie AA do pilota')
-  const sheet = screen.getByRole('dialog', { name: 'Zadanie' })
-  fireEvent.change(within(sheet).getByLabelText('Nazwa zadania'), { target: { value: '  ' } })
-  fireEvent.click(within(sheet).getByRole('button', { name: 'Gotowe' }))
+  const sheet = editTask('Baterie AA do pilota')
+  fireEvent.change(within(sheet).getByLabelText('NAZWA'), { target: { value: '  ' } })
+  expect(
+    (within(sheet).getByRole('button', { name: 'Zapisz' }) as HTMLButtonElement).disabled,
+  ).toBe(true)
+  click('Zamknij')
+  const ask = screen.getByRole('alertdialog', { name: 'Odrzucić zmiany?' })
+  // „Anuluj” – zostaje w edycji
+  fireEvent.click(within(ask).getAllByRole('button', { name: 'Anuluj' }).at(-1)!)
+  expect(within(sheet).getByLabelText('NAZWA')).toBeDefined()
+  click('Zamknij')
+  fireEvent.click(
+    within(screen.getByRole('alertdialog', { name: 'Odrzucić zmiany?' })).getByRole('button', {
+      name: 'Odrzuć',
+    }),
+  )
+  expect(screen.queryByRole('dialog')).toBeNull()
   expect(screen.getByText('Baterie AA do pilota')).toBeDefined()
+})
+
+test('arkusz: „Anuluj” w edycji bez zmian – od razu wraca do odczytu', () => {
+  renderAt('/zadania')
+  const sheet = editTask('Baterie AA do pilota')
+  fireEvent.click(within(sheet).getByRole('button', { name: 'Anuluj' }))
+  expect(screen.queryByRole('alertdialog')).toBeNull()
+  expect(within(sheet).getByRole('button', { name: 'Edytuj' })).toBeDefined()
 })
 
 test('arkusz: „Ogarnij” zamyka i ogarnia; „Usuń” przenosi do kosza', () => {
@@ -122,8 +162,7 @@ test('arkusz: „Ogarnij” zamyka i ogarnia; „Usuń” przenosi do kosza', ()
 
 test('arkusz: termin spoza chipów = chip z datą + kalendarz', () => {
   renderAt('/zadania')
-  click('Otwórz zadanie Zapłacić rachunek za prąd')
-  const sheet = screen.getByRole('dialog', { name: 'Zadanie' })
+  const sheet = editTask('Zapłacić rachunek za prąd')
   expect(
     within(sheet).getByRole('button', { name: 'CZ 15 PAŹ' }).getAttribute('aria-pressed'),
   ).toBe('true')
@@ -257,8 +296,7 @@ test('panel filtrów zamyka dotknięcie poza nim (tło nad całym ekranem, takż
 
 test('arkusz: w niedzielę „W tym tygodniu” da się wybrać, choć to ten sam dzień co „Dziś”', () => {
   renderAt('/zadania', '2026-10-18')
-  click('Otwórz zadanie Baterie AA do pilota')
-  const sheet = screen.getByRole('dialog', { name: 'Zadanie' })
+  const sheet = editTask('Baterie AA do pilota')
   const chip = (name: string) => within(sheet).getByRole('button', { name })
   fireEvent.click(chip('W tym tygodniu'))
   expect(chip('W tym tygodniu').getAttribute('aria-pressed')).toBe('true')
@@ -268,7 +306,7 @@ test('arkusz: w niedzielę „W tym tygodniu” da się wybrać, choć to ten sa
   expect(chip('W tym tygodniu').getAttribute('aria-pressed')).toBe('false')
 })
 
-test('notatka: przy nowym zadaniu i w arkuszu zadania (zapis od razu)', () => {
+test('notatka: przy nowym zadaniu i w arkuszu zadania („Zapisz”)', () => {
   renderAt('/zadania?nowe=zadanie')
   const sheet = screen.getByRole('dialog', { name: 'Nowe zadanie' })
   fireEvent.change(within(sheet).getByLabelText('CO TRZEBA ZROBIĆ?'), {
@@ -280,14 +318,13 @@ test('notatka: przy nowym zadaniu i w arkuszu zadania (zapis od razu)', () => {
   fireEvent.click(within(sheet).getByRole('button', { name: 'Dodaj zadanie' }))
   click('Otwórz zadanie Odebrać paczkę')
   const detail = screen.getByRole('dialog', { name: 'Zadanie' })
+  expect(within(detail).getByText('Paczkomat przy Biedronce, kod 4821')).toBeDefined()
+  fireEvent.click(within(detail).getByRole('button', { name: 'Edytuj' }))
   const note = within(detail).getByLabelText(/NOTATKA/) as HTMLTextAreaElement
   expect(note.value).toBe('Paczkomat przy Biedronce, kod 4821')
   fireEvent.change(note, { target: { value: 'Kod 4821 – ważny do piątku' } })
-  fireEvent.click(within(detail).getAllByRole('button', { name: 'Gotowe' })[0])
-  click('Otwórz zadanie Odebrać paczkę')
-  expect(
-    (within(screen.getByRole('dialog')).getByLabelText(/NOTATKA/) as HTMLTextAreaElement).value,
-  ).toBe('Kod 4821 – ważny do piątku')
+  fireEvent.click(within(detail).getByRole('button', { name: 'Zapisz' }))
+  expect(within(detail).getByText('Kod 4821 – ważny do piątku')).toBeDefined()
 })
 
 test('„Cofnij” cofa tylko ogarnięcie – późniejsza zmiana innego zadania zostaje', () => {
@@ -298,11 +335,12 @@ test('„Cofnij” cofa tylko ogarnięcie – późniejsza zmiana innego zadania
   act(() => vi.advanceTimersByTime(400))
   expect(screen.getByRole('status').textContent).toContain('Ogarnięte: Baterie AA do pilota')
   // w ciągu 4,5 s zmiana innego zadania (np. z drugiego telefonu albo w arkuszu)
-  click('Otwórz zadanie Wymienić filtr w okapie')
-  fireEvent.change(within(screen.getByRole('dialog')).getByLabelText('Nazwa zadania'), {
+  const sheet = editTask('Wymienić filtr w okapie')
+  fireEvent.change(within(sheet).getByLabelText('NAZWA'), {
     target: { value: 'Wymienić filtr w okapie i umyć kratkę' },
   })
-  fireEvent.click(within(screen.getByRole('dialog')).getAllByRole('button', { name: 'Gotowe' })[0])
+  fireEvent.click(within(sheet).getByRole('button', { name: 'Zapisz' }))
+  click('Zamknij')
   click('COFNIJ')
   expect(screen.getByRole('button', { name: 'Otwórz zadanie Baterie AA do pilota' })).toBeDefined()
   expect(
