@@ -8,12 +8,23 @@ Aktualny etap: **4 – Wspólny dom** (w toku)
 | 1 Klikalny mockup | zakończony | 2026-10-18 |
 | 2 Konta i dane | zakończony | 2026-10-20 |
 | 3 Zadania | kod zakończony 2026-10-20 – odbiór w etapie 5 (we dwoje) | – |
-| 4 Wspólny dom (dawniej 8) | w toku | – |
-| 5 Kategorie, Kalendarz, Start i wspólne testowanie (dawniej 4–6 + odbiór 3) | – | – |
+| 4 Wspólny dom (dawniej 8) | zakończony | 2026-10-25 |
+| 5 Kategorie, Kalendarz, Start i wspólne testowanie (dawniej 4–6 + odbiór 3) | w toku | – |
 | 6 Ustawienia i push (dawniej 7) | – | – |
 | 7 Testy i publikacja (dawniej 9) | – | – |
 
 Kolejność etapów zmieniona 2026-10-20 (decyzja Hani: testować dopiero we dwoje) – szczegóły w PLAN.md. Wpisy w dzienniku sprzed tej daty używają dawnej numeracji.
+
+## Etap 5 – kroki (Kategorie, Kalendarz, Start, testowanie we dwoje)
+
+Funkcje są w aplikacji; etap = sprawdzenie na prawdziwych danych, poprawki z uwag i odbiór (także etapu 3).
+
+| Krok | Status |
+| --- | --- |
+| 1 Testy automatyczne odbioru: każda kombinacja filtrów (Pokaż × kategoria × grupowanie, także własne priorytety i „Tylko ja”) daje poprawną listę i liczniki; liczby na Starcie = lista zadań; wydarzenie z Kosza wraca na swój dzień | do zrobienia (następny) |
+| 2 Tydzień używania we dwoje (Hania + domownik) – uwagi w tabeli „Uwagi Hani” jako „poprawka teraz” / „później” | do zrobienia |
+| 3 Poprawki „teraz” z uwag | do zrobienia |
+| 4 Wersja testowa, odbiór etapu 5 (z odbiorem etapu 3) | do zrobienia |
 
 ## Etap 4 – kroki (Wspólny dom)
 
@@ -198,3 +209,4 @@ Wersja testowa: https://ogarnij-zycie--test-56tdtc0y.web.app (kanał `test`, odn
 - 2026-10-25 · Etap 4 · Krok 6: za zgodą Hani Claude wgrał reguły (domownicy – released rules); dane bez zmian. Wersja testowa: https://ogarnij-zycie--test-56tdtc0y.web.app (do 2026-11-24). Czeka demo we dwoje i odbiór etapu 4.
 - 2026-10-25 · Etap 4 · Krok 6: Hania po demo we dwoje: „ok działa”. Czeka „akceptuję” do zamknięcia etapu 4.
 - 2026-10-25 · Etap 4 · Odbiór: synchronizacja między telefonami, zmiany offline, ochrona przed obcymi (testy reguł), zużyty / przeterminowany kod, „Tylko ja”, „Opuść dom” / „Usuń z domu”. Hania: „akceptuję”. Etap 4 zakończony.
+- 2026-10-25 · Etap 5 · Start etapu: kroki w tabeli „Etap 5 – kroki”.
