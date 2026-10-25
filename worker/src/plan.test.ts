@@ -2,13 +2,14 @@
 
 import { describe, expect, test } from 'vitest'
 import {
-  changeMessage,
+  activityMessage,
   cleanupPlan,
   daysSince,
-  houseChanges,
+  isQuiet,
   localNow,
   morningFor,
   remindersFor,
+  type ActivityEntry,
   type Event,
   type Task,
   type User,
@@ -159,36 +160,84 @@ describe('poranne podsumowanie', () => {
   })
 })
 
-describe('zmiany domowników', () => {
-  const from = Date.parse('2026-10-25T10:00:00Z')
-  const to = from + 60_000
-  test('nowe zadanie i ogarnięte w tej minucie; zwykła edycja i kosz – nic', () => {
-    const changes = houseChanges(
-      [
-        {
-          houseId: 'dom1',
-          task: task({ title: 'Mleko', createdBy: 'krzys' }),
-          createTime: from + 5000,
-        },
-        {
-          houseId: 'dom1',
-          task: task({ title: 'Filtr', done: true, doneAt: from + 10, doneBy: 'krzys' }),
-          createTime: 0,
-        },
-        { houseId: 'dom1', task: task({ title: 'Edycja' }), createTime: 0 },
-        { houseId: 'dom1', task: task({ title: 'Kosz', deleted: true }), createTime: from + 1 },
-      ],
-      from,
-      to,
-    )
-    expect(changes).toEqual([
-      { houseId: 'dom1', actor: 'krzys', kind: 'added', title: 'Mleko' },
-      { houseId: 'dom1', actor: 'krzys', kind: 'done', title: 'Filtr' },
-    ])
-    expect(changeMessage('Krzyś', 'done', 'Filtr')).toMatchObject({
-      title: 'Krzyś · ogarnięte',
-      body: 'Filtr',
+describe('zmiany domowników (docs/POWIADOMIENIA.md)', () => {
+  const e = (over: Partial<ActivityEntry>): ActivityEntry => ({
+    houseId: 'dom1',
+    actor: 'krzys',
+    kind: 'task-added',
+    title: 'Mleko',
+    detail: null,
+    date: null,
+    ...over,
+  })
+  test('pojedyncze zmiany zadań – treść', () => {
+    expect(activityMessage('Krzyś', [e({})])).toEqual({
+      title: 'Krzyś · nowe zadanie',
+      body: 'Mleko',
+      url: '/zadania',
+      tag: 'zmiany-Krzyś',
     })
+    expect(activityMessage('Krzyś', [e({ kind: 'task-done', title: 'Filtr' })]).title).toBe(
+      'Krzyś · ogarnięte',
+    )
+    expect(
+      activityMessage('Krzyś', [e({ kind: 'task-due-soon', title: 'Rachunek', detail: 'JUTRO' })]),
+    ).toMatchObject({ title: 'Krzyś · termin JUTRO', body: 'Rachunek' })
+    expect(activityMessage('Krzyś', [e({ kind: 'task-urgent', title: 'Hydraulik' })]).title).toBe(
+      'Krzyś · pilne',
+    )
+    expect(activityMessage('Krzyś', [e({ kind: 'task-trashed', title: 'Prezent' })])).toMatchObject(
+      {
+        title: 'Krzyś · usunięte',
+        body: 'Prezent – można przywrócić z Kosza',
+      },
+    )
+  })
+  test('wydarzenia – z dniem i godziną, link do dnia w kalendarzu', () => {
+    const ev = { title: 'Dentysta', detail: 'pt 31 paź, 17:00', date: '2026-10-31' }
+    expect(activityMessage('Krzyś', [e({ kind: 'event-added', ...ev })])).toEqual({
+      title: 'Krzyś · nowe wydarzenie',
+      body: 'Dentysta · pt 31 paź, 17:00',
+      url: '/kalendarz?dzien=2026-10-31',
+      tag: 'zmiany-Krzyś',
+    })
+    expect(activityMessage('Krzyś', [e({ kind: 'event-moved', ...ev })]).body).toBe(
+      'Dentysta → pt 31 paź, 17:00',
+    )
+    expect(activityMessage('Krzyś', [e({ kind: 'event-trashed', ...ev })])).toMatchObject({
+      title: 'Krzyś · odwołane',
+      body: 'Dentysta · pt 31 paź, 17:00 – można przywrócić z Kosza',
+    })
+  })
+  test('grupowanie (Z3): kilka tego samego rodzaju – jedno powiadomienie; różne – „zmiany: N”', () => {
+    expect(
+      activityMessage('Krzyś', [
+        e({ title: 'Mleko' }),
+        e({ title: 'Chleb' }),
+        e({ title: 'Masło' }),
+      ]),
+    ).toMatchObject({ title: 'Krzyś · 3 nowe zadania', body: 'Mleko, Chleb, Masło' })
+    const five = ['A', 'B', 'C', 'D', 'E'].map((t) => e({ title: t }))
+    expect(activityMessage('Krzyś', five)).toMatchObject({
+      title: 'Krzyś · 5 nowych zadań',
+      body: 'A, B, C i 2 więcej',
+    })
+    expect(
+      activityMessage('Krzyś', [
+        e({ title: 'Mleko' }),
+        e({ kind: 'task-done', title: 'Filtr' }),
+        e({ kind: 'event-added', title: 'Kino', detail: 'sob 26 paź, 19:00', date: '2026-10-26' }),
+      ]),
+    ).toEqual({
+      title: 'Krzyś · zmiany: 3',
+      body: 'Nowe zadanie: Mleko · Ogarnięte: Filtr · Nowe wydarzenie: Kino · sob 26 paź, 19:00',
+      url: '/kalendarz',
+      tag: 'zmiany-Krzyś',
+    })
+  })
+  test('cisza nocna 22:00–7:00 (Z4)', () => {
+    expect(['21:59', '07:00', '12:00'].map(isQuiet)).toEqual([false, false, false])
+    expect(['22:00', '23:30', '00:00', '06:59'].map(isQuiet)).toEqual([true, true, true, true])
   })
 })
 

@@ -356,6 +356,24 @@ service cloud.firestore {
           && (resource.data.deleted == true || resource.data.createdBy == me());
       }
 
+      // ── Wpisy „co się stało” dla powiadomień (etap 6, docs/POWIADOMIENIA.md) ─────
+      // Dopisuje domownik – tylko pod własnym kontem i z czasem serwera; nikt ich nie zmienia
+      // ani nie usuwa (stare usuwa Worker kontem serwisowym).
+
+      match /activity/{id} {
+        allow read: if isMember(houseId);
+        allow create: if isMember(houseId)
+          && request.resource.data.keys().hasOnly(['kind', 'title', 'detail', 'date', 'actor', 'at'])
+          && request.resource.data.kind in ['task-added', 'task-done', 'task-due-soon',
+              'task-urgent', 'task-trashed', 'event-added', 'event-moved', 'event-trashed']
+          && str(request.resource.data.title, 200)
+          && strOrNull(request.resource.data.detail, 60)
+          && (request.resource.data.date == null || isDay(request.resource.data.date))
+          && request.resource.data.actor == me()
+          && request.resource.data.at == request.time;
+        allow update, delete: if false;
+      }
+
       // ── „Tylko ja”: zadania i wydarzenia widoczne tylko dla autora (decyzja Hani 2026-10-25) ──
       // Zapisuje, czyta i usuwa wyłącznie sam autor, dopóki jest domownikiem; inni domownicy nie widzą.
 

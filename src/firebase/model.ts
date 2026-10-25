@@ -2,6 +2,7 @@
 // i zamiana dokument ↔ typ aplikacji (src/data/types.ts). Bez połączenia z bazą – czyste funkcje.
 
 import { Timestamp, serverTimestamp, type FieldValue } from 'firebase/firestore'
+import type { Activity } from '../data/activity.ts'
 import { toKey, type Stamp } from '../data/dates.ts'
 import type {
   CalendarEvent,
@@ -32,6 +33,8 @@ export const paths = {
   /** „Tylko ja”: zadania i wydarzenia widoczne tylko dla autora (decyzja Hani 2026-10-25). */
   privateTasks: (houseId: string, uid: string) => `houses/${houseId}/private/${uid}/tasks`,
   privateEvents: (houseId: string, uid: string) => `houses/${houseId}/private/${uid}/events`,
+  /** Wpisy „co się stało” dla powiadomień o zmianach domowników (etap 6). */
+  activity: (houseId: string) => `houses/${houseId}/activity`,
   /** Subskrypcja Web Push jednego telefonu (etap 6) – widzi i zapisuje tylko właściciel konta. */
   push: (uid: string, id: string) => `users/${uid}/push/${id}`,
   /** Zaproszenie do domu: kod 6 cyfr. */
@@ -48,6 +51,20 @@ export const LIMITS = {
 } as const
 
 export const REMINDS: readonly Remind[] = ['none', 'day', 'week']
+
+/** Wpis „co się stało” (docs/POWIADOMIENIA.md): kto, co, nazwa, szczegół; czas serwera. */
+export type ActivityDoc = Activity & { actor: string; at: Timestamp | FieldValue }
+
+export function activityDoc(a: Activity, uid: string): ActivityDoc {
+  return {
+    kind: a.kind,
+    title: a.title.slice(0, 200),
+    detail: a.detail,
+    date: a.date,
+    actor: uid,
+    at: serverTimestamp(),
+  }
+}
 
 /** Subskrypcja Web Push w bazie: adres i klucze telefonu (do wysyłki przez Workera). */
 export type PushDoc = {
@@ -254,7 +271,8 @@ export function eventTypeFromDoc(id: string, d: Partial<EventTypeDoc>): EventTyp
 
 export const DEFAULT_USER: Omit<UserDoc, 'name'> = {
   houseId: null,
-  notif: { tasks: true, events: true, morning: true, house: false },
+  // „Zmiany od domowników” domyślnie włączone (decyzja Hani 2026-10-25, POWIADOMIENIA Z5)
+  notif: { tasks: true, events: true, morning: true, house: true },
   cleanupDays: 30,
   taskReminderTime: '18:00',
 }

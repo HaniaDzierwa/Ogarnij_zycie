@@ -1,17 +1,19 @@
 // Cloudflare Worker „Ogarnij życie – powiadomienia” (etap 6). Uruchamia się co minutę (cron):
 // przypomnienia o godzinie z Ustawień, poranne podsumowanie o 8:00, zmiany domowników z ostatniej
-// minuty, o 3:00 sprzątanie. Wysyła Web Push na telefony zapisane przy kontach.
+// minuty (wpisy z aplikacji, bez ciszy nocnej 22–7), o 3:00 sprzątanie. Wysyła Web Push na telefony zapisane przy kontach.
 
 import { accessToken, firestore, type Doc, type Firestore } from './firestore.ts'
 import {
-  changeMessage,
+  activityMessage,
   cleanupPlan,
   CLEANUP_TIME,
-  houseChanges,
+  isQuiet,
   localNow,
   MORNING,
   morningFor,
   remindersFor,
+  type ActivityEntry,
+  type ActivityKind,
   type Event,
   type Message,
   type Task,
@@ -43,7 +45,8 @@ export function toUser(doc: Doc): User {
       tasks: n.tasks !== false,
       events: n.events !== false,
       morning: n.morning !== false,
-      house: n.house === true,
+      // „Zmiany od domowników” – domyślnie włączone (POWIADOMIENIA Z5)
+      house: n.house !== false,
     },
     taskReminderTime: str(d.taskReminderTime, '18:00'),
     cleanupDays: d.cleanupDays === undefined ? 30 : num(d.cleanupDays),
@@ -81,6 +84,32 @@ export function toEvent(doc: Doc): Event & { path: string } {
     remind,
     deleted: d.deleted === true,
     deletedAt: num(d.deletedAt),
+  }
+}
+
+const KINDS: ActivityKind[] = [
+  'task-added',
+  'task-done',
+  'task-due-soon',
+  'task-urgent',
+  'task-trashed',
+  'event-added',
+  'event-moved',
+  'event-trashed',
+]
+
+/** Wpis „co się stało” z bazy (houses/{dom}/activity/{id}); inny – pomijamy. */
+export function toActivity(doc: Doc): ActivityEntry | null {
+  const m = /^houses\/([^/]+)\/activity\/[^/]+$/.exec(doc.path)
+  const d = doc.data
+  if (!m || !KINDS.includes(d.kind as ActivityKind) || typeof d.actor !== 'string') return null
+  return {
+    houseId: m[1],
+    actor: d.actor,
+    kind: d.kind as ActivityKind,
+    title: str(d.title),
+    detail: typeof d.detail === 'string' ? d.detail : null,
+    date: typeof d.date === 'string' ? d.date : null,
   }
 }
 
@@ -130,21 +159,34 @@ export async function run(nowMs: number, env: Env, fetchFn: typeof fetch = fetch
     }
   }
 
-  // 2. Zmiany domowników z ostatniej minuty (tylko wspólne zadania)
-  try {
-    const from = start - 60_000
-    const changed = (await db.changedSince('tasks', 'updatedAt', from))
-      .map((doc) => ({ doc, m: /^houses\/([^/]+)\/tasks\/[^/]+$/.exec(doc.path) }))
-      .filter((x) => x.m)
-      .map(({ doc, m }) => ({ houseId: m![1], task: toTask(doc), createTime: doc.createTime }))
-    for (const c of houseChanges(changed, from, start)) {
-      const actor = byUid.get(c.actor)?.name || 'Domownik'
-      for (const u of users)
-        if (u.houseId === c.houseId && u.uid !== c.actor && u.notif.house)
-          outbox.push({ uid: u.uid, message: changeMessage(actor, c.kind, c.title) })
+  // 2. Zmiany domowników z ostatniej minuty – wpisy „co się stało” z aplikacji
+  //    (docs/POWIADOMIENIA.md); w ciszy nocnej 22:00–7:00 bez powiadomień (Z4)
+  if (!isQuiet(time)) {
+    try {
+      const from = start - 60_000
+      const entries = (await db.changedSince('activity', 'at', from))
+        .filter((d) => {
+          const at = d.data.at
+          return typeof at === 'number' && at >= from && at < start
+        })
+        .map(toActivity)
+        .filter((e): e is ActivityEntry => e !== null)
+      // jedna wiadomość na dom i osobę (Z3)
+      const groups = new Map<string, ActivityEntry[]>()
+      for (const e of entries) {
+        const key = `${e.houseId}/${e.actor}`
+        groups.set(key, [...(groups.get(key) ?? []), e])
+      }
+      for (const group of groups.values()) {
+        const { houseId, actor } = group[0]
+        const message = activityMessage(byUid.get(actor)?.name || 'Domownik', group)
+        for (const u of users)
+          if (u.houseId === houseId && u.uid !== actor && u.notif.house)
+            outbox.push({ uid: u.uid, message })
+      }
+    } catch (e) {
+      console.error('Zmiany domowników', e)
     }
-  } catch (e) {
-    console.error('Zmiany domowników', e)
   }
 
   // 3. Wysyłka – na każdy telefon zapisany przy koncie; wygasłe subskrypcje usuwamy
@@ -166,6 +208,8 @@ export async function run(nowMs: number, env: Env, fetchFn: typeof fetch = fetch
 
   return { sent: outbox.length }
 }
+
+const ACTIVITY_DAYS = 7
 
 async function cleanup(db: Firestore, users: User[], day: string, now: number) {
   const houses = new Set(users.map((u) => u.houseId).filter((h): h is string => !!h))
@@ -191,6 +235,10 @@ async function cleanup(db: Firestore, users: User[], day: string, now: number) {
       for (const path of plan.toTrash)
         await db.update(path, { deleted: true, deletedAt: new Date(now), deletedBy: 'sprzatanie' })
       for (const path of plan.toDelete) await db.remove(path)
+      // wpisy „co się stało” starsze niż tydzień – już niepotrzebne
+      for (const a of await db.list(`houses/${houseId}/activity`))
+        if (typeof a.data.at === 'number' && a.data.at < now - ACTIVITY_DAYS * 86_400_000)
+          await db.remove(a.path)
     } catch (e) {
       console.error('Sprzątanie', houseId, e)
     }

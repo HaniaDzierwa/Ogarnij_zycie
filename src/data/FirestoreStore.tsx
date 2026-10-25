@@ -10,6 +10,7 @@ import {
   eventToDoc,
   eventTypeFromDoc,
   eventTypeToDoc,
+  activityDoc,
   paths,
   pushDoc,
   priorityFromDoc,
@@ -24,6 +25,7 @@ import { syncCollection } from '../firebase/sync.ts'
 import { useHouse } from '../house/house.ts'
 import { builtInEventTypes } from '../theme'
 import { nowStamp, today as getToday } from './dates.ts'
+import { eventActivity, taskActivity, type Activity } from './activity.ts'
 import { revertChanges } from './listDiff.ts'
 import { allPriorities } from './selectors.ts'
 import { StoreContext, useUndoToast, type Store } from './store.ts'
@@ -225,6 +227,8 @@ function HouseData({ children }: { children: ReactNode }) {
       toDoc: (x: T, uid: string) => Record<string, unknown>,
       /** Lista z „Tylko ja”: prywatne do osobnego miejsca; zmiana wspólne ↔ prywatne = przeniesienie. */
       privatePath?: (h: string, uid: string) => string,
+      /** Co z tej zmiany ma trafić do powiadomień domowników (docs/POWIADOMIENIA.md). */
+      activity?: (prev: T[], next: T[]) => Activity[],
     ) =>
       (update: (list: T[]) => T[]) => {
         if (!houseId) return
@@ -246,13 +250,23 @@ function HouseData({ children }: { children: ReactNode }) {
           sync(path(houseId), (x) => !x.private)
           sync(privatePath(houseId, uid), (x) => !!x.private)
         }
+        const entries = activity?.(prev, next) ?? []
+        if (entries.length) {
+          const batch = writeBatch(db)
+          for (const a of entries)
+            batch.set(doc(collection(db, paths.activity(houseId))), activityDoc(a, uid))
+          batch.commit().catch(reportError)
+        }
       },
     [houseId, uid],
   )
 
   const setTasks = useMemo(
-    () => makeSetter<Task>('tasks', setTasksState, paths.tasks, taskToDoc, paths.privateTasks),
-    [makeSetter, setTasksState],
+    () =>
+      makeSetter<Task>('tasks', setTasksState, paths.tasks, taskToDoc, paths.privateTasks, (p, n) =>
+        taskActivity(p, n, day),
+      ),
+    [makeSetter, setTasksState, day],
   )
   const setCategories = useMemo(
     () => makeSetter<Category>('categories', setCategoriesState, paths.categories, categoryToDoc),
@@ -277,8 +291,9 @@ function HouseData({ children }: { children: ReactNode }) {
         paths.events,
         eventToDoc,
         paths.privateEvents,
+        (p, n) => eventActivity(p, n, day),
       ),
-    [makeSetter, setEventsState],
+    [makeSetter, setEventsState, day],
   )
   const setEventTypes = useMemo(
     () => makeSetter<EventType>('eventTypes', setEventTypesState, paths.eventTypes, eventTypeToDoc),

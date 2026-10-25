@@ -125,25 +125,36 @@ describe('Worker – jedno uruchomienie', () => {
         return new Response(null, { status: 201 })
       }
       expect((init.headers as Record<string, string>).Authorization).toBe('Bearer tok')
-      if (url === `${BASE}:runQuery`)
+      if (url === `${BASE}:runQuery`) {
+        expect(JSON.parse(String(init.body)).structuredQuery.from).toEqual([
+          { collectionId: 'activity', allDescendants: true },
+        ])
         // Krzyś dodał zadanie 20 s przed pełną minutą 18:00 (w poprzedniej minucie)
+        const at = { timestampValue: '2026-10-25T16:59:40Z' }
         return Response.json([
           {
-            document: doc(
-              'houses/dom1/tasks/t2',
-              task('Kupić mleko', null, 'krzys'),
-              '2026-10-25T16:59:40Z',
-            ),
+            document: doc('houses/dom1/activity/a1', {
+              kind: s('task-added'),
+              title: s('Kupić mleko'),
+              detail: nul,
+              date: nul,
+              actor: s('krzys'),
+              at,
+            }),
           },
-          // „Tylko ja” – nigdy nie idzie do innych
+          // wpis sprzed okna (już wysłany minutę wcześniej) – pomijany
           {
-            document: doc(
-              'houses/dom1/private/krzys/tasks/p1',
-              task('Prezent dla Hani', null, 'krzys'),
-              '2026-10-25T16:59:41Z',
-            ),
+            document: doc('houses/dom1/activity/a0', {
+              kind: s('task-done'),
+              title: s('Stare'),
+              detail: nul,
+              date: nul,
+              actor: s('krzys'),
+              at: { timestampValue: '2026-10-25T16:58:59Z' },
+            }),
           },
         ])
+      }
       const path = url.slice(BASE.length + 1).split('?')[0]
       if (path in db) return Response.json({ documents: db[path] })
       throw new Error(`nieoczekiwany adres: ${url}`)

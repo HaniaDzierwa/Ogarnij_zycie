@@ -9,6 +9,7 @@ import {
   type RulesTestEnvironment,
 } from '@firebase/rules-unit-testing'
 import {
+  addDoc,
   collection,
   deleteDoc,
   doc,
@@ -35,6 +36,7 @@ import {
   paths,
   priorityToDoc,
   pushDoc,
+  activityDoc,
   taskToDoc,
 } from '../../src/firebase/model.ts'
 
@@ -567,4 +569,49 @@ describe('subskrypcje powiadomień', () => {
     await assertFails(setDoc(at('hania'), pushDoc({ ...sub, endpoint: 'http://zly' }, 'x')))
     await assertFails(setDoc(at('hania'), { ...pushDoc(sub, 'x'), extra: 1 }))
   })
+})
+
+// ── Wpisy „co się stało” dla powiadomień (etap 6) ───────────────────────────
+
+describe('wpisy dla powiadomień o zmianach', () => {
+  beforeEach(async () => {
+    await seed()
+    await invite()
+    await join('ola')
+  })
+  const entry = { kind: 'task-added' as const, title: 'Mleko', detail: null, date: null }
+  const add = (as: string, data: Record<string, unknown>) =>
+    addDoc(collection(db(as), paths.activity('dom1')), data)
+
+  test('domownik dopisuje wpis pod własnym kontem; inni domownicy go czytają', async () => {
+    await assertSucceeds(add('ola', activityDoc(entry, 'ola')))
+    await assertSucceeds(getDocs(collection(db('hania'), paths.activity('dom1'))))
+  })
+  test('nie pod cudzym kontem, nie obcy, nie zły rodzaj; nikt nie zmienia ani nie usuwa', async () => {
+    await assertFails(add('ola', activityDoc(entry, 'hania')))
+    await assertFails(add('obcy', activityDoc(entry, 'obcy')))
+    await assertFails(add('ola', { ...activityDoc(entry, 'ola'), kind: 'cokolwiek' }))
+    await assertFails(getDocs(collection(db('obcy'), paths.activity('dom1'))))
+    const ref = await addDoc(
+      collection(db('ola'), paths.activity('dom1')),
+      activityDoc(entry, 'ola'),
+    )
+    await assertFails(deleteDoc(doc(db('ola'), ref.path)))
+    await assertFails(updateDoc(doc(db('ola'), ref.path), { title: 'X' }))
+  })
+  test('wydarzenie z dniem i opisem', () =>
+    assertSucceeds(
+      add(
+        'hania',
+        activityDoc(
+          {
+            kind: 'event-moved',
+            title: 'Dentysta',
+            detail: 'pt 31 paź, 17:00',
+            date: '2026-10-31',
+          },
+          'hania',
+        ),
+      ),
+    ))
 })

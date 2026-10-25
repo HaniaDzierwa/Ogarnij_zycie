@@ -1,7 +1,7 @@
 // Co i komu wysłać o danej minucie – czyste funkcje (bez sieci), czas polski (Europe/Warsaw).
 // Decyzje Hani: przypomnienie o terminach dzień wcześniej o godzinie z Ustawień (domyślnie 18:00);
 // poranne podsumowanie o 8:00 tylko, gdy jest coś pilnego, termin na dziś albo wydarzenie dziś;
-// push, gdy domownik doda lub ogarnie zadanie. „Tylko ja” nigdy nie trafia do innych.
+// zmiany domowników wg docs/POWIADOMIENIA.md (zatwierdzone 2026-10-25). „Tylko ja” nigdy nie trafia do innych.
 
 export const ZONE = 'Europe/Warsaw'
 export const MORNING = '08:00'
@@ -135,33 +135,99 @@ export function morningFor(
   return { title: 'Na dziś', body: parts.join(' · '), url: '/', tag: 'poranek' }
 }
 
-/**
- * Zmiany domowników w oknie [from, to): nowe zadanie (utworzone w tym czasie) albo ogarnięte
- * (doneAt w tym czasie). Tylko wspólne zadania. Zwraca, kto co zrobił.
- */
-export function houseChanges(
-  changed: { houseId: string; task: Task; createTime: number }[],
-  from: number,
-  to: number,
-): { houseId: string; actor: string; kind: 'added' | 'done'; title: string }[] {
-  const inWindow = (ms: number | null) => ms !== null && ms >= from && ms < to
-  const out: { houseId: string; actor: string; kind: 'added' | 'done'; title: string }[] = []
-  for (const { houseId, task, createTime } of changed) {
-    if (task.deleted) continue
-    if (inWindow(createTime))
-      out.push({ houseId, actor: task.createdBy, kind: 'added', title: task.title })
-    else if (task.done && inWindow(task.doneAt) && task.doneBy)
-      out.push({ houseId, actor: task.doneBy, kind: 'done', title: task.title })
-  }
-  return out
+/** Wpis „co się stało” z aplikacji (src/data/activity.ts, docs/POWIADOMIENIA.md). */
+export type ActivityKind =
+  | 'task-added'
+  | 'task-done'
+  | 'task-due-soon'
+  | 'task-urgent'
+  | 'task-trashed'
+  | 'event-added'
+  | 'event-moved'
+  | 'event-trashed'
+
+export type ActivityEntry = {
+  houseId: string
+  actor: string
+  kind: ActivityKind
+  title: string
+  detail: string | null
+  date: string | null
 }
 
-export function changeMessage(actorName: string, kind: 'added' | 'done', title: string): Message {
+/** Cisza nocna 22:00–7:00 – bez powiadomień o zmianach (Z4). */
+export const isQuiet = (time: string) => time >= '22:00' || time < '07:00'
+
+/** Opis rodzaju zmiany: jedna rzecz / kilka (2–4) / wiele. */
+const LABELS: Record<ActivityKind, [string, string, string]> = {
+  'task-added': ['nowe zadanie', 'nowe zadania', 'nowych zadań'],
+  'task-done': ['ogarnięte', 'ogarnięte', 'ogarniętych'],
+  'task-due-soon': ['termin', 'terminy', 'terminów'],
+  'task-urgent': ['pilne', 'pilne', 'pilnych'],
+  'task-trashed': ['usunięte', 'usunięte', 'usuniętych'],
+  'event-added': ['nowe wydarzenie', 'nowe wydarzenia', 'nowych wydarzeń'],
+  'event-moved': ['przełożone', 'przełożone', 'przełożonych'],
+  'event-trashed': ['odwołane', 'odwołane', 'odwołanych'],
+}
+
+function plural(n: number, [one, few, many]: [string, string, string]) {
+  if (n === 1) return one
+  const d = n % 10
+  const dd = n % 100
+  return d >= 2 && d <= 4 && (dd < 12 || dd > 14) ? few : many
+}
+
+/** Co pokazać o jednej zmianie: „Mleko”, „Rachunek (JUTRO)”, „Dentysta → pt 31 paź, 17:00”. */
+function itemText(e: ActivityEntry): string {
+  if (e.kind === 'task-due-soon') return e.detail ? `${e.title} (${e.detail})` : e.title
+  if (e.kind === 'event-moved') return `${e.title} → ${e.detail ?? ''}`.trim()
+  if (e.kind.startsWith('event-')) return e.detail ? `${e.title} · ${e.detail}` : e.title
+  return e.title
+}
+
+const RESTORE = ' – można przywrócić z Kosza'
+
+/**
+ * Jedno powiadomienie na osobę i minutę (Z3): jedna zmiana – „Krzyś · nowe zadanie”; kilka tego
+ * samego rodzaju – „Krzyś · 3 nowe zadania”; różne – „Krzyś · zmiany: 3”.
+ */
+export function activityMessage(actorName: string, entries: ActivityEntry[]): Message {
+  const kinds = new Set(entries.map((e) => e.kind))
+  const events = entries.filter((e) => e.kind.startsWith('event-'))
+  const dates = new Set(events.map((e) => e.date))
+  const url = !events.length
+    ? '/zadania'
+    : events.length === entries.length && dates.size === 1 && events[0].date
+      ? `/kalendarz?dzien=${events[0].date}`
+      : '/kalendarz'
+  const tag = `zmiany-${actorName}`
+  const trashed = entries.some((e) => e.kind === 'task-trashed' || e.kind === 'event-trashed')
+
+  if (kinds.size === 1) {
+    const kind = entries[0].kind
+    if (entries.length === 1) {
+      const e = entries[0]
+      const label = kind === 'task-due-soon' && e.detail ? `termin ${e.detail}` : LABELS[kind][0]
+      const body = kind === 'task-due-soon' ? e.title : itemText(e)
+      return { title: `${actorName} · ${label}`, body: body + (trashed ? RESTORE : ''), url, tag }
+    }
+    return {
+      title: `${actorName} · ${entries.length} ${plural(entries.length, LABELS[kind])}`,
+      body: list(entries.map(itemText)) + (trashed ? RESTORE : ''),
+      url,
+      tag,
+    }
+  }
+  const lines = entries.map((e) => {
+    const label = LABELS[e.kind][0]
+    return `${label[0].toUpperCase()}${label.slice(1)}: ${itemText(e)}`
+  })
+  const head = lines.slice(0, 3).join(' · ')
   return {
-    title: kind === 'added' ? `${actorName} · nowe zadanie` : `${actorName} · ogarnięte`,
-    body: title,
-    url: '/zadania',
-    tag: `zmiana-${kind}`,
+    title: `${actorName} · zmiany: ${entries.length}`,
+    body: lines.length > 3 ? `${head} i ${lines.length - 3} więcej` : head,
+    url,
+    tag,
   }
 }
 
