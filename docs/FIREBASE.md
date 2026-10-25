@@ -66,11 +66,44 @@ Dopiero gdy wszystkie testy reguł przejdą: na głównym komputerze w katalogu 
 
 ---
 
-## Etap 6 – powiadomienia push (Claude dopisze szczegóły)
+## Etap 6 – powiadomienia push
 
-- Klucze VAPID (Claude wygeneruje parę; klucz prywatny trzymasz tylko w sekretach Cloudflare).
-- Konto serwisowe Firebase (Project settings → Service accounts → Generate new private key) – plik JSON **nigdy** nie trafia do repozytorium ani na czat; tylko jako sekret Workera.
-- Darmowe konto Cloudflare + `npx wrangler login`.
+Powiadomienia wysyła darmowy **Cloudflare Worker** (mały program w chmurze Cloudflare), który co minutę sprawdza, co jest do wysłania. Potrzebuje dwóch **tajnych** kluczy – wpisujesz je Ty, prosto do Cloudflare. **Żaden tajny klucz nie trafia do repozytorium ani na czat z Claude.** Claude dostaje od Ciebie tylko **klucz publiczny** (nie jest tajny).
+
+Wszystkie komendy wpisujesz w terminalu (PowerShell) **w katalogu repozytorium**, na komputerze, na którym pracuje Claude. Najpierw: `git pull` i `npm install` (doszło narzędzie Cloudflare – `wrangler`).
+
+### A. Konto Cloudflare (darmowe)
+1. Wejdź na https://dash.cloudflare.com/sign-up.
+2. Wpisz e‑mail i hasło → **Sign up** (Zarejestruj). Potwierdź adres e‑mail z wiadomości od Cloudflare.
+3. Jeśli Cloudflare zapyta o plan albo o dodanie strony (domeny) – **pomiń** (Skip). Plan **Free**, **bez karty płatniczej**. Jeśli coś każe podać kartę – nie podawaj, zapytaj Claude.
+
+### B. Połączenie komputera z kontem Cloudflare
+1. `npx wrangler login` – otworzy się przeglądarka z pytaniem o dostęp → **Allow** (Zezwól).
+2. `npx wrangler whoami` – powinno pokazać Twój e‑mail i nazwę konta. Napisz Claude: **„wrangler zalogowany”**.
+
+### C. Klucze do powiadomień (VAPID)
+1. `npx web-push@3.6.7 generate-vapid-keys` (za pierwszym razem zapyta „Ok to proceed?” → **y**). Pokaże dwa klucze: **Public Key** i **Private Key**.
+2. **Public Key** – skopiuj i wklej Claude na czacie (nie jest tajny, trafi do aplikacji).
+3. **Private Key** – wpisz tylko do Cloudflare:
+   - `npx wrangler secret put VAPID_PRIVATE_KEY --config worker/wrangler.toml`
+   - Na pytanie, czy utworzyć nowego Workera („There doesn't seem to be a Worker called … Do you want to create a new Worker…?”) → **y**.
+   - Na „Enter a secret value” wklej **Private Key** i naciśnij Enter (wklejony tekst może być niewidoczny – to normalne).
+4. Wyczyść okno terminala: `cls`. Klucza prywatnego nigdzie nie zapisuj.
+
+### D. Klucz konta serwisowego Firebase (dla Workera)
+Worker czyta zadania, wydarzenia i ustawienia domowników – potrzebuje własnego „konta” w Firebase.
+1. https://console.firebase.google.com → projekt **ogarnij-zycie**.
+2. Koło zębate obok **Przegląd projektu** (Project overview) → **Ustawienia projektu** (Project settings).
+3. Zakładka **Konta usługi** (Service accounts) → przycisk **Wygeneruj nowy klucz prywatny** (Generate new private key) → **Wygeneruj klucz** (Generate key). Pobierze się plik `ogarnij-zycie-firebase-adminsdk-….json` (zwykle do **Pobrane**).
+4. Wpisz go do Cloudflare jedną komendą (bez otwierania pliku):
+   - `Get-Content (Get-ChildItem "$HOME\Downloads\ogarnij-zycie-firebase-adminsdk-*.json" | Select-Object -First 1) -Raw | npx wrangler secret put FIREBASE_SERVICE_ACCOUNT --config worker/wrangler.toml`
+5. **Usuń pobrany plik JSON** (i opróżnij Kosz Windows). Nie wysyłaj go nikomu, nie kopiuj do repozytorium.
+
+### E. Sprawdzenie
+1. `npx wrangler secret list --config worker/wrangler.toml` – na liście powinny być **VAPID_PRIVATE_KEY** i **FIREBASE_SERVICE_ACCOUNT** (same nazwy, bez wartości).
+2. Napisz Claude: wynik tej komendy (same nazwy) + **Public Key** z kroku C.
+
+Gdyby coś poszło nie tak (np. wklejony zły klucz) – po prostu powtórz komendę `secret put` z tą samą nazwą; nowa wartość zastąpi starą.
 
 ## Etap 7 – publikacja
 

@@ -1,0 +1,18 @@
+# Cloudflare Worker „Ogarnij życie – powiadomienia” (etap 6): co minutę sprawdza, co wysłać
+# (terminy zadań, wydarzenia, poranne podsumowanie, zmiany domowników), raz dziennie sprząta.
+# Sekrety (NIGDY w repozytorium) – ustawia Hania: `npx wrangler secret put … --config worker/wrangler.toml`
+#   VAPID_PRIVATE_KEY         – prywatny klucz VAPID
+#   FIREBASE_SERVICE_ACCOUNT  – plik JSON konta serwisowego Firebase (cała zawartość)
+
+name = "ogarnij-zycie-powiadomienia"
+main = "src/index.ts"
+compatibility_date = "2026-10-01"
+compatibility_flags = ["nodejs_compat"]
+
+[triggers]
+crons = ["* * * * *"]
+
+[vars]
+FIREBASE_PROJECT_ID = "ogarnij-zycie"
+# kontakt dla usług push (adres aplikacji zamiast e-maila)
+VAPID_SUBJECT = "https://ogarnij-zycie.web.app"
