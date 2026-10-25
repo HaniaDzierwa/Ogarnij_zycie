@@ -14,5 +14,7 @@ crons = ["* * * * *"]
 
 [vars]
 FIREBASE_PROJECT_ID = "ogarnij-zycie"
+# klucz PUBLICZNY VAPID (ten sam co VITE_VAPID_PUBLIC_KEY w .env); prywatny – sekret
+VAPID_PUBLIC_KEY = "BIQx-M15t9twe1QWvfNcLkoJooEJ5N-JoGNrOXAPvmXmRIr2-LrWDseMiLBz-5yrIy7wWvC5mJOKRSGdTOGIGaA"
 # kontakt dla usług push (adres aplikacji zamiast e-maila)
 VAPID_SUBJECT = "https://ogarnij-zycie.web.app"
