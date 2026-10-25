@@ -21,8 +21,8 @@ Funkcje są w aplikacji; etap = sprawdzenie na prawdziwych danych, poprawki z uw
 
 | Krok | Status |
 | --- | --- |
-| 1 Testy automatyczne odbioru: każda kombinacja filtrów (Pokaż × kategoria × grupowanie, także własne priorytety i „Tylko ja”) daje poprawną listę i liczniki; liczby na Starcie = lista zadań; wydarzenie z Kosza wraca na swój dzień | do zrobienia (następny) |
-| 2 Tydzień używania we dwoje (Hania + domownik) – uwagi w tabeli „Uwagi Hani” jako „poprawka teraz” / „później” | do zrobienia |
+| 1 Testy automatyczne odbioru: każda kombinacja filtrów (Pokaż × kategoria × grupowanie, także własne priorytety i „Tylko ja”) daje poprawną listę i liczniki; liczby na Starcie = lista zadań; wydarzenie z Kosza wraca na swój dzień | zrobione |
+| 2 Tydzień używania we dwoje (Hania + domownik) – uwagi w tabeli „Uwagi Hani” jako „poprawka teraz” / „później” | w toku (następny) |
 | 3 Poprawki „teraz” z uwag | do zrobienia |
 | 4 Wersja testowa, odbiór etapu 5 (z odbiorem etapu 3) | do zrobienia |
 
@@ -210,3 +210,4 @@ Wersja testowa: https://ogarnij-zycie--test-56tdtc0y.web.app (kanał `test`, odn
 - 2026-10-25 · Etap 4 · Krok 6: Hania po demo we dwoje: „ok działa”. Czeka „akceptuję” do zamknięcia etapu 4.
 - 2026-10-25 · Etap 4 · Odbiór: synchronizacja między telefonami, zmiany offline, ochrona przed obcymi (testy reguł), zużyty / przeterminowany kod, „Tylko ja”, „Opuść dom” / „Usuń z domu”. Hania: „akceptuję”. Etap 4 zakończony.
 - 2026-10-25 · Etap 5 · Start etapu: kroki w tabeli „Etap 5 – kroki”.
+- 2026-10-25 · Etap 5 · Krok 1: testy odbioru. (a) Wszystkie kombinacje filtrów – 6 × Pokaż (z dwoma własnymi priorytetami) × 8 kategorii (z „Bez kategorii”) × 2 grupowania = 96 przypadków na danych z „Tylko ja”, ogarniętymi, koszem i priorytetem, którego już nie ma: lista = wyliczenie „na piechotę”, każde zadanie raz i we właściwej grupie, bez pustych grup, kolejność priorytetów, liczniki (otwarte, pilne, ogarnięte, przy kategoriach) niezależne od filtrów – wszystkie przeszły bez poprawek w kodzie. (b) Start = Zadania: liczby „Do zrobienia” i „Pilne” zgodne z nagłówkiem Zadań na starcie, po ogarnięciu i po dodaniu pilnego zadania. (c) Wydarzenie z Kosza po „Przywróć” wraca na swój dzień w Kalendarzu. · Sprawdzenie: `npm test` – 290.
