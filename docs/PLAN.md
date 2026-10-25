@@ -145,9 +145,11 @@ Funkcje są w aplikacji od etapów 1–2; w tym etapie poprawki z testów we dwo
 - Ikona i ekran startowy po dodaniu do ekranu głównego; usuwanie konta z poziomu aplikacji. Gdy usuwa je założyciel domu, a są inni domownicy – aplikacja pyta: usunąć dom (u wszystkich) czy przekazać go wybranemu domownikowi (decyzja Hani 2026-10-18).
 - Publikacja na Firebase Hosting pod docelowym adresem (własna domena opcjonalnie).
 
-**Odbiór:**
-- [ ] Brak znanych błędów, które tracą dane
-- [ ] Aplikacja działa w przeglądarkach telefonów wszystkich domowników
+> **Na później (decyzja Hani 2026-10-25):** usuwanie konta z poziomu aplikacji (założyciel z innymi domownikami – pytanie: usunąć dom czy przekazać go domownikowi) – do zrobienia po zakończeniu planu.
+
+**Odbiór:** (zaakceptowany przez Hanię 2026-10-25)
+- [x] Brak znanych błędów, które tracą dane
+- [x] Aplikacja działa w przeglądarkach telefonów wszystkich domowników
 
 ---
 
