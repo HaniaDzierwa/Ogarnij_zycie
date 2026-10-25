@@ -367,7 +367,9 @@ service cloud.firestore {
           && (request.resource.data.system == false || houseCreatedNow(houseId));
         allow update: if isMember(houseId) && validEventType(request.resource.data)
           && request.resource.data.system == resource.data.system;
-        allow delete: if isMember(houseId) && (resource.data.system == false || isOwner(houseId));
+        // wbudowany („Termin zadania”) – tylko razem z całym domem (ta sama paczka, założyciel)
+        allow delete: if isMember(houseId) && (resource.data.system == false
+          || (isOwner(houseId) && !existsAfter(/databases/$(database)/documents/houses/$(houseId))));
       }
 
       // ── Wydarzenia (kosz: deleted = true) ─────────────────────────────────

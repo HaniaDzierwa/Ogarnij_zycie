@@ -240,12 +240,15 @@ export function FirebaseHouseProvider({ children }: { children: ReactNode }) {
               paths.events,
               paths.categories,
               paths.priorities,
-              paths.eventTypes,
               paths.activity,
             ])
               await removeAll(part(houseId))
+            // rodzaje wydarzeń: własne od razu; wbudowany „Termin zadania” – reguły pozwalają
+            // tylko razem z domem, w tej samej paczce
+            const types = await getDocs(collection(db, paths.eventTypes(houseId)))
             const members = await getDocs(collection(db, paths.members(houseId)))
             const batch = writeBatch(db)
+            for (const t of types.docs) batch.delete(t.ref)
             for (const m of members.docs) if (m.id !== uid) batch.delete(m.ref)
             batch.delete(doc(db, paths.house(houseId)))
             await batch.commit()
