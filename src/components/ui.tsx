@@ -1,5 +1,6 @@
 import type { CSSProperties, ReactNode } from 'react'
 import { useOnline } from '../data/useOnline.ts'
+import { useDragToClose } from './useDragToClose.ts'
 import { colors, priorities, radii, shadows, sizes } from '../theme'
 
 /** Układ ekranu: kremowe tło, odstępy 16 px, miejsce na dolny pasek. */
@@ -380,6 +381,24 @@ export function Sheet({
 }) {
   if (!open) return null
   return (
+    <SheetPanel onClose={onClose} label={label}>
+      {children}
+    </SheetPanel>
+  )
+}
+
+/** Otwarty arkusz: tło (dotknięcie zamyka) i panel, który zwija się przeciągnięciem w dół. */
+function SheetPanel({
+  onClose,
+  label,
+  children,
+}: {
+  onClose: () => void
+  label: string
+  children: ReactNode
+}) {
+  const panel = useDragToClose<HTMLDivElement>(onClose)
+  return (
     <div
       role="dialog"
       aria-modal="true"
@@ -401,7 +420,9 @@ export function Sheet({
         }}
       />
       <div
+        ref={panel}
         className="sheet-up sheet-body"
+        data-testid="arkusz"
         style={{
           position: 'absolute',
           left: 0,
@@ -412,6 +433,7 @@ export function Sheet({
           // zawsze zostaje pas przyciemnienia nad arkuszem – dotknięcie go zamyka arkusz
           maxHeight: 'calc(100dvh - 88px - env(safe-area-inset-top))',
           overflowY: 'auto',
+          overscrollBehavior: 'contain',
           background: colors.creamLight,
           borderRadius: `${radii.sheet}px ${radii.sheet}px 0 0`,
           padding: '12px 22px calc(28px + env(safe-area-inset-bottom))',
