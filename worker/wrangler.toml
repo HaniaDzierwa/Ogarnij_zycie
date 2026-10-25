@@ -9,6 +9,9 @@ main = "src/index.ts"
 compatibility_date = "2026-10-01"
 # bez anonimowych statystyk wranglera
 send_metrics = false
+# bez publicznego adresu – Worker działa tylko z harmonogramu (cron)
+workers_dev = false
+preview_urls = false
 
 [triggers]
 crons = ["* * * * *"]

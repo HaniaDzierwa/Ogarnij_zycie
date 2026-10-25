@@ -77,6 +77,11 @@ Wszystkie komendy wpisujesz w terminalu (PowerShell) **w katalogu repozytorium**
 2. Wpisz e‑mail i hasło → **Sign up** (Zarejestruj). Potwierdź adres e‑mail z wiadomości od Cloudflare.
 3. Jeśli Cloudflare zapyta o plan albo o dodanie strony (domeny) – **pomiń** (Skip). Plan **Free**, **bez karty płatniczej**. Jeśli coś każe podać kartę – nie podawaj, zapytaj Claude.
 
+### A2. Subdomena workers.dev (jednorazowo, wymagana dla harmonogramu)
+1. https://dash.cloudflare.com → menu po lewej **Compute (Workers)** → **Workers & Pages** (albo samo **Workers & Pages**).
+2. Przy pierwszym wejściu Cloudflare tworzy subdomenę konta albo prosi o nazwę – wpisz np. `hania-dzierwa` (bez polskich znaków) → **Set up** / **Continue**. Nic więcej nie klikaj.
+3. Nasz Worker i tak nie ma publicznego adresu (`workers_dev = false`) – działa tylko z harmonogramu.
+
 ### B. Połączenie komputera z kontem Cloudflare
 1. `npx wrangler login` – otworzy się przeglądarka z pytaniem o dostęp → **Allow** (Zezwól).
 2. `npx wrangler whoami` – powinno pokazać Twój e‑mail i nazwę konta. Napisz Claude: **„wrangler zalogowany”**.
