@@ -13,6 +13,7 @@ import { InviteScreen } from '../screens/settings/InviteScreen.tsx'
 import { MembersScreen } from '../screens/settings/MembersScreen.tsx'
 import { CategoriesScreen } from '../screens/settings/CategoriesScreen.tsx'
 import { PrioritiesScreen } from '../screens/settings/PrioritiesScreen.tsx'
+import { DeleteAccountScreen } from '../screens/settings/DeleteAccountScreen.tsx'
 import { StartScreen } from '../screens/StartScreen.tsx'
 import { TasksRoute } from '../screens/tasks/TasksScreen.tsx'
 import { TrashScreen } from '../screens/tasks/TrashScreen.tsx'
@@ -34,6 +35,7 @@ const built: Partial<Record<ScreenId, ReactNode>> = {
   domownicy: <MembersScreen />,
   kategorie: <CategoriesScreen />,
   priorytety: <PrioritiesScreen />,
+  usunKonto: <DeleteAccountScreen />,
   zapros: <InviteScreen />,
   dolacz: <JoinScreen />,
 }

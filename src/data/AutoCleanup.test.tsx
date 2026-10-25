@@ -1,6 +1,7 @@
 import { cleanup, render } from '@testing-library/react'
 import { afterEach, expect, test } from 'vitest'
 import { autoCleanup, TRASH_DAYS } from '../screens/tasks/tasksView.ts'
+import { MemoryAuthProvider } from '../auth/MemoryAuthProvider.tsx'
 import { MemoryHouseProvider } from '../house/MemoryHouseProvider.tsx'
 import { AutoCleanup } from './AutoCleanup.tsx'
 import { mockEvents, mockTasks } from './mock.ts'
@@ -76,12 +77,14 @@ test('przy uruchomieniu: raz, na wczytanych danych domu', () => {
     return null
   }
   render(
-    <MemoryHouseProvider>
-      <MockStoreProvider today={DAY}>
-        <AutoCleanup />
-        <Peek />
-      </MockStoreProvider>
-    </MemoryHouseProvider>,
+    <MemoryAuthProvider>
+      <MemoryHouseProvider>
+        <MockStoreProvider today={DAY}>
+          <AutoCleanup />
+          <Peek />
+        </MockStoreProvider>
+      </MemoryHouseProvider>
+    </MemoryAuthProvider>,
   )
   const before = mockTasks(DAY)
   const expected = autoCleanup(before, mockEvents(DAY), DAY, 30, { uid: 'hania', at: '' })

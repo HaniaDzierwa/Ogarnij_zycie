@@ -37,6 +37,13 @@ export class JoinError extends Error {
   }
 }
 
+/**
+ * Co z domem przy usuwaniu konta (decyzja Hani 2026-10-18): domownik wychodzi; założyciel bez
+ * innych – dom znika; założyciel z domownikami – przekazuje dom wybranemu albo usuwa go u wszystkich.
+ */
+export type DeleteMode =
+  { kind: 'leave' } | { kind: 'transfer'; to: string } | { kind: 'delete-house' }
+
 export type HouseApi = {
   /** Profil już wczytany (pierwszy odczyt z Firestore albo z pamięci telefonu). */
   ready: boolean
@@ -62,6 +69,11 @@ export type HouseApi = {
   removeMember: (uid: string) => Promise<void>
   /** „Opuść dom”: wypisanie siebie z domu, profil bez domu („Pierwsze uruchomienie”). */
   leaveHouse: () => Promise<void>
+  /**
+   * „Usuń konto”: potwierdzenie hasłem, potem dane (własne „Tylko ja”, dom wg `mode`, powiadomienia,
+   * profil) i samo konto. Złe hasło albo brak internetu – AuthError (nic nie usunięte).
+   */
+  deleteAccount: (password: string, mode: DeleteMode) => Promise<void>
 }
 
 /** Nazwa domu, gdy pole zostanie puste. */

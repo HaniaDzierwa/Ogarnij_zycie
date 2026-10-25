@@ -408,6 +408,18 @@ export function SettingsScreen() {
             Wyloguj
           </button>
         </span>
+        <Link
+          to={paths.usunKonto}
+          style={{
+            padding: '8px 4px',
+            color: priorities.high.line,
+            fontSize: 12,
+            fontWeight: 700,
+            textDecoration: 'none',
+          }}
+        >
+          Usuń konto
+        </Link>
       </div>
 
       {askSignOut && (

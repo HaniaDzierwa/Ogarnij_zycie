@@ -14,6 +14,7 @@ export type ScreenId =
   | 'domownicy'
   | 'kategorie'
   | 'priorytety'
+  | 'usunKonto'
   | 'zapros'
   | 'dolacz'
 
@@ -61,6 +62,8 @@ export const paths = {
   /** Ustawienia → Zadania: kategorie i własne priorytety (decyzja Hani 2026-10-20). */
   kategorie: '/ustawienia/kategorie',
   priorytety: '/ustawienia/priorytety',
+  /** Usunięcie konta (etap 7). */
+  usunKonto: '/ustawienia/usun-konto',
   zapros: '/ustawienia/domownicy/zapros',
   dolacz: '/dolacz',
 } as const
@@ -194,6 +197,16 @@ export const screens: Screen[] = [
     number: '5g',
     name: 'Kategorie',
     source: 'brak w projekcie – lista w stylu Kosza / Domowników (decyzja Hani 2026-10-20)',
+    tab: 'ustawienia',
+    back: { to: paths.ustawienia, label: 'USTAWIENIA' },
+    transitions: [{ label: 'Wróć do Ustawień', to: paths.ustawienia }],
+  },
+  {
+    id: 'usunKonto',
+    path: paths.usunKonto,
+    number: '5i',
+    name: 'Usuń konto',
+    source: 'brak w projekcie – decyzja Hani 2026-10-18 (przekazać dom / usunąć dom)',
     tab: 'ustawienia',
     back: { to: paths.ustawienia, label: 'USTAWIENIA' },
     transitions: [{ label: 'Wróć do Ustawień', to: paths.ustawienia }],

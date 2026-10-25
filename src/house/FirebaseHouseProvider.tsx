@@ -1,4 +1,5 @@
 import { FirebaseError } from 'firebase/app'
+import { deleteUser, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth'
 import {
   Timestamp,
   collection,
@@ -13,7 +14,8 @@ import {
 } from 'firebase/firestore'
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useAuth } from '../auth/auth.ts'
-import { db } from '../firebase/app.ts'
+import { AuthError } from '../auth/auth.ts'
+import { auth, db } from '../firebase/app.ts'
 import {
   inviteLeftMs,
   joinHouseOps,
@@ -50,6 +52,16 @@ async function readInvite(code: string): Promise<InviteDoc & { createdAt: Timest
   if (d.usedBy) throw new JoinError('used')
   if (inviteLeftMs(d.createdAt) === 0) throw new JoinError('expired')
   return d
+}
+
+/** Usuwa wszystkie dokumenty kolekcji (paczkami po 400 – limit paczki to 500). */
+async function removeAll(collectionPath: string) {
+  const snap = await getDocs(collection(db, collectionPath))
+  for (let i = 0; i < snap.docs.length; i += 400) {
+    const batch = writeBatch(db)
+    for (const d of snap.docs.slice(i, i + 400)) batch.delete(d.ref)
+    await batch.commit()
+  }
 }
 
 /** Profil z `users/{uid}` (na żywo), zakładanie domu, zaproszenia i dołączanie. */
@@ -199,6 +211,51 @@ export function FirebaseHouseProvider({ children }: { children: ReactNode }) {
       removeMember: async (memberUid) => {
         if (!houseId) return
         await deleteDoc(doc(db, `${paths.members(houseId)}/${memberUid}`))
+      },
+
+      deleteAccount: async (password, mode) => {
+        const u = auth.currentUser
+        if (!u || !uid || !u.email) throw new AuthError('auth/requires-recent-login')
+        if (!navigator.onLine) throw new AuthError('auth/network-request-failed')
+        // najpierw hasło – przy złym nic nie usuwamy
+        try {
+          await reauthenticateWithCredential(u, EmailAuthProvider.credential(u.email, password))
+        } catch (e) {
+          throw new AuthError(e instanceof FirebaseError ? e.code : 'unknown')
+        }
+        if (houseId) {
+          // własne „Tylko ja” – póki jestem domownikiem (reguły)
+          await removeAll(paths.privateTasks(houseId, uid))
+          await removeAll(paths.privateEvents(houseId, uid))
+          const me = doc(db, `${paths.members(houseId)}/${uid}`)
+          if (mode.kind === 'transfer') {
+            const batch = writeBatch(db)
+            batch.update(doc(db, paths.house(houseId)), { ownerUid: mode.to })
+            batch.update(doc(db, `${paths.members(houseId)}/${mode.to}`), { role: 'owner' })
+            batch.delete(me)
+            await batch.commit()
+          } else if (mode.kind === 'delete-house') {
+            for (const part of [
+              paths.tasks,
+              paths.events,
+              paths.categories,
+              paths.priorities,
+              paths.eventTypes,
+              paths.activity,
+            ])
+              await removeAll(part(houseId))
+            const members = await getDocs(collection(db, paths.members(houseId)))
+            const batch = writeBatch(db)
+            for (const m of members.docs) if (m.id !== uid) batch.delete(m.ref)
+            batch.delete(doc(db, paths.house(houseId)))
+            await batch.commit()
+            // na końcu siebie – do tej chwili reguły widzą mnie jako domownika
+            await deleteDoc(me)
+          } else await deleteDoc(me)
+        }
+        await removeAll(`${paths.user(uid)}/push`)
+        await deleteDoc(doc(db, paths.user(uid)))
+        await deleteUser(u)
       },
 
       leaveHouse: async () => {

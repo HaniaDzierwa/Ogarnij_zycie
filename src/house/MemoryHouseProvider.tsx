@@ -5,16 +5,19 @@ import {
   HouseContext,
   JoinError,
   type HouseApi,
+  type DeleteMode,
   type InviteState,
   type Profile,
 } from './house.ts'
 import { MINUTE, sampleInvites, type MemoryInvite } from './memoryInvites.ts'
+import { AuthError, useAuth } from '../auth/auth.ts'
 
 /**
  * Profil w pamięci (testy): na start z domem (albo `noHouse` – świeże konto bez profilu).
  * `onCreate` / `onJoin` – podgląd tego, co zapisałyby „Załóż nowy dom” / „Dołącz jako …”.
  * `inviteUsedBy` – ten domownik (uid) „dołącza” chwilę po utworzeniu zaproszenia.
  * `onRemoveMember` – podgląd „Usuń z domu” (lista domowników jest w magazynie danych).
+ * `onDeleteAccount` – podgląd „Usuń konto” (hasło „zle” – błąd hasła).
  */
 export function MemoryHouseProvider({
   children,
@@ -23,6 +26,7 @@ export function MemoryHouseProvider({
   onJoin,
   inviteUsedBy,
   onRemoveMember,
+  onDeleteAccount,
 }: {
   children: ReactNode
   noHouse?: boolean
@@ -30,7 +34,9 @@ export function MemoryHouseProvider({
   onJoin?: (code: string, userName: string) => void
   inviteUsedBy?: string
   onRemoveMember?: (uid: string) => void
+  onDeleteAccount?: (mode: DeleteMode) => void
 }) {
+  const auth = useAuth()
   const [profile, setProfile] = useState<Profile | null>(
     noHouse ? null : { name: 'Hania', houseId: 'dom1' },
   )
@@ -104,10 +110,16 @@ export function MemoryHouseProvider({
       removeMember: async (uid) => {
         onRemoveMember?.(uid)
       },
+      deleteAccount: async (password, mode) => {
+        if (password === 'zle') throw new AuthError('auth/invalid-credential')
+        onDeleteAccount?.(mode)
+        setProfile(null)
+        await auth.signOut()
+      },
       leaveHouse: async () => {
         setProfile((p) => (p ? { ...p, houseId: null } : p))
       },
     }
-  }, [profile, onCreate, onJoin, inviteUsedBy, onRemoveMember])
+  }, [profile, onCreate, onJoin, inviteUsedBy, onRemoveMember, onDeleteAccount, auth])
   return <HouseContext.Provider value={api}>{children}</HouseContext.Provider>
 }

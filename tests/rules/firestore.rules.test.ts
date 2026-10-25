@@ -615,3 +615,46 @@ describe('wpisy dla powiadomień o zmianach', () => {
       ),
     ))
 })
+
+// ── Usuwanie konta (etap 7) ─────────────────────────────────────────────────
+
+describe('usuwanie konta', () => {
+  beforeEach(async () => {
+    await seed()
+    await invite()
+    await join('ola')
+  })
+  const house = (as: string) => doc(db(as), paths.house('dom1'))
+  const member = (as: string, uid: string) => doc(db(as), `${paths.members('dom1')}/${uid}`)
+
+  test('każdy usuwa tylko swój profil', async () => {
+    await assertFails(deleteDoc(doc(db('ola'), paths.user('hania'))))
+    await assertSucceeds(deleteDoc(doc(db('ola'), paths.user('ola'))))
+  })
+  test('przekazanie domu: założycielka oddaje dom Oli i wychodzi jedną paczką', async () => {
+    const fs = db('hania')
+    const batch = writeBatch(fs)
+    batch.update(doc(fs, paths.house('dom1')), { ownerUid: 'ola' })
+    batch.update(doc(fs, `${paths.members('dom1')}/ola`), { role: 'owner' })
+    batch.delete(doc(fs, `${paths.members('dom1')}/hania`))
+    await assertSucceeds(batch.commit())
+    expect((await getDoc(house('ola'))).data()?.ownerUid).toBe('ola')
+  })
+  test('nie: przejęcie domu przez domownika, przekazanie bez roli „owner”, obcemu', async () => {
+    await assertFails(updateDoc(house('ola'), { ownerUid: 'ola' }))
+    await assertFails(updateDoc(member('ola', 'ola'), { role: 'owner' }))
+    await assertFails(updateDoc(house('hania'), { ownerUid: 'ola' }))
+    await assertFails(updateDoc(house('hania'), { ownerUid: 'obcy' }))
+  })
+  test('usunięcie domu: założycielka usuwa wszystko (także cudze zadania i „Termin zadania”), domownik – nie', async () => {
+    const olaTask = sampleTask({ id: 'z7', createdBy: 'ola' })
+    await setDoc(doc(db('ola'), taskPath('dom1', 'z7')), taskToDoc(olaTask, 'ola'))
+    await assertFails(deleteDoc(doc(db('ola'), taskPath('dom1'))))
+    await assertFails(deleteDoc(house('ola')))
+    await assertSucceeds(deleteDoc(doc(db('hania'), taskPath('dom1', 'z7'))))
+    await assertSucceeds(deleteDoc(doc(db('hania'), `${paths.eventTypes('dom1')}/task`)))
+    await assertSucceeds(deleteDoc(member('hania', 'ola')))
+    await assertSucceeds(deleteDoc(house('hania')))
+    await assertSucceeds(deleteDoc(member('hania', 'hania')))
+  })
+})

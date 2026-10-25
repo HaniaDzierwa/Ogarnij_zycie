@@ -22,6 +22,7 @@ export type RenderOptions = {
   /** Zalogowany domownik (domyślnie Hania – założycielka); podgląd „Usuń z domu”. */
   as?: string
   onRemoveMember?: (uid: string) => void
+  onDeleteAccount?: (mode: import('../house/house.ts').DeleteMode) => void
   /** Dane bez domowników (konto bez domu). */
   noMembers?: boolean
   /** Rodzaje wydarzeń jeszcze nie wczytane; dane domu jeszcze się wczytują. */
@@ -39,6 +40,7 @@ export function renderApp(url: string, opts: RenderOptions = {}) {
         inviteUsedBy={opts.inviteUsedBy}
         onJoin={opts.onJoin}
         onRemoveMember={opts.onRemoveMember}
+        onDeleteAccount={opts.onDeleteAccount}
       >
         <MockStoreProvider
           currentUid={opts.as}
