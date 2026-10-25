@@ -1,5 +1,6 @@
-import type { CSSProperties, ReactNode } from 'react'
+import { useCallback, useRef, type CSSProperties, type ReactNode } from 'react'
 import { useOnline } from '../data/useOnline.ts'
+import { prefersReducedMotion, SHEET_EXIT_MS, SheetCloseContext } from './sheetClose.ts'
 import { useDragToClose } from './useDragToClose.ts'
 import { colors, priorities, radii, shadows, sizes } from '../theme'
 
@@ -372,89 +373,143 @@ export function Sheet({
   open,
   onClose,
   label,
+  confirmClose = false,
   children,
 }: {
   open: boolean
   onClose: () => void
   label: string
+  /**
+   * Zamknięcie najpierw pyta (np. „Odrzucić zmiany?”) – wtedy dotknięcie obok / przeciągnięcie
+   * nie animuje zjazdu, tylko woła `onClose` (arkusz zostaje, pojawia się pytanie).
+   */
+  confirmClose?: boolean
   children: ReactNode
 }) {
   if (!open) return null
   return (
-    <SheetPanel onClose={onClose} label={label}>
+    <SheetPanel onClose={onClose} label={label} confirmClose={confirmClose}>
       {children}
     </SheetPanel>
   )
 }
 
-/** Otwarty arkusz: tło (dotknięcie zamyka) i panel, który zwija się przeciągnięciem w dół. */
+/**
+ * Otwarty arkusz: wysuwa się z dołu; zamyka się zjazdem w dół z wygaszeniem tła – po dotknięciu
+ * obok, przeciągnięciu w dół albo przyciskiem w arkuszu (useSheetClose) – uwaga Hani 2026-10-25.
+ */
 function SheetPanel({
   onClose,
   label,
+  confirmClose,
   children,
 }: {
   onClose: () => void
   label: string
+  confirmClose: boolean
   children: ReactNode
 }) {
-  const panel = useDragToClose<HTMLDivElement>(onClose)
+  const panel = useRef<HTMLDivElement>(null)
+  const backdrop = useRef<HTMLButtonElement>(null)
+  const leaving = useRef(false)
+
+  /** Zjazd w dół (od miejsca, gdzie jest arkusz – także w trakcie przeciągania), potem `after`. */
+  const animatedClose = useCallback(
+    (after: () => void = onClose) => {
+      if (leaving.current) return
+      const el = panel.current
+      if (!SHEET_EXIT_MS || prefersReducedMotion() || !el) return after()
+      leaving.current = true
+      el.style.transition = `transform ${SHEET_EXIT_MS}ms cubic-bezier(0.4, 0, 1, 1)`
+      el.style.transform = 'translateY(100%)'
+      if (backdrop.current) {
+        backdrop.current.style.transition = `opacity ${SHEET_EXIT_MS}ms ease-in`
+        backdrop.current.style.opacity = '0'
+      }
+      setTimeout(() => {
+        leaving.current = false
+        after()
+        // arkusz, który jednak został (np. zamknięcie odwołane) – wraca na miejsce
+        el.style.transition = 'none'
+        el.style.transform = ''
+        if (backdrop.current) backdrop.current.style.opacity = ''
+      }, SHEET_EXIT_MS)
+    },
+    [onClose],
+  )
+
+  /** Dotknięcie obok / przeciągnięcie: z pytaniem – arkusz wraca i pojawia się pytanie. */
+  const requestClose = () => {
+    if (!confirmClose) return animatedClose()
+    const el = panel.current
+    if (el) {
+      el.style.transition = 'transform 200ms ease-out'
+      el.style.transform = ''
+    }
+    onClose()
+  }
+
+  useDragToClose(panel, requestClose)
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-label={label}
-      style={{ position: 'fixed', inset: 0, zIndex: 40 }}
-    >
-      <button
-        type="button"
-        aria-label="Zamknij"
-        onClick={onClose}
-        className="fade-in"
-        style={{
-          position: 'absolute',
-          inset: 0,
-          width: '100%',
-          height: '100%',
-          border: 0,
-          background: 'rgba(31,61,46,0.5)',
-        }}
-      />
+    <SheetCloseContext.Provider value={animatedClose}>
       <div
-        ref={panel}
-        className="sheet-up sheet-body"
-        data-testid="arkusz"
-        style={{
-          position: 'absolute',
-          left: 0,
-          right: 0,
-          bottom: 0,
-          maxWidth: 480,
-          margin: '0 auto',
-          // zawsze zostaje pas przyciemnienia nad arkuszem – dotknięcie go zamyka arkusz
-          maxHeight: 'calc(100dvh - 88px - env(safe-area-inset-top))',
-          overflowY: 'auto',
-          overscrollBehavior: 'contain',
-          background: colors.creamLight,
-          borderRadius: `${radii.sheet}px ${radii.sheet}px 0 0`,
-          padding: '12px 22px calc(28px + env(safe-area-inset-bottom))',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 16,
-        }}
+        role="dialog"
+        aria-modal="true"
+        aria-label={label}
+        style={{ position: 'fixed', inset: 0, zIndex: 40 }}
       >
-        <div
-          aria-hidden="true"
+        <button
+          ref={backdrop}
+          type="button"
+          aria-label="Zamknij"
+          onClick={requestClose}
+          className="fade-in"
           style={{
-            width: 40,
-            height: 4,
-            borderRadius: 4,
-            background: colors.border,
-            alignSelf: 'center',
+            position: 'absolute',
+            inset: 0,
+            width: '100%',
+            height: '100%',
+            border: 0,
+            background: 'rgba(31,61,46,0.5)',
           }}
         />
-        {children}
+        <div
+          ref={panel}
+          className="sheet-up sheet-body"
+          data-testid="arkusz"
+          style={{
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            bottom: 0,
+            maxWidth: 480,
+            margin: '0 auto',
+            // zawsze zostaje pas przyciemnienia nad arkuszem – dotknięcie go zamyka arkusz
+            maxHeight: 'calc(100dvh - 88px - env(safe-area-inset-top))',
+            overflowY: 'auto',
+            overscrollBehavior: 'contain',
+            background: colors.creamLight,
+            borderRadius: `${radii.sheet}px ${radii.sheet}px 0 0`,
+            padding: '12px 22px calc(28px + env(safe-area-inset-bottom))',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 16,
+          }}
+        >
+          <div
+            aria-hidden="true"
+            style={{
+              width: 40,
+              height: 4,
+              borderRadius: 4,
+              background: colors.border,
+              alignSelf: 'center',
+            }}
+          />
+          {children}
+        </div>
       </div>
-    </div>
+    </SheetCloseContext.Provider>
   )
 }
 

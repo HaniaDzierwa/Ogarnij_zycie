@@ -1,12 +1,13 @@
 import { newId } from '../../data/ids.ts'
 import { useState } from 'react'
-import { Chip, Dot, Field, NoteField, PrimaryButton, Sheet } from '../../components/ui.tsx'
+import { Chip, Dot, Field, NoteField, Sheet } from '../../components/ui.tsx'
 import { CloseIcon, PlusIcon } from '../../components/icons.tsx'
 import { addDays, dueLabel, weekStart, type DateKey } from '../../data/dates.ts'
 import type { Category, Subtask, Task } from '../../data/types.ts'
 import { colors, DEFAULT_PRIORITY, fonts, type Priority } from '../../theme'
 import { NewCategoryButton, NewCategoryForm } from './NewCategoryForm.tsx'
 import { PriorityPicker } from './PriorityPicker.tsx'
+import { SheetSubmit } from '../../components/SheetSubmit.tsx'
 import { VisibilityField } from '../../components/VisibilityField.tsx'
 
 const PRESETS = ['Bez terminu', 'Dziś', 'Jutro', 'W tym tygodniu'] as const
@@ -269,7 +270,9 @@ export function TaskSheet({ onClose, categories, today, onAddCategory, onSave }:
 
       <VisibilityField value={isPrivate} onChange={setPrivate} />
 
-      <PrimaryButton onClick={submit}>Dodaj zadanie</PrimaryButton>
+      <SheetSubmit ready={!!title.trim()} onSubmit={submit}>
+        Dodaj zadanie
+      </SheetSubmit>
     </Sheet>
   )
 }

@@ -1,11 +1,12 @@
 import { useState, type ReactNode } from 'react'
-import { Chip, Dot, Field, NoteField, PrimaryButton, Sheet } from '../../components/ui.tsx'
+import { Chip, Dot, Field, NoteField, Sheet } from '../../components/ui.tsx'
 import { DAYS, MONTHS_GEN, parseKey, type DateKey } from '../../data/dates.ts'
 import type { CalendarEvent, EventType, Remind } from '../../data/types.ts'
 import { colors, fonts } from '../../theme'
 import { REMINDS } from '../../data/eventOps.ts'
 import { TYPE_SWATCHES } from './calendarView.ts'
 import { label, timeInput } from './formStyles.ts'
+import { SheetSubmit } from '../../components/SheetSubmit.tsx'
 import { VisibilityField } from '../../components/VisibilityField.tsx'
 
 /** Nowe wydarzenie z formularza (id nadaje ekran). */
@@ -310,7 +311,9 @@ export function EventSheet({
 
       <VisibilityField value={isPrivate} onChange={setPrivate} />
 
-      <PrimaryButton onClick={submit}>Dodaj do kalendarza</PrimaryButton>
+      <SheetSubmit ready={!!title.trim()} onSubmit={submit}>
+        Dodaj do kalendarza
+      </SheetSubmit>
     </Sheet>
   )
 }

@@ -79,7 +79,7 @@ export function EventDetailSheet({
   const change = (fn: (d: EventEdit) => EventEdit) => setDraft((d) => (d ? fn(d) : d))
 
   return (
-    <Sheet open onClose={requestClose} label="Wydarzenie">
+    <Sheet open onClose={requestClose} confirmClose={dirty} label="Wydarzenie">
       <DetailTopBar
         status={status}
         editing={editing}

@@ -4,6 +4,7 @@
 import type { ReactNode } from 'react'
 import { colors, priorities } from '../theme'
 import { CheckIcon, PencilIcon, TrashIcon } from './icons.tsx'
+import { useSheetClose } from './sheetClose.ts'
 import { ConfirmDialog } from './ui.tsx'
 
 /** Górny pasek: odczyt – opis + „Edytuj”; edycja – „Anuluj” + „Zapisz”. */
@@ -171,7 +172,10 @@ export function NoteText({ text }: { text: string }) {
   )
 }
 
-/** Dół arkusza (tylko w odczycie): mniejsze „Usuń” i główna akcja (Ogarnij / Przywróć / Gotowe). */
+/**
+ * Dół arkusza (tylko w odczycie): mniejsze „Usuń” i główna akcja (Ogarnij / Przywróć / Gotowe) –
+ * ta zamyka arkusz zjazdem w dół i dopiero potem działa.
+ */
 export function DetailActions({
   onDelete,
   primary,
@@ -179,6 +183,7 @@ export function DetailActions({
   onDelete: () => void
   primary: { label: string; icon: ReactNode; onClick: () => void }
 }) {
+  const close = useSheetClose()
   const base = {
     height: 44,
     borderRadius: 22,
@@ -206,7 +211,7 @@ export function DetailActions({
       </button>
       <button
         type="button"
-        onClick={primary.onClick}
+        onClick={() => close(primary.onClick)}
         style={{ ...base, border: 0, background: colors.green900, color: colors.cream }}
       >
         <span style={{ color: colors.brass300, display: 'flex' }}>{primary.icon}</span>

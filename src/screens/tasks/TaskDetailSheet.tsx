@@ -93,7 +93,7 @@ export function TaskDetailSheet({
   const subDone = task.subtasks.filter((s) => s.done).length
 
   return (
-    <Sheet open onClose={requestClose} label="Zadanie">
+    <Sheet open onClose={requestClose} confirmClose={dirty} label="Zadanie">
       <DetailTopBar
         status={status}
         editing={editing}

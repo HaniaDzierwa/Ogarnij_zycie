@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, type RefObject } from 'react'
 
 /** Ile przeciągnąć w dół, żeby arkusz się zwinął (albo krócej, ale szybkim ruchem). */
 export const CLOSE_DISTANCE = 110
@@ -8,10 +8,9 @@ const START_AFTER = 6
 /**
  * Przeciągnięcie arkusza w dół zwija go (uwaga Hani 2026-10-25). Działa, gdy treść arkusza jest
  * przewinięta na samą górę – inaczej ruch w dół przewija treść. Arkusz jedzie za palcem; po
- * puszczeniu za blisko wraca na miejsce. Zwraca ref do elementu arkusza.
+ * puszczeniu za blisko wraca na miejsce. `ref` – element arkusza.
  */
-export function useDragToClose<T extends HTMLElement>(onClose: () => void) {
-  const ref = useRef<T>(null)
+export function useDragToClose(ref: RefObject<HTMLElement | null>, onClose: () => void) {
   const close = useRef(onClose)
   useEffect(() => {
     close.current = onClose
@@ -58,8 +57,10 @@ export function useDragToClose<T extends HTMLElement>(onClose: () => void) {
       if (!dragging) return
       dragging = false
       const speed = dy / Math.max(1, e.timeStamp - startT)
-      move(0, true)
+      // zamknięcie – arkusz zjeżdża dalej od miejsca, gdzie jest palec (albo wraca, gdy
+      // trzeba najpierw zapytać „Odrzucić zmiany?”); za krótko – wraca na miejsce
       if (dy > CLOSE_DISTANCE || (dy > 40 && speed > FLICK_SPEED)) close.current()
+      else move(0, true)
     }
 
     el.addEventListener('touchstart', onStart, { passive: true })
@@ -73,7 +74,5 @@ export function useDragToClose<T extends HTMLElement>(onClose: () => void) {
       el.removeEventListener('touchend', onEnd)
       el.removeEventListener('touchcancel', onEnd)
     }
-  }, [])
-
-  return ref
+  }, [ref])
 }
