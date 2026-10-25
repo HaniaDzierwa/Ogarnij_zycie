@@ -24,7 +24,15 @@
     />
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Widok jak ekran startowy Androida (zielone tło + domek) – widać go od pierwszej chwili,
+           zanim wczyta się aplikacja; potem płynnie przechodzi w ekran ładowania. -->
+      <div
+        style="position: fixed; inset: 0; background: #1f3d2e; display: flex; align-items: center; justify-content: center"
+      >
+        <svg width="96" height="96" viewBox="0 0 120 120" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><g transform="translate(18 18) scale(0.7)"><path d="M24 60L60 28l36 32" stroke="#F6F1E7" stroke-width="11"/><path d="M34 54v34a6 6 0 0 0 6 6h40a6 6 0 0 0 6-6V54" stroke="#F6F1E7" stroke-width="11"/><path d="M46 72l10 10 20-22" stroke="#E8C98E" stroke-width="11"/></g></svg>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

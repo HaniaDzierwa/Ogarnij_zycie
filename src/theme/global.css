@@ -158,6 +158,20 @@ button {
     opacity: 0.55;
   }
 }
+/* Start ekranu ładowania jak ekran Androida (zielone tło + domek), potem znika. */
+@keyframes loading-splash {
+  0%,
+  35% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+.loading-splash {
+  animation: loading-splash 700ms ease-out both;
+}
 .loading-pop {
   animation: loading-pop 500ms cubic-bezier(0.2, 0.8, 0.2, 1.2) both;
 }
@@ -184,6 +198,7 @@ button {
 }
 /* Ekran ładowania – wspólne przesunięcie animacji (--od ustawia LoadingScreen), żeby po
    ponownym pokazaniu ekranu animacje biegły dalej, a nie od początku. */
+.loading-splash,
 .loading-pop,
 .loading-rise,
 .loading-sun,
@@ -196,6 +211,9 @@ button {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .loading-splash {
+    display: none;
+  }
   .loading-pop,
   .loading-rise,
   .loading-sun,

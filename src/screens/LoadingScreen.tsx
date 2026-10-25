@@ -75,6 +75,24 @@ export function LoadingScreen({ waiting = false }: { waiting?: boolean }) {
     >
       <Sky day={day} />
 
+      {/* start jak ekran Androida: zielone tło z domkiem, potem płynnie znika (raz – --od) */}
+      <span
+        aria-hidden="true"
+        className="loading-splash"
+        style={{
+          position: 'absolute',
+          inset: 0,
+          zIndex: 2,
+          background: colors.green900,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          pointerEvents: 'none',
+        }}
+      >
+        <Logo size={96} color={colors.cream} check={colors.brass300} />
+      </span>
+
       <span
         style={{
           position: 'relative',

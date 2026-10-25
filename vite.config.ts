@@ -19,7 +19,9 @@ export default defineConfig({
         scope: '/',
         display: 'standalone',
         orientation: 'portrait',
-        background_color: '#F6F1E7',
+        // ekran startowy Androida: tło ikony (butelkowa zieleń) – płynne przejście do ekranu
+        // ładowania, który zaczyna od tego samego widoku (decyzja Hani 2026-10-25)
+        background_color: '#1F3D2E',
         theme_color: '#F6F1E7',
         icons: [
           { src: 'pwa-64x64.png', sizes: '64x64', type: 'image/png' },
