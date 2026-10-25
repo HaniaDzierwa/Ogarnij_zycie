@@ -132,11 +132,11 @@ Funkcje są w aplikacji od etapów 1–2; w tym etapie poprawki z testów we dwo
 - Cloudflare Worker (darmowy plan, cron co minutę): sprawdza, co jest do wysłania (terminy, wydarzenia, poranne podsumowanie o 8:00, zmiany domowników), wysyła push. Instrukcja dla Hani: konto Cloudflare, klucze VAPID, konto serwisowe Firebase jako sekret Workera.
 - Motyw: tylko jasny, wybór ukryty.
 
-**Odbiór:**
-- [ ] Przypomnienie przychodzi przy zamkniętej stronie z opóźnieniem najwyżej 1 min
-- [ ] Wyłączone powiadomienie nie przychodzi
-- [ ] Domownik dostaje push, gdy ktoś inny doda lub ogarnie zadanie
-- [ ] Działa na Androidzie (Chrome) i na iPhonie (strona dodana do ekranu głównego)
+**Odbiór:** (zaakceptowany przez Hanię 2026-10-25 – „zamknij wszystkie etapy, działa tak jak ma być”)
+- [x] Przypomnienie przychodzi przy zamkniętej stronie z opóźnieniem najwyżej 1 min
+- [x] Wyłączone powiadomienie nie przychodzi
+- [x] Domownik dostaje push, gdy ktoś inny doda lub ogarnie zadanie
+- [x] Działa na Androidzie (Chrome) i na iPhonie (strona dodana do ekranu głównego)
 
 ## Etap 7 – Testy i publikacja (dawniej 9)
 

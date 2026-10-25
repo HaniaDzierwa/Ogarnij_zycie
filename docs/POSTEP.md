@@ -10,8 +10,8 @@ Aktualny etap: **4 – Wspólny dom** (w toku)
 | 3 Zadania | zakończony (odbiór razem z etapem 5) | 2026-10-25 |
 | 4 Wspólny dom (dawniej 8) | zakończony | 2026-10-25 |
 | 5 Kategorie, Kalendarz, Start i wspólne testowanie (dawniej 4–6 + odbiór 3) | zakończony | 2026-10-25 |
-| 6 Ustawienia i push (dawniej 7) | w toku | – |
-| 7 Testy i publikacja (dawniej 9) | – | – |
+| 6 Ustawienia i push (dawniej 7) | zakończony | 2026-10-25 |
+| 7 Testy i publikacja (dawniej 9) | w toku – opublikowane; brakuje usuwania konta | – |
 
 Kolejność etapów zmieniona 2026-10-20 (decyzja Hani: testować dopiero we dwoje) – szczegóły w PLAN.md. Wpisy w dzienniku sprzed tej daty używają dawnej numeracji.
 
@@ -23,7 +23,7 @@ Kolejność etapów zmieniona 2026-10-20 (decyzja Hani: testować dopiero we dwo
 | 2 Zgoda na powiadomienia (karta po pierwszym uruchomieniu i przy przełączniku), subskrypcja Web Push przy koncie, instrukcja „Dodaj do ekranu głównego” na iPhonie | zrobione – testy reguł przeszły u Hani; działa po kroku 3 (klucz VAPID) |
 | 3 Instrukcja dla Hani (docs/FIREBASE.md): konto Cloudflare, klucze VAPID, konto serwisowe Firebase – sekrety tylko w Cloudflare | zrobione – sekrety w Cloudflare, subdomena workers.dev |
 | 4 Cloudflare Worker (cron co minutę): terminy, wydarzenia, poranne 8:00, zmiany domowników, codzienne sprzątanie | zrobione – Worker wgrany, harmonogram co minutę działa (przebieg „ok”) |
-| 5 Testy, demo na Androidzie i iPhonie, odbiór | w toku (następny) |
+| 5 Testy, demo na Androidzie i iPhonie, odbiór | zrobione – odbiór 2026-10-25 |
 
 ## Etap 5 – kroki (Kategorie, Kalendarz, Start, testowanie we dwoje)
 
@@ -248,3 +248,5 @@ Wersja testowa: https://ogarnij-zycie--test-56tdtc0y.web.app (kanał `test`, odn
 - 2026-10-25 · Etap 6 · Poprawka (Android, uwaga Hani): ekran ładowania tworzył się od nowa na każdym etapie wczytywania (konto → profil → dane domu), więc jego animacja startowała od początku kilka razy – na wolniejszym wczytywaniu wyglądało to jak ciągłe odświeżanie. Teraz: jeden ekran ładowania dla wszystkich etapów (RequireAuth w jednym miejscu) i ciągłość animacji – gdy ekran pojawi się znów w ciągu 2 s, animacje biegną dalej (wspólne przesunięcie --od), a nie od początku. Testy: 331.
 - 2026-10-25 · Etap 6 · Ekran startowy Androida (pokazuje go system z manifestu – nie da się go wyłączyć): za zgodą Hani tło #1F3D2E jak tło ikony (domek „zlewa się” z tłem); nasz ekran ładowania zaczyna od tego samego widoku (zielone tło + domek) i po ~0,25 s płynnie odsłania niebo i napis (raz – ciągłość animacji); w index.html ten sam widok od pierwszej chwili, zanim wczyta się aplikacja (bez pustego mignięcia). Przy „ograniczaniu ruchu” – bez nakładki. Uwaga: nowy kolor ekranu startowego Android przyjmuje przy aktualizacji aplikacji z ekranu głównego (Chrome sprawdza to sam, zwykle do doby) albo od razu po ponownym dodaniu do ekranu głównego.
 - 2026-10-25 · Publikacja: za zgodą Hani („zrób deploy na oficjalną stronę”) Claude opublikował aplikację pod adresem docelowym https://ogarnij-zycie.web.app (npx firebase deploy --only hosting). Reguły, indeksy i Worker – już wgrane. Kanał „test” zostaje do sprawdzania kolejnych zmian.
+- 2026-10-25 · Etap 6 · Odbiór: powiadomienia (przypomnienia, poranne, zmiany domowników wg POWIADOMIENIA.md), zgoda na telefonach, Ustawienia; poprawki z uwag (animacje arkuszy, ekran ładowania i start na Androidzie). Hania: „zamknij wszystkie etapy, działa tak jak ma być” – przyjęte jako akceptacja. Etap 6 zakończony.
+- 2026-10-25 · Etap 7 · Stan: testy automatyczne (331 + reguły u Hani), publikacja pod adresem docelowym, ikona i ekran startowy – zrobione. Brakuje: usuwania konta z aplikacji (z pytaniem założyciela: usunąć dom czy przekazać domownikowi – decyzja Hani 2026-10-18); dwa tygodnie codziennego używania – w toku.
