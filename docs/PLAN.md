@@ -114,11 +114,11 @@ Funkcje są w aplikacji od etapów 1–2; w tym etapie poprawki z testów we dwo
 - **Start:** kafelki z danych („Ogarnięte dziś X / Y”: Y = ogarnięte dziś + niezrobione z terminem na dziś lub po terminie), skróty do Zadań / Kalendarza, powitanie dzień/noc; zadania i wydarzenia na Starcie działają jak w Zadaniach i Kalendarzu.
 - **Tydzień używania we dwoje** (Hania + domownik), lista uwag, poprawki.
 
-**Odbiór (w tym przeniesiony z etapu 3):**
-- [ ] Zadania: przez tydzień prawdziwe zadania i nic nie znika; gesty działają i nie przeszkadzają w przewijaniu; „Cofnij” przywraca dokładnie poprzedni stan; zadanie z kosza wraca na swoje miejsce
-- [ ] Każda kombinacja filtrów daje poprawną listę, liczniki się zgadzają
-- [ ] Wydarzenia zapisują się poprawnie i są widoczne u wszystkich domowników; usunięte wydarzenie jest w Koszu i po „Przywróć” wraca na swój dzień
-- [ ] Liczby na Starcie zawsze zgadzają się z listą zadań
+**Odbiór (w tym przeniesiony z etapu 3):** (zaakceptowany przez Hanię 2026-10-25)
+- [x] Zadania: przez tydzień prawdziwe zadania i nic nie znika; gesty działają i nie przeszkadzają w przewijaniu; „Cofnij” przywraca dokładnie poprzedni stan; zadanie z kosza wraca na swoje miejsce
+- [x] Każda kombinacja filtrów daje poprawną listę, liczniki się zgadzają
+- [x] Wydarzenia zapisują się poprawnie i są widoczne u wszystkich domowników; usunięte wydarzenie jest w Koszu i po „Przywróć” wraca na swój dzień
+- [x] Liczby na Starcie zawsze zgadzają się z listą zadań
 
 ## Etap 6 – Ustawienia i powiadomienia push (dawniej 7)
 

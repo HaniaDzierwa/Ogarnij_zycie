@@ -7,10 +7,10 @@ Aktualny etap: **4 – Wspólny dom** (w toku)
 | 0 Przygotowanie | zakończony | 2026-10-18 |
 | 1 Klikalny mockup | zakończony | 2026-10-18 |
 | 2 Konta i dane | zakończony | 2026-10-20 |
-| 3 Zadania | kod zakończony 2026-10-20 – odbiór w etapie 5 (we dwoje) | – |
+| 3 Zadania | zakończony (odbiór razem z etapem 5) | 2026-10-25 |
 | 4 Wspólny dom (dawniej 8) | zakończony | 2026-10-25 |
-| 5 Kategorie, Kalendarz, Start i wspólne testowanie (dawniej 4–6 + odbiór 3) | w toku | – |
-| 6 Ustawienia i push (dawniej 7) | – | – |
+| 5 Kategorie, Kalendarz, Start i wspólne testowanie (dawniej 4–6 + odbiór 3) | zakończony | 2026-10-25 |
+| 6 Ustawienia i push (dawniej 7) | następny | – |
 | 7 Testy i publikacja (dawniej 9) | – | – |
 
 Kolejność etapów zmieniona 2026-10-20 (decyzja Hani: testować dopiero we dwoje) – szczegóły w PLAN.md. Wpisy w dzienniku sprzed tej daty używają dawnej numeracji.
@@ -22,9 +22,9 @@ Funkcje są w aplikacji; etap = sprawdzenie na prawdziwych danych, poprawki z uw
 | Krok | Status |
 | --- | --- |
 | 1 Testy automatyczne odbioru: każda kombinacja filtrów (Pokaż × kategoria × grupowanie, także własne priorytety i „Tylko ja”) daje poprawną listę i liczniki; liczby na Starcie = lista zadań; wydarzenie z Kosza wraca na swój dzień | zrobione |
-| 2 Tydzień używania we dwoje (Hania + domownik) – uwagi w tabeli „Uwagi Hani” jako „poprawka teraz” / „później” | w toku |
+| 2 Tydzień używania we dwoje (Hania + domownik) – uwagi w tabeli „Uwagi Hani” jako „poprawka teraz” / „później” | zrobione – Hania: „uwag już nie ma” |
 | 3 Poprawki „teraz” z uwag | 3 uwagi z 2026-10-25 zrobione i sprawdzone u Hani; kolejne – na bieżąco |
-| 4 Wersja testowa, odbiór etapu 5 (z odbiorem etapu 3) | do zrobienia |
+| 4 Wersja testowa, odbiór etapu 5 (z odbiorem etapu 3) | zrobione – odbiór 2026-10-25 |
 
 ## Etap 4 – kroki (Wspólny dom)
 
@@ -218,3 +218,4 @@ Wersja testowa: https://ogarnij-zycie--test-56tdtc0y.web.app (kanał `test`, odn
 - 2026-10-25 · Etap 5 · Krok 3 (uwaga Hani): przeciągnięcie arkusza w dół go zwija (wspólny arkusz – zadanie, wydarzenie, „Nowe zadanie”, „Nowe wydarzenie”). Arkusz jedzie za palcem; zwija się po ok. 110 px albo po szybkim ruchu, krótszy ruch – wraca na miejsce. Działa, gdy treść arkusza jest przewinięta na samą górę (inaczej ruch w dół przewija treść); w notatce (polu tekstowym) nie działa. W edycji ze zmianami – pytanie „Odrzucić zmiany?”. Testy: 296. · Sprawdzenie: otwórz zadanie → przeciągnij za górną kreskę w dół.
 - 2026-10-25 · Etap 5 · Hania: zwijanie arkusza przeciągnięciem – „super działa”.
 - 2026-10-25 · Etap 5 · Hania: dzień w „Nowe wydarzenie” i arkusze do odczytu z „Edytuj / Zapisz” – „działa”.
+- 2026-10-25 · Etap 5 · Odbiór (z odbiorem etapu 3): zadania (nic nie znika, gesty, „Cofnij”, powrót z Kosza), filtry i liczniki (też testy 96 kombinacji), wydarzenia u domowników i powrót z Kosza na swój dzień, liczby na Starcie. Hania: „uwag już nie ma”, „akceptuję”. Etapy 3 i 5 zakończone.
