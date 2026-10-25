@@ -93,7 +93,7 @@ Wersja testowa: https://ogarnij-zycie--test-56tdtc0y.web.app (kanał `test`, odn
 
 | Data | Etap | Uwaga | Kiedy | Status |
 | --- | --- | --- | --- | --- |
-| 2026-10-25 | 7 | Usuwanie konta z aplikacji (założyciel z domownikami: usunąć dom czy przekazać) – najpierw „później”, potem „dorób już dziś”. | teraz | zrobione (kod) – testy reguł u Hani |
+| 2026-10-25 | 7 | Usuwanie konta z aplikacji (założyciel z domownikami: usunąć dom czy przekazać) – najpierw „później”, potem „dorób już dziś”. | teraz | zrobione – testy reguł przeszły u Hani |
 | 2026-10-25 | 6 | Android: najpierw ikona domku (ekran startowy systemu), dopiero potem nasz ekran ładowania. | teraz | zrobione – do sprawdzenia |
 | 2026-10-25 | 6 | Android: animacja ekranu ładowania się zacina, jakby się ciągle odświeżała (na iPhonie dobrze). | teraz | poprawione – do sprawdzenia |
 | 2026-10-25 | 6 | Animacja otwierania i zamykania arkusza z zadaniem / wydarzeniem. | teraz | zrobione – do sprawdzenia |
@@ -254,3 +254,4 @@ Wersja testowa: https://ogarnij-zycie--test-56tdtc0y.web.app (kanał `test`, odn
 - 2026-10-25 · Etap 7 · Decyzja Hani: usuwanie konta „na później”. Etap 7 zakończony: testy, publikacja pod https://ogarnij-zycie.web.app, ikona i ekran startowy. Wszystkie etapy planu (0–7) zakończone.
 - 2026-10-25 · Etap 7 · Usuwanie konta (prośba Hani „dorób już dziś”): Ustawienia → stopka → „Usuń konto” → ekran z opisem skutków i hasłem (Firebase wymaga świeżego potwierdzenia). Domownik – wychodzi z domu (wspólne zostają). Założyciel sam – dom usunięty ze wszystkim. Założyciel z domownikami – wybór „Przekaż dom” (nowy założyciel z listy) albo „Usuń u wszystkich” (domownicy wracają do „Witaj”). Kolejność: hasło (złe – nic nie usunięte) → własne „Tylko ja” → dom wg wyboru → subskrypcje powiadomień → profil → konto. Reguły: usunięcie własnego profilu; przekazanie domu (właściciel + rola „owner” u nowego w jednej paczce); założyciel usuwa wszystko w domu (także cudze zadania, „Termin zadania”, wpisy) i sam dom. „Tylko ja” innych domowników przy usunięciu domu zostaje w bazie niedostępne dla nikogo. Testy: 338 (Vitest), testy reguł +4 – do uruchomienia u Hani.
 - 2026-10-25 · Etap 7 · Testy reguł u Hani: 1 nie przeszedł – „wbudowanego rodzaju Termin zadania nie da się usunąć” (założyciel mógł go usunąć osobno). Poprawka: „Termin zadania” da się usunąć tylko razem z domem, w tej samej paczce (reguła !existsAfter(dom)); aplikacja przy „Usuń u wszystkich” usuwa rodzaje wydarzeń w ostatniej paczce razem z domem; test usuwania domu zmieniony tak samo. Do ponownego uruchomienia u Hani.
+- 2026-10-25 · Etap 7 · Hania – testy reguł (usuwanie konta, po poprawce „Termin zadania”) przeszły.
