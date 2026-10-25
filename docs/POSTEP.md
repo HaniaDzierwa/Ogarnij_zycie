@@ -256,3 +256,4 @@ Wersja testowa: https://ogarnij-zycie--test-56tdtc0y.web.app (kanał `test`, odn
 - 2026-10-25 · Etap 7 · Testy reguł u Hani: 1 nie przeszedł – „wbudowanego rodzaju Termin zadania nie da się usunąć” (założyciel mógł go usunąć osobno). Poprawka: „Termin zadania” da się usunąć tylko razem z domem, w tej samej paczce (reguła !existsAfter(dom)); aplikacja przy „Usuń u wszystkich” usuwa rodzaje wydarzeń w ostatniej paczce razem z domem; test usuwania domu zmieniony tak samo. Do ponownego uruchomienia u Hani.
 - 2026-10-25 · Etap 7 · Hania – testy reguł (usuwanie konta, po poprawce „Termin zadania”) przeszły.
 - 2026-10-25 · Etap 7 · Za zgodą Hani: reguły usuwania konta wgrane (released rules), dane bez zmian; usuwanie konta opublikowane na kanale „test”. Na oficjalnej stronie – po sprawdzeniu i osobnej zgodzie.
+- 2026-10-25 · Publikacja: za zgodą Hani („wgraj na oficjalną”) wersja z usuwaniem konta opublikowana pod https://ogarnij-zycie.web.app.
