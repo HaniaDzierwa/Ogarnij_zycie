@@ -30,6 +30,7 @@ import {
   urgentOpen,
   weekDays,
 } from '../data/selectors.ts'
+import { PushCard } from '../push/PushCard.tsx'
 import { colors, fonts, priorities, shadows, todayBadge } from '../theme'
 import { useItemSheets } from './shared/useItemSheets.tsx'
 
@@ -171,6 +172,8 @@ export function StartScreen() {
           }
         />
       </div>
+
+      <PushCard />
 
       <Link
         to={paths.kalendarz}

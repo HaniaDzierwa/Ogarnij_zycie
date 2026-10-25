@@ -239,6 +239,23 @@ service cloud.firestore {
       allow read: if signedIn() && me() == uid;
       allow create, update: if signedIn() && me() == uid && validUser(request.resource.data);
       allow delete: if false; // etap 7 – usuwanie konta
+
+      // Powiadomienia (etap 6): subskrypcje telefonów – tylko właściciel konta; Worker czyta
+      // je kontem serwisowym (poza regułami).
+      match /push/{id} {
+        allow read, delete: if signedIn() && me() == uid;
+        allow create, update: if signedIn() && me() == uid
+          && request.resource.data.keys().hasOnly(['endpoint', 'keys', 'userAgent', 'createdAt'])
+          && text(request.resource.data.endpoint, 1000)
+          && request.resource.data.endpoint.matches('https://.*')
+          // pole „keys” – przez nawias (keys() to też funkcja mapy)
+          && request.resource.data['keys'] is map
+          && request.resource.data['keys'].keys().hasOnly(['p256dh', 'auth'])
+          && str(request.resource.data['keys'].p256dh, 200)
+          && str(request.resource.data['keys'].auth, 100)
+          && str(request.resource.data.userAgent, 300)
+          && request.resource.data.createdAt == request.time;
+      }
     }
 
     // ── Dom ─────────────────────────────────────────────────────────────────

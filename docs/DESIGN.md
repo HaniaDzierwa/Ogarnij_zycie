@@ -160,7 +160,8 @@ Zakupy `#5E8C6A` · Dom `#B8925A` · Zdrowie `#A4492F` · Urzędy `#6E5F8C` · A
 
 ```
 users/{uid}                         name, houseId|null, notif{tasks,events,morning,house}, cleanupDays(7|30|null),
-                                    taskReminderTime('18:00'), pushSubscriptions[] (etap 6)
+                                    taskReminderTime('18:00')
+users/{uid}/push/{id}               endpoint, keys{p256dh, auth}, userAgent, createdAt – subskrypcja Web Push telefonu (etap 6; tylko właściciel konta, Worker – kontem serwisowym)
 houses/{houseId}                    name (wpisuje założyciel), ownerUid, createdAt
 houses/{houseId}/members/{uid}      name, role(owner|member), scope{all, categoryIds[], calendar}, joinedAt
 houses/{houseId}/categories/{id}    name, color, order, updatedAt, updatedBy

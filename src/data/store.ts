@@ -64,6 +64,8 @@ export type Store = {
   setNotifications: (update: (n: NotificationSettings) => NotificationSettings) => void
   setCleanupDays: (days: CleanupDays) => void
   setTaskReminderTime: (time: string) => void
+  /** Zapis subskrypcji powiadomień tego telefonu przy koncie (etap 6). */
+  savePushSubscription: (id: string, sub: PushSubscriptionJSON) => Promise<void>
 }
 
 export const StoreContext = createContext<Store | null>(null)

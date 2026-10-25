@@ -32,6 +32,8 @@ export const paths = {
   /** „Tylko ja”: zadania i wydarzenia widoczne tylko dla autora (decyzja Hani 2026-10-25). */
   privateTasks: (houseId: string, uid: string) => `houses/${houseId}/private/${uid}/tasks`,
   privateEvents: (houseId: string, uid: string) => `houses/${houseId}/private/${uid}/events`,
+  /** Subskrypcja Web Push jednego telefonu (etap 6) – widzi i zapisuje tylko właściciel konta. */
+  push: (uid: string, id: string) => `users/${uid}/push/${id}`,
   /** Zaproszenie do domu: kod 6 cyfr. */
   invite: (code: string) => `invites/${code}`,
 } as const
@@ -46,6 +48,23 @@ export const LIMITS = {
 } as const
 
 export const REMINDS: readonly Remind[] = ['none', 'day', 'week']
+
+/** Subskrypcja Web Push w bazie: adres i klucze telefonu (do wysyłki przez Workera). */
+export type PushDoc = {
+  endpoint: string
+  keys: { p256dh: string; auth: string }
+  userAgent: string
+  createdAt: Timestamp | FieldValue
+}
+
+export function pushDoc(sub: PushSubscriptionJSON, userAgent: string): PushDoc {
+  return {
+    endpoint: sub.endpoint ?? '',
+    keys: { p256dh: sub.keys?.p256dh ?? '', auth: sub.keys?.auth ?? '' },
+    userAgent: userAgent.slice(0, 300),
+    createdAt: serverTimestamp(),
+  }
+}
 
 // ── Czas: aplikacja „RRRR-MM-DDTHH:MM” (czas lokalny) ↔ Timestamp w bazie ─
 

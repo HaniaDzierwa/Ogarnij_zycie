@@ -36,6 +36,8 @@ export default defineConfig({
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
         navigateFallback: '/index.html',
+        // powiadomienia push (etap 6) – obsługa w public/push-sw.js
+        importScripts: ['push-sw.js'],
         runtimeCaching: [
           {
             // Czcionki Fraunces i Nunito – żeby działały też bez internetu.

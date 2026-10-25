@@ -107,6 +107,7 @@ export function MockStoreProvider({
       setNotifications,
       setCleanupDays,
       setTaskReminderTime,
+      savePushSubscription: async () => {},
     }),
     [
       day,

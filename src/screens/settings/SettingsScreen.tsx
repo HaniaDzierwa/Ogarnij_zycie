@@ -22,6 +22,8 @@ import { DEFAULT_HOUSE_NAME } from '../../house/house.ts'
 import { plural } from '../../data/plural.ts'
 import type { CleanupDays, NotificationSettings } from '../../data/types.ts'
 import { colors, fonts, priorities, shadows } from '../../theme'
+import { PushStatusRow } from '../../push/PushStatusRow.tsx'
+import { usePush } from '../../push/usePush.ts'
 import { trashItems, trashWhat } from '../tasks/tasksView.ts'
 
 const CLEANUP: { id: CleanupDays; name: string; hint: string }[] = [
@@ -48,6 +50,8 @@ export function SettingsScreen() {
   const other = others[0]
   const trash = trashItems(tasks, events, today)
 
+  // powiadomienia na tym telefonie – zgoda przy włączaniu przełącznika (decyzja Hani 2026-10-18)
+  const push = usePush()
   const notifs: { id: keyof NotificationSettings; name: string; hint: string }[] = [
     {
       id: 'tasks',
@@ -311,13 +315,18 @@ export function SettingsScreen() {
 
       <Section label="POWIADOMIENIA">
         <Card radius={22}>
+          <PushStatusRow push={push} />
           {notifs.map((n, i) => (
             <Fragment key={n.id}>
               <ToggleRow
                 name={n.name}
                 hint={n.hint}
                 on={notifications[n.id]}
-                onToggle={() => store.setNotifications((s) => ({ ...s, [n.id]: !s[n.id] }))}
+                onToggle={() => {
+                  const turnOn = !notifications[n.id]
+                  store.setNotifications((s) => ({ ...s, [n.id]: !s[n.id] }))
+                  if (turnOn && push.state === 'off') push.enable()
+                }}
                 last={i === notifs.length - 1}
               />
               {/* godzina przypomnienia o terminach – pod przełącznikiem (decyzja Hani 2026-10-18) */}

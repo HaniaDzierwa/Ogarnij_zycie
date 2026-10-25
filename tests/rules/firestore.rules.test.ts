@@ -34,6 +34,7 @@ import {
   newInviteDoc,
   paths,
   priorityToDoc,
+  pushDoc,
   taskToDoc,
 } from '../../src/firebase/model.ts'
 
@@ -538,5 +539,32 @@ describe('wychodzenie i usuwanie domowników', () => {
     await assertSucceeds(batch.commit())
     await assertFails(getDocs(collection(db('ola'), paths.tasks('dom1'))))
     await assertSucceeds(getDocs(collection(db('ola'), paths.tasks('dom2'))))
+  })
+})
+
+// ── Powiadomienia: subskrypcje telefonów (etap 6) ──────────────────────────
+
+describe('subskrypcje powiadomień', () => {
+  beforeEach(seed)
+  const sub = {
+    endpoint: 'https://fcm.googleapis.com/fcm/send/abc',
+    keys: { p256dh: 'BPx', auth: 'au' },
+  }
+  const at = (as: string, uid = as) => doc(db(as), paths.push(uid, 'tel1'))
+
+  test('właściciel konta zapisuje, czyta i usuwa subskrypcję swojego telefonu', async () => {
+    await assertSucceeds(setDoc(at('hania'), pushDoc(sub, 'Chrome na Androidzie')))
+    await assertSucceeds(getDoc(at('hania')))
+    await assertSucceeds(deleteDoc(at('hania')))
+  })
+  test('nikt inny jej nie widzi ani nie zapisuje (także domownik)', async () => {
+    await setDoc(at('hania'), pushDoc(sub, 'x'))
+    await assertFails(getDoc(at('obcy', 'hania')))
+    await assertFails(setDoc(at('obcy', 'hania'), pushDoc(sub, 'x')))
+    await assertFails(getDoc(doc(db(), paths.push('hania', 'tel1'))))
+  })
+  test('zły kształt odrzucony (adres nie https, dodatkowe pola)', async () => {
+    await assertFails(setDoc(at('hania'), pushDoc({ ...sub, endpoint: 'http://zly' }, 'x')))
+    await assertFails(setDoc(at('hania'), { ...pushDoc(sub, 'x'), extra: 1 }))
   })
 })

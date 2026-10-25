@@ -1,4 +1,4 @@
-import { collection, doc, onSnapshot, updateDoc, writeBatch } from 'firebase/firestore'
+import { collection, doc, onSnapshot, setDoc, updateDoc, writeBatch } from 'firebase/firestore'
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useAuth } from '../auth/auth.ts'
 import { db } from '../firebase/app.ts'
@@ -11,6 +11,7 @@ import {
   eventTypeFromDoc,
   eventTypeToDoc,
   paths,
+  pushDoc,
   priorityFromDoc,
   priorityToDoc,
   taskFromDoc,
@@ -356,6 +357,8 @@ function HouseData({ children }: { children: ReactNode }) {
         updateUser({ notif: update(userDoc.notif) }),
       setCleanupDays: (cleanupDays: CleanupDays) => updateUser({ cleanupDays }),
       setTaskReminderTime: (taskReminderTime: string) => updateUser({ taskReminderTime }),
+      savePushSubscription: (id, sub) =>
+        setDoc(doc(db, paths.push(uid, id)), pushDoc(sub, navigator.userAgent)),
     }),
     [
       day,
