@@ -11,8 +11,11 @@ import {
   eventTypeFromDoc,
   eventTypeToDoc,
   activityDoc,
+  normalizeTimes,
   paths,
   pushDoc,
+  summaryContentOf,
+  summaryTimesOf,
   priorityFromDoc,
   priorityToDoc,
   taskFromDoc,
@@ -35,6 +38,7 @@ import type {
   CleanupDays,
   CustomPriority,
   EventType,
+  SummaryContent,
   Member,
   NotificationSettings,
   Task,
@@ -114,6 +118,8 @@ function HouseData({ children }: { children: ReactNode }) {
         notif: { ...DEFAULT_USER.notif, ...d.notif },
         cleanupDays: d.cleanupDays === undefined ? DEFAULT_USER.cleanupDays : d.cleanupDays,
         taskReminderTime: d.taskReminderTime ?? DEFAULT_USER.taskReminderTime,
+        summaryTimes: summaryTimesOf(d),
+        summaryContent: summaryContentOf(d),
       })
     })
   }, [uid])
@@ -345,7 +351,8 @@ function HouseData({ children }: { children: ReactNode }) {
       members,
       notifications: userDoc.notif,
       cleanupDays: userDoc.cleanupDays,
-      taskReminderTime: userDoc.taskReminderTime,
+      summaryTimes: userDoc.summaryTimes,
+      summaryContent: userDoc.summaryContent,
       toast,
       who: () => ({ uid, at: nowStamp(day) }),
       // imię jest w profilu i na liście domowników – zmiana w obu miejscach jednym zapisem
@@ -371,7 +378,8 @@ function HouseData({ children }: { children: ReactNode }) {
       setNotifications: (update: (n: NotificationSettings) => NotificationSettings) =>
         updateUser({ notif: update(userDoc.notif) }),
       setCleanupDays: (cleanupDays: CleanupDays) => updateUser({ cleanupDays }),
-      setTaskReminderTime: (taskReminderTime: string) => updateUser({ taskReminderTime }),
+      setSummaryTimes: (times: string[]) => updateUser({ summaryTimes: normalizeTimes(times) }),
+      setSummaryContent: (summaryContent: SummaryContent) => updateUser({ summaryContent }),
       savePushSubscription: (id, sub) =>
         setDoc(doc(db, paths.push(uid, id)), pushDoc(sub, navigator.userAgent)),
     }),

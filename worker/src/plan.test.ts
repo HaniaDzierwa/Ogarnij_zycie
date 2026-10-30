@@ -7,8 +7,9 @@ import {
   daysSince,
   isQuiet,
   localNow,
-  morningFor,
-  remindersFor,
+  summaryContentOf,
+  summaryFor,
+  summaryTimesOf,
   type ActivityEntry,
   type Event,
   type Task,
@@ -21,7 +22,14 @@ const user: User = {
   name: 'Hania',
   houseId: 'dom1',
   notif: { tasks: true, events: true, morning: true, house: true },
-  taskReminderTime: '18:00',
+  summaryTimes: ['08:00', '18:00'],
+  summaryContent: {
+    urgent: true,
+    dueToday: true,
+    dueTomorrow: true,
+    eventsToday: true,
+    eventsSoon: true,
+  },
   cleanupDays: 30,
 }
 const task = (over: Partial<Task>): Task => ({
@@ -71,92 +79,73 @@ describe('czas polski', () => {
   })
 })
 
-describe('przypomnienia o godzinie z Ustawień', () => {
-  test('terminy jutro – jedno albo kilka; ogarnięte i w koszu pomijane', () => {
-    const tasks = [
-      task({ id: '1', title: 'Rachunek', due: '2026-10-26' }),
-      task({ id: '2', title: 'Ogarnięte', due: '2026-10-26', done: true }),
-      task({ id: '3', title: 'W koszu', due: '2026-10-26', deleted: true }),
-      task({ id: '4', title: 'Pojutrze', due: '2026-10-27' }),
-    ]
-    expect(remindersFor(user, tasks, [], DAY)).toEqual([
-      { title: 'Jutro termin', body: 'Rachunek', url: '/zadania', tag: 'terminy' },
-    ])
-    const many = ['A', 'B', 'C', 'D', 'E'].map((t, i) =>
-      task({ id: t, title: t, due: '2026-10-26', priority: String(i) }),
-    )
-    expect(remindersFor(user, many, [], DAY)[0]).toMatchObject({
-      title: 'Jutro terminy: 5',
-      body: 'A, B, C i 2 więcej',
-    })
-  })
-  test('wydarzenia: „dzień wcześniej” jutro, „tydzień wcześniej” za 7 dni; bez przypomnienia – nic', () => {
-    const events = [
-      event({ id: 'a', title: 'Urodziny Oli', date: '2026-10-26', remind: 'day' }),
-      event({
-        id: 'b',
-        title: 'Dentysta',
-        date: '2026-11-01',
-        remind: 'week',
-        allDay: false,
-        from: '17:00',
-      }),
-      event({ id: 'c', title: 'Bez', date: '2026-10-26', remind: 'none' }),
-    ]
-    expect(remindersFor(user, [], events, DAY)).toEqual([
-      {
-        title: 'Jutro: Urodziny Oli',
-        body: 'Jutro – cały dzień',
-        url: '/kalendarz?dzien=2026-10-26',
-        tag: 'wydarzenie-a',
-      },
-      {
-        title: 'Za tydzień: Dentysta',
-        body: 'Za tydzień 17:00',
-        url: '/kalendarz?dzien=2026-11-01',
-        tag: 'wydarzenie-b',
-      },
-    ])
-  })
-  test('wyłączone w Ustawieniach – nie wysyłamy', () => {
-    const off = { ...user, notif: { ...user.notif, tasks: false, events: false } }
-    expect(
-      remindersFor(
-        off,
-        [task({ due: '2026-10-26' })],
-        [event({ date: '2026-10-26', remind: 'day' })],
-        DAY,
-      ),
-    ).toEqual([])
-  })
-})
+describe('podsumowania o godzinach wybranych przez domownika (decyzje Hani 2026-10-30)', () => {
+  const tasks = [
+    task({ id: 'p', title: 'Hydraulik', priority: 'high' }),
+    task({ id: 'd', title: 'Rachunek', due: '2026-10-24' }), // po terminie
+    task({ id: 'j', title: 'Recepta', due: '2026-10-26' }),
+    task({ id: 'o', title: 'Ogarnięte', due: DAY, done: true }),
+  ]
+  const events = [
+    event({ id: 'k', title: 'Kino', allDay: false, from: '19:00' }),
+    event({ id: 'r', title: 'Rano', allDay: false, from: '07:00' }), // już minęło
+    event({ id: 'u', title: 'Urodziny Oli', date: '2026-10-26', remind: 'day' }),
+    event({ id: 't', title: 'Dentysta', date: '2026-11-01', remind: 'week' }),
+  ]
 
-describe('poranne podsumowanie', () => {
-  test('tylko gdy jest coś pilnego, termin na dziś (albo po terminie) lub wydarzenie dziś', () => {
-    expect(morningFor(user, [task({ due: '2026-10-30' })], [], DAY)).toBeNull()
-    expect(
-      morningFor(
-        user,
-        [task({ priority: 'high' }), task({ id: 'x', title: 'Rachunek', due: '2026-10-24' })],
-        [event({ title: 'Kino', allDay: false, from: '19:00' })],
-        DAY,
-      ),
-    ).toEqual({
-      title: 'Na dziś',
-      body: 'Pilne: 1 · Termin dziś: Rachunek · Dziś: Kino 19:00',
+  test('pełne podsumowanie: dziś i jutro, z nazwami pilnych; minione wydarzenie pominięte', () => {
+    expect(summaryFor(user, tasks, events, DAY, '08:00', true)).toEqual({
+      title: 'Na dziś i jutro',
+      body: 'Pilne: Hydraulik · Termin dziś: Rachunek · Dziś: Kino 19:00 · Jutro termin: Recepta · Jutro: Urodziny Oli · Za tydzień: Dentysta',
       url: '/',
-      tag: 'poranek',
+      tag: 'podsumowanie',
+    })
+    // o 6:00 poranne wydarzenie (7:00) jeszcze jest
+    expect(summaryFor(user, tasks, events, DAY, '06:00', true)!.body).toContain('Rano 07:00')
+  })
+  test('„Za tydzień” tylko w pierwszym podsumowaniu dnia; „Jutro” w każdym', () => {
+    const second = summaryFor(user, tasks, events, DAY, '18:00', false)!
+    expect(second.body).not.toContain('Za tydzień')
+    expect(second.body).toContain('Jutro: Urodziny Oli')
+  })
+  test('kratki: „tylko Pilne”', () => {
+    const onlyUrgent = {
+      ...user,
+      summaryContent: {
+        urgent: true,
+        dueToday: false,
+        dueTomorrow: false,
+        eventsToday: false,
+        eventsSoon: false,
+      },
+    }
+    expect(summaryFor(onlyUrgent, tasks, events, DAY, '12:00', true)).toEqual({
+      title: 'Na dziś',
+      body: 'Pilne: Hydraulik',
+      url: '/',
+      tag: 'podsumowanie',
     })
   })
-  test('wyłączone – nic', () => {
-    expect(
-      morningFor(
-        { ...user, notif: { ...user.notif, morning: false } },
-        [task({ priority: 'high' })],
-        [],
-        DAY,
-      ),
-    ).toBeNull()
+  test('nic do zgłoszenia – nic nie wysyłamy; same wydarzenia jutro – „Na jutro” z linkiem do dnia', () => {
+    expect(summaryFor(user, [], [], DAY, '12:00', true)).toBeNull()
+    expect(summaryFor(user, [], [events[2]], DAY, '12:00', false)).toEqual({
+      title: 'Na jutro',
+      body: 'Jutro: Urodziny Oli',
+      url: '/kalendarz?dzien=2026-10-26',
+      tag: 'podsumowanie',
+    })
+  })
+  test('stare konto bez nowych pól – jak dotąd (8:00 i dawna godzina, treść wg przełączników)', () => {
+    expect(summaryTimesOf(undefined, undefined)).toEqual(['08:00', '18:00'])
+    expect(summaryTimesOf(undefined, '20:30')).toEqual(['08:00', '20:30'])
+    expect(summaryTimesOf(['16:00', '08:00', 'x', '08:00'], '20:30')).toEqual(['08:00', '16:00'])
+    expect(summaryContentOf(undefined, { ...user.notif, events: false })).toEqual({
+      urgent: true,
+      dueToday: true,
+      dueTomorrow: true,
+      eventsToday: false,
+      eventsSoon: false,
+    })
   })
 })
 

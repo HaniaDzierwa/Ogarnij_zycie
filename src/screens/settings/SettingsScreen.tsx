@@ -23,6 +23,7 @@ import { plural } from '../../data/plural.ts'
 import type { CleanupDays, NotificationSettings } from '../../data/types.ts'
 import { colors, fonts, priorities, shadows } from '../../theme'
 import { PushStatusRow } from '../../push/PushStatusRow.tsx'
+import { SummarySettings } from './SummarySettings.tsx'
 import { usePush } from '../../push/usePush.ts'
 import { trashItems, trashWhat } from '../tasks/tasksView.ts'
 
@@ -52,18 +53,13 @@ export function SettingsScreen() {
 
   // powiadomienia na tym telefonie – zgoda przy włączaniu przełącznika (decyzja Hani 2026-10-18)
   const push = usePush()
+  // podsumowania o wybranych godzinach + zmiany od domowników (decyzje Hani 2026-10-30)
   const notifs: { id: keyof NotificationSettings; name: string; hint: string }[] = [
     {
-      id: 'tasks',
-      name: 'Terminy zadań',
-      hint: `Dzień przed terminem o ${store.taskReminderTime}`,
+      id: 'morning',
+      name: 'Podsumowania',
+      hint: 'Co pilne, terminy i wydarzenia – o wybranych godzinach',
     },
-    {
-      id: 'events',
-      name: 'Wydarzenia z kalendarza',
-      hint: 'Zgodnie z przypomnieniem przy wydarzeniu',
-    },
-    { id: 'morning', name: 'Poranne podsumowanie', hint: 'Codziennie o 8:00 – co pilne i co dziś' },
     {
       id: 'house',
       name: 'Zmiany od domowników',
@@ -329,39 +325,7 @@ export function SettingsScreen() {
                 }}
                 last={i === notifs.length - 1}
               />
-              {/* godzina przypomnienia o terminach – pod przełącznikiem (decyzja Hani 2026-10-18) */}
-              {n.id === 'tasks' && notifications.tasks && (
-                <label
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    gap: 12,
-                    padding: '0 18px 12px',
-                    borderBottom: `1px solid ${colors.line}`,
-                  }}
-                >
-                  <span style={{ fontSize: 14, color: colors.muted2 }}>Godzina przypomnienia</span>
-                  <input
-                    type="time"
-                    step={900}
-                    value={store.taskReminderTime}
-                    onChange={(e) => e.target.value && store.setTaskReminderTime(e.target.value)}
-                    style={{
-                      height: 44,
-                      border: `1px solid ${colors.border}`,
-                      borderRadius: 14,
-                      padding: '0 12px',
-                      fontFamily: fonts.serif,
-                      fontSize: 18,
-                      fontWeight: 600,
-                      color: colors.green900,
-                      background: colors.white,
-                      outlineColor: colors.green900,
-                    }}
-                  />
-                </label>
-              )}
+              {n.id === 'morning' && notifications.morning && <SummarySettings />}
             </Fragment>
           ))}
         </Card>

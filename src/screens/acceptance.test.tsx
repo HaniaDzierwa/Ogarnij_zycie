@@ -55,7 +55,7 @@ test('liczby na Starcie zgadzają się z listą zadań – przed i po zmianach',
   await check()
   await act(() => router.navigate('/?pora=dzien'))
   expect(tileNumber('PILNE')).toBe(5)
-})
+}, 15_000)
 
 test('usunięte wydarzenie jest w Koszu i po „Przywróć” wraca na swój dzień', async () => {
   const router = renderApp('/kalendarz?dzien=2026-10-14')

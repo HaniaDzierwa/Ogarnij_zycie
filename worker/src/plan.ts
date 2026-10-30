@@ -1,21 +1,69 @@
 // Co i komu wysłać o danej minucie – czyste funkcje (bez sieci), czas polski (Europe/Warsaw).
-// Decyzje Hani: przypomnienie o terminach dzień wcześniej o godzinie z Ustawień (domyślnie 18:00);
-// poranne podsumowanie o 8:00 tylko, gdy jest coś pilnego, termin na dziś albo wydarzenie dziś;
+// Decyzje Hani: podsumowania o godzinach wybranych przez każdego domownika (2026-10-30) – treść wg
+// kratek, nic do zgłoszenia – nic nie wysyłamy;
 // zmiany domowników wg docs/POWIADOMIENIA.md (zatwierdzone 2026-10-25). „Tylko ja” nigdy nie trafia do innych.
 
 export const ZONE = 'Europe/Warsaw'
-export const MORNING = '08:00'
 export const CLEANUP_TIME = '03:00'
 export const TRASH_DAYS = 30
 
+/** `morning` – „Podsumowania” (włączone / wyłączone); `house` – zmiany od domowników. */
 export type Notif = { tasks: boolean; events: boolean; morning: boolean; house: boolean }
+export type SummaryContent = {
+  urgent: boolean
+  dueToday: boolean
+  dueTomorrow: boolean
+  eventsToday: boolean
+  eventsSoon: boolean
+}
 export type User = {
   uid: string
   name: string
   houseId: string | null
   notif: Notif
-  taskReminderTime: string
+  /** Godziny podsumowań „HH:MM”, rosnąco (1–5). */
+  summaryTimes: string[]
+  summaryContent: SummaryContent
   cleanupDays: number | null
+}
+
+const TIME = /^([01][0-9]|2[0-3]):[0-5][0-9]$/
+
+/**
+ * Godziny podsumowań z profilu; konta sprzed zmiany (bez pola) – jak dotąd: 8:00 i dawna godzina
+ * przypomnienia o terminach. Ta sama zasada co summaryTimesOf w aplikacji (src/firebase/model.ts).
+ */
+export function summaryTimesOf(summaryTimes: unknown, taskReminderTime: unknown): string[] {
+  const norm = (xs: unknown[]) =>
+    [...new Set(xs.filter((t): t is string => typeof t === 'string' && TIME.test(t)))]
+      .sort()
+      .slice(0, 5)
+  const own = Array.isArray(summaryTimes) ? norm(summaryTimes) : []
+  return own.length
+    ? own
+    : norm(['08:00', typeof taskReminderTime === 'string' ? taskReminderTime : '18:00'])
+}
+
+/** Co przychodzi; konta sprzed zmiany – wg dawnych przełączników terminów i wydarzeń. */
+export function summaryContentOf(content: unknown, notif: Notif): SummaryContent {
+  if (content && typeof content === 'object') {
+    const c = content as Record<string, unknown>
+    const b = (k: string) => c[k] !== false
+    return {
+      urgent: b('urgent'),
+      dueToday: b('dueToday'),
+      dueTomorrow: b('dueTomorrow'),
+      eventsToday: b('eventsToday'),
+      eventsSoon: b('eventsSoon'),
+    }
+  }
+  return {
+    urgent: notif.tasks,
+    dueToday: notif.tasks,
+    dueTomorrow: notif.tasks,
+    eventsToday: notif.events,
+    eventsSoon: notif.events,
+  }
 }
 export type Task = {
   id: string
@@ -80,59 +128,76 @@ function list(titles: string[]): string {
 }
 const hour = (e: Event) => (e.allDay || !e.from ? '' : ` ${e.from}`)
 
-/** Przypomnienia o tej godzinie (z Ustawień): terminy zadań jutro, wydarzenia jutro / za tydzień. */
-export function remindersFor(user: User, tasks: Task[], events: Event[], day: string): Message[] {
-  const out: Message[] = []
-  const tomorrow = addDays(day, 1)
-  if (user.notif.tasks) {
-    const due = tasks.filter((t) => open(t) && t.due === tomorrow).map((t) => t.title)
-    if (due.length)
-      out.push({
-        title: due.length === 1 ? 'Jutro termin' : `Jutro terminy: ${due.length}`,
-        body: list(due),
-        url: '/zadania',
-        tag: 'terminy',
-      })
-  }
-  if (user.notif.events) {
-    const live = events.filter((e) => !e.deleted)
-    const soon = [
-      ...live
-        .filter((e) => e.remind === 'day' && e.date === tomorrow)
-        .map((e) => ({ e, when: 'Jutro' })),
-      ...live
-        .filter((e) => e.remind === 'week' && e.date === addDays(day, 7))
-        .map((e) => ({ e, when: 'Za tydzień' })),
-    ]
-    for (const { e, when } of soon)
-      out.push({
-        title: `${when}: ${e.title}`,
-        body: when === 'Jutro' ? `Jutro${hour(e) || ' – cały dzień'}` : `Za tydzień${hour(e)}`,
-        url: `/kalendarz?dzien=${e.date}`,
-        tag: `wydarzenie-${e.id}`,
-      })
-  }
-  return out
-}
-
-/** Poranne podsumowanie o 8:00 – tylko gdy jest coś pilnego, termin na dziś albo wydarzenie dziś. */
-export function morningFor(
+/**
+ * Podsumowanie o jednej z godzin wybranych przez domownika (decyzje Hani 2026-10-30): części wg
+ * zaznaczonych kratek; „Za tydzień” tylko w pierwszym podsumowaniu dnia; nic do zgłoszenia – null.
+ */
+export function summaryFor(
   user: User,
   tasks: Task[],
   events: Event[],
   day: string,
+  time: string,
+  isFirstToday: boolean,
 ): Message | null {
-  if (!user.notif.morning) return null
-  const urgent = tasks.filter((t) => open(t) && t.priority === 'high')
-  const dueToday = tasks.filter((t) => open(t) && t.due !== null && t.due <= day)
-  const today = events.filter((e) => !e.deleted && e.date === day)
-  if (!urgent.length && !dueToday.length && !today.length) return null
+  const c = user.summaryContent
+  const tomorrow = addDays(day, 1)
+  const live = events.filter((e) => !e.deleted)
+  const pick = <T>(on: boolean, items: T[]) => (on ? items : [])
+
+  const urgent = pick(
+    c.urgent,
+    tasks.filter((t) => open(t) && t.priority === 'high'),
+  )
+  const dueToday = pick(
+    c.dueToday,
+    tasks.filter((t) => open(t) && t.due !== null && t.due <= day),
+  )
+  // dzisiejsze – bez tych z godziną, która już minęła
+  const eventsToday = pick(
+    c.eventsToday,
+    live.filter((e) => e.date === day && (e.allDay || !e.from || e.from >= time)),
+  )
+  const dueTomorrow = pick(
+    c.dueTomorrow,
+    tasks.filter((t) => open(t) && t.due === tomorrow),
+  )
+  const eventsTomorrow = pick(
+    c.eventsSoon,
+    live.filter((e) => e.remind === 'day' && e.date === tomorrow),
+  )
+  const eventsWeek = pick(
+    c.eventsSoon && isFirstToday,
+    live.filter((e) => e.remind === 'week' && e.date === addDays(day, 7)),
+  )
+
+  const titles = (xs: { title: string }[]) => list(xs.map((x) => x.title))
+  const withHour = (xs: Event[]) => list(xs.map((e) => `${e.title}${hour(e)}`))
   const parts = [
-    urgent.length ? `Pilne: ${urgent.length}` : '',
-    dueToday.length ? `Termin dziś: ${list(dueToday.map((t) => t.title))}` : '',
-    today.length ? `Dziś: ${list(today.map((e) => `${e.title}${hour(e)}`))}` : '',
+    urgent.length ? `Pilne: ${titles(urgent)}` : '',
+    dueToday.length ? `Termin dziś: ${titles(dueToday)}` : '',
+    eventsToday.length ? `Dziś: ${withHour(eventsToday)}` : '',
+    dueTomorrow.length ? `Jutro termin: ${titles(dueTomorrow)}` : '',
+    eventsTomorrow.length ? `Jutro: ${withHour(eventsTomorrow)}` : '',
+    eventsWeek.length ? `Za tydzień: ${withHour(eventsWeek)}` : '',
   ].filter(Boolean)
-  return { title: 'Na dziś', body: parts.join(' · '), url: '/', tag: 'poranek' }
+  if (!parts.length) return null
+
+  const hasToday = urgent.length + dueToday.length + eventsToday.length > 0
+  const hasTomorrow = dueTomorrow.length + eventsTomorrow.length > 0
+  const title =
+    hasToday && hasTomorrow
+      ? 'Na dziś i jutro'
+      : hasToday
+        ? 'Na dziś'
+        : hasTomorrow
+          ? 'Na jutro'
+          : 'Za tydzień'
+  // same wydarzenia jednego dnia – od razu ten dzień w kalendarzu; inaczej Start
+  const onlyEvents = !urgent.length && !dueToday.length && !dueTomorrow.length
+  const dates = new Set([...eventsToday, ...eventsTomorrow, ...eventsWeek].map((e) => e.date))
+  const url = onlyEvents && dates.size === 1 ? `/kalendarz?dzien=${[...dates][0]}` : '/'
+  return { title, body: parts.join(' · '), url, tag: 'podsumowanie' }
 }
 
 /** Wpis „co się stało” z aplikacji (src/data/activity.ts, docs/POWIADOMIENIA.md). */

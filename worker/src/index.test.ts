@@ -92,13 +92,13 @@ describe('Worker – jedno uruchomienie', () => {
           name: s('Hania'),
           houseId: s('dom1'),
           notif: notif(true),
-          taskReminderTime: s('18:00'),
+          summaryTimes: { arrayValue: { values: [s('18:00')] } },
         }),
         doc('users/krzys', {
           name: s('Krzyś'),
           houseId: s('dom1'),
           notif: notif(false),
-          taskReminderTime: s('20:00'),
+          summaryTimes: { arrayValue: { values: [s('08:00'), s('12:00'), s('16:00')] } },
         }),
       ],
       'houses/dom1/tasks': [

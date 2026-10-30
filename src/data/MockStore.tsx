@@ -10,6 +10,7 @@ import {
   mockTasks,
   mockUserName,
 } from './mock.ts'
+import { DEFAULT_USER, normalizeTimes } from '../firebase/model.ts'
 import { revertChanges } from './listDiff.ts'
 import { allPriorities } from './selectors.ts'
 import { StoreContext, useUndoToast, type Store } from './store.ts'
@@ -49,7 +50,8 @@ export function MockStoreProvider({
   const [eventTypes, setEventTypes] = useState(() => (noEventTypes ? [] : mockEventTypes))
   const [notifications, setNotifications] = useState(mockNotifications)
   const [cleanupDays, setCleanupDays] = useState<CleanupDays>(30)
-  const [taskReminderTime, setTaskReminderTime] = useState('18:00')
+  const [summaryTimes, setSummaryTimes] = useState(['08:00', '18:00'])
+  const [summaryContent, setSummaryContent] = useState(DEFAULT_USER.summaryContent)
   const { toast, show, undo } = useUndoToast()
 
   const who = useCallback(() => ({ uid: currentUid, at: nowStamp(day) }), [day, currentUid])
@@ -91,7 +93,8 @@ export function MockStoreProvider({
       members: noMembers ? [] : mockMembers,
       notifications,
       cleanupDays,
-      taskReminderTime,
+      summaryTimes,
+      summaryContent,
       toast,
       who,
       setUserName,
@@ -106,7 +109,8 @@ export function MockStoreProvider({
       setEventTypes,
       setNotifications,
       setCleanupDays,
-      setTaskReminderTime,
+      setSummaryTimes: (times: string[]) => setSummaryTimes(normalizeTimes(times)),
+      setSummaryContent,
       savePushSubscription: async () => {},
     }),
     [
@@ -124,7 +128,8 @@ export function MockStoreProvider({
       eventTypes,
       notifications,
       cleanupDays,
-      taskReminderTime,
+      summaryTimes,
+      summaryContent,
       toast,
       who,
       changeTasks,

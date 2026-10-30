@@ -27,6 +27,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, test } from 'vitest'
 import { mockEvents, mockTasks } from '../../src/data/mock.ts'
 import type { Task } from '../../src/data/types.ts'
 import {
+  DEFAULT_USER,
   categoryToDoc,
   eventToDoc,
   eventTypeToDoc,
@@ -121,6 +122,25 @@ describe('niezalogowany', () => {
 
 describe('profil', () => {
   beforeEach(seed)
+
+  test('godziny podsumowań: do 5 godzin i poprawne kratki; więcej albo zła mapa – odrzucone', async () => {
+    const me = doc(db('hania'), paths.user('hania'))
+    await assertSucceeds(
+      updateDoc(me, {
+        summaryTimes: ['08:00', '10:00', '12:00', '14:00', '16:00'],
+        summaryContent: { ...DEFAULT_USER.summaryContent, eventsSoon: false },
+      }),
+    )
+    await assertFails(
+      updateDoc(me, { summaryTimes: ['08:00', '10:00', '12:00', '14:00', '16:00', '18:00'] }),
+    )
+    await assertFails(
+      updateDoc(me, { summaryContent: { ...DEFAULT_USER.summaryContent, extra: true } }),
+    )
+    await assertFails(
+      updateDoc(me, { summaryContent: { ...DEFAULT_USER.summaryContent, urgent: 'tak' } }),
+    )
+  })
 
   test('Hania czyta i zmienia swój profil', async () => {
     await assertSucceeds(getDoc(doc(db('hania'), paths.user('hania'))))

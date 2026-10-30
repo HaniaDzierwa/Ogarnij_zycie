@@ -42,13 +42,19 @@ Stan: **zatwierdzone przez Hanię 2026-10-25 w całości** („ok, możesz tak w
 | W5 | Przywrócił z Kosza | ❌ nie | – | Zwykle poprawka pomyłki | ✅ |
 | W6 | „Tylko ja” → **Wspólne** | ✅ jak W1 | „Krzyś · nowe wydarzenie” – … | Dla innych to nowe wydarzenie | ✅ |
 
-## Przypomnienia czasowe (bez zmian – dla porównania)
+## Podsumowania o wybranych godzinach (decyzje Hani 2026-10-30 – zastępują P1–P3)
 
-| # | Co | Kiedy | Dla kogo | Decyzja |
-| --- | --- | --- | --- | --- |
-| P1 | „Jutro termin / terminy” | Dzień przed terminem, o godzinie z Ustawień (domyślnie 18:00) | Każdy domownik: wspólne + jego „Tylko ja”; przełącznik „Terminy zadań” | ✅ |
-| P2 | Wydarzenia „Jutro: …” / „Za tydzień: …” | Wg przypomnienia przy wydarzeniu, o tej samej godzinie co P1 | Jw.; przełącznik „Wydarzenia z kalendarza” | ✅ |
-| P3 | Poranne „Na dziś” | 8:00, tylko gdy jest coś pilnego, termin dziś / po terminie albo wydarzenie dziś | Jw.; przełącznik „Poranne podsumowanie” | ✅ |
+Każdy domownik w Ustawieniach → Powiadomienia → „Podsumowania” ustawia **godziny** (dowolne, co 15 minut, 1–5; domyślnie 8:00 i 18:00 – jak wcześniej) i **co przychodzi** (kratki, jeden zestaw dla wszystkich godzin). O każdej godzinie – jedno powiadomienie; nic do zgłoszenia – nic nie wysyłamy.
+
+| # | Kratka | W podsumowaniu | Decyzja |
+| --- | --- | --- | --- |
+| S1 | Pilne | „Pilne: Hydraulik, Recepta i 2 więcej” – nazwy zadań | ✅ |
+| S2 | Terminy na dziś (i po terminie) | „Termin dziś: …” | ✅ |
+| S3 | Terminy na jutro | „Jutro termin: …” | ✅ |
+| S4 | Wydarzenia dziś | „Dziś: Kino 19:00” – bez tych, które już minęły | ✅ |
+| S5 | Wydarzenia jutro i za tydzień | wg przypomnienia przy wydarzeniu: „Jutro: …” w każdym podsumowaniu, „Za tydzień: …” tylko w pierwszym podsumowaniu dnia | ✅ |
+
+Tytuł: „Na dziś” / „Na jutro” / „Na dziś i jutro”. Zawsze zostaje co najmniej jedna godzina – podsumowania wyłącza przełącznik. Wspólne + własne „Tylko ja”. Zmiany od domowników – dalej na bieżąco (Z1–Z7). Konta sprzed zmiany: godziny 8:00 i dawna godzina przypomnienia, treść wg dawnych przełączników „Terminy zadań” / „Wydarzenia z kalendarza”.
 
 **Do rozważenia na później (nie w tym etapie):** przypomnienie o wydarzeniu z godziną „godzinę przed” (dziś do wyboru tylko „dzień” / „tydzień wcześniej”); osobna godzina przypomnień o wydarzeniach.
 

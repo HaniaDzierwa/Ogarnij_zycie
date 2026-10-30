@@ -1,5 +1,5 @@
 // Cloudflare Worker „Ogarnij życie – powiadomienia” (etap 6). Uruchamia się co minutę (cron):
-// przypomnienia o godzinie z Ustawień, poranne podsumowanie o 8:00, zmiany domowników z ostatniej
+// podsumowania o godzinach wybranych przez każdego domownika, zmiany domowników z ostatniej
 // minuty (wpisy z aplikacji, bez ciszy nocnej 22–7), o 3:00 sprzątanie. Wysyła Web Push na telefony zapisane przy kontach.
 
 import { accessToken, firestore, type Doc, type Firestore } from './firestore.ts'
@@ -9,9 +9,9 @@ import {
   CLEANUP_TIME,
   isQuiet,
   localNow,
-  MORNING,
-  morningFor,
-  remindersFor,
+  summaryContentOf,
+  summaryFor,
+  summaryTimesOf,
   type ActivityEntry,
   type ActivityKind,
   type Event,
@@ -37,18 +37,21 @@ const num = (v: unknown) => (typeof v === 'number' ? v : null)
 export function toUser(doc: Doc): User {
   const d = doc.data
   const n = (d.notif ?? {}) as Record<string, unknown>
+  const notif = {
+    tasks: n.tasks !== false,
+    events: n.events !== false,
+    // „Podsumowania” (dawniej „Poranne podsumowanie”)
+    morning: n.morning !== false,
+    // „Zmiany od domowników” – domyślnie włączone (POWIADOMIENIA Z5)
+    house: n.house !== false,
+  }
   return {
     uid: doc.id,
     name: str(d.name),
     houseId: typeof d.houseId === 'string' ? d.houseId : null,
-    notif: {
-      tasks: n.tasks !== false,
-      events: n.events !== false,
-      morning: n.morning !== false,
-      // „Zmiany od domowników” – domyślnie włączone (POWIADOMIENIA Z5)
-      house: n.house !== false,
-    },
-    taskReminderTime: str(d.taskReminderTime, '18:00'),
+    notif,
+    summaryTimes: summaryTimesOf(d.summaryTimes, d.taskReminderTime),
+    summaryContent: summaryContentOf(d.summaryContent, notif),
     cleanupDays: d.cleanupDays === undefined ? 30 : num(d.cleanupDays),
   }
 }
@@ -140,22 +143,16 @@ export async function run(nowMs: number, env: Env, fetchFn: typeof fetch = fetch
   const byUid = new Map(users.map((u) => [u.uid, u]))
   const outbox: { uid: string; message: Message }[] = []
 
-  // 1. Przypomnienia (godzina z Ustawień) i poranne podsumowanie (8:00)
+  // 1. Podsumowania – o godzinach wybranych przez każdego domownika (decyzje Hani 2026-10-30)
   for (const u of users) {
-    if (!u.houseId) continue
-    const reminders = u.taskReminderTime === time
-    const morning = time === MORNING
-    if (!reminders && !morning) continue
+    if (!u.houseId || !u.notif.morning || !u.summaryTimes.includes(time)) continue
     try {
       const { tasks, events } = await visibleTo(db, u.houseId, u.uid)
-      if (reminders)
-        for (const m of remindersFor(u, tasks, events, day)) outbox.push({ uid: u.uid, message: m })
-      if (morning) {
-        const m = morningFor(u, tasks, events, day)
-        if (m) outbox.push({ uid: u.uid, message: m })
-      }
+      const isFirstToday = u.summaryTimes[0] === time
+      const m = summaryFor(u, tasks, events, day, time, isFirstToday)
+      if (m) outbox.push({ uid: u.uid, message: m })
     } catch (e) {
-      console.error('Przypomnienia', u.uid, e)
+      console.error('Podsumowanie', u.uid, e)
     }
   }
 

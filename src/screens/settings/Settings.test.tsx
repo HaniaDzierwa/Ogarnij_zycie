@@ -152,12 +152,57 @@ test('Wspólny dom: nazwa domu do zmiany; pusta wraca do „Nasz dom”', () => 
   expect(input.value).toBe('Nasz dom')
 })
 
-test('Terminy zadań: godzina przypomnienia pod przełącznikiem (domyślnie 18:00)', () => {
+const times = () =>
+  screen.getAllByLabelText(/^Godzina podsumowania/).map((i) => (i as HTMLInputElement).value)
+
+test('Podsumowania: domyślnie 8:00 i 18:00; zmiana, dodawanie do 5, ostatniej nie da się usunąć', () => {
   renderAt('/ustawienia')
-  const time = screen.getByLabelText('Godzina przypomnienia') as HTMLInputElement
-  expect(time.value).toBe('18:00')
-  fireEvent.change(time, { target: { value: '19:30' } })
-  expect(screen.getByText('Dzień przed terminem o 19:30')).toBeDefined()
-  fireEvent.click(screen.getByRole('switch', { name: /Terminy zadań/ }))
-  expect(screen.queryByLabelText('Godzina przypomnienia')).toBeNull()
+  expect(screen.queryByRole('switch', { name: /Terminy zadań/ })).toBeNull()
+  expect(screen.queryByRole('switch', { name: /Poranne podsumowanie/ })).toBeNull()
+  expect(screen.getByRole('switch', { name: /Podsumowania/ }).getAttribute('aria-checked')).toBe(
+    'true',
+  )
+  expect(times()).toEqual(['08:00', '18:00'])
+
+  // zmiana godziny – lista zostaje uporządkowana
+  fireEvent.change(screen.getByLabelText('Godzina podsumowania 2'), { target: { value: '12:00' } })
+  expect(times()).toEqual(['08:00', '12:00'])
+  // dodawanie – kolejna pełna godzina po ostatniej, najwyżej 5
+  const add = () => fireEvent.click(screen.getByRole('button', { name: /Dodaj godzinę/ }))
+  add()
+  add()
+  add()
+  expect(times()).toEqual(['08:00', '12:00', '13:00', '14:00', '15:00'])
+  expect(screen.queryByRole('button', { name: /Dodaj godzinę/ })).toBeNull()
+
+  // usuwanie – zostaje co najmniej jedna
+  for (const t of ['15:00', '14:00', '13:00', '12:00'])
+    fireEvent.click(screen.getByRole('button', { name: `Usuń godzinę ${t}` }))
+  expect(times()).toEqual(['08:00'])
+  expect(
+    (screen.getByRole('button', { name: 'Usuń godzinę 08:00' }) as HTMLButtonElement).disabled,
+  ).toBe(true)
+})
+
+test('Podsumowania: kratki „Co przychodzi”; bez żadnej – wskazówka; wyłączone – bez godzin', () => {
+  renderAt('/ustawienia')
+  const box = (name: string) => screen.getByRole('checkbox', { name }) as HTMLInputElement
+  const names = [
+    'Pilne',
+    'Terminy na dziś (i po terminie)',
+    'Terminy na jutro',
+    'Wydarzenia dziś',
+    'Wydarzenia jutro i za tydzień (wg przypomnienia)',
+  ]
+  expect(names.map((n) => box(n).checked)).toEqual([true, true, true, true, true])
+  // „tylko Pilne”
+  for (const n of names.slice(1)) fireEvent.click(box(n))
+  expect(names.map((n) => box(n).checked)).toEqual([true, false, false, false, false])
+  expect(screen.queryByText(/Zaznacz przynajmniej jedną rzecz/)).toBeNull()
+  fireEvent.click(box('Pilne'))
+  expect(screen.getByText(/Zaznacz przynajmniej jedną rzecz/)).toBeDefined()
+
+  fireEvent.click(screen.getByRole('switch', { name: /Podsumowania/ }))
+  expect(screen.queryByLabelText(/^Godzina podsumowania/)).toBeNull()
+  expect(screen.queryByRole('checkbox', { name: 'Pilne' })).toBeNull()
 })

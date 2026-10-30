@@ -4,10 +4,12 @@
 import { Timestamp, serverTimestamp, type FieldValue } from 'firebase/firestore'
 import type { Activity } from '../data/activity.ts'
 import { toKey, type Stamp } from '../data/dates.ts'
+import { MAX_SUMMARY_TIMES } from '../data/types.ts'
 import type {
   CalendarEvent,
   Category,
   CustomPriority,
+  SummaryContent,
   CleanupDays,
   EventType,
   Member,
@@ -110,8 +112,12 @@ export type UserDoc = {
   houseId: string | null
   notif: NotificationSettings
   cleanupDays: CleanupDays
-  /** Godzina przypomnienia o terminach zadań dzień wcześniej (etap 6). */
+  /** Dawna godzina przypomnienia o terminach (etap 6) – dziś tylko wartość zastępcza dla summaryTimes. */
   taskReminderTime: string
+  /** Godziny podsumowań „HH:MM” (posortowane, najwyżej 5) – decyzja Hani 2026-10-30. */
+  summaryTimes: string[]
+  /** Co przychodzi w podsumowaniach. */
+  summaryContent: SummaryContent
 }
 
 export type HouseDoc = {
@@ -275,6 +281,44 @@ export const DEFAULT_USER: Omit<UserDoc, 'name'> = {
   notif: { tasks: true, events: true, morning: true, house: true },
   cleanupDays: 30,
   taskReminderTime: '18:00',
+  summaryTimes: ['08:00', '18:00'],
+  summaryContent: {
+    urgent: true,
+    dueToday: true,
+    dueTomorrow: true,
+    eventsToday: true,
+    eventsSoon: true,
+  },
+}
+
+const TIME = /^([01][0-9]|2[0-3]):[0-5][0-9]$/
+
+/** Godziny „HH:MM”: poprawne, bez powtórzeń, rosnąco, najwyżej 5. */
+export function normalizeTimes(times: string[]): string[] {
+  return [...new Set(times.filter((t) => TIME.test(t)))].sort().slice(0, MAX_SUMMARY_TIMES)
+}
+
+/**
+ * Godziny podsumowań z profilu. Konta sprzed zmiany (bez pola) – jak dotąd: rano 8:00
+ * i dawna godzina przypomnienia o terminach (domyślnie 18:00).
+ */
+export function summaryTimesOf(d: Partial<UserDoc>): string[] {
+  const own = Array.isArray(d.summaryTimes) ? normalizeTimes(d.summaryTimes) : []
+  return own.length ? own : normalizeTimes(['08:00', d.taskReminderTime ?? '18:00'])
+}
+
+/** Co przychodzi w podsumowaniach. Konta sprzed zmiany – wg dawnych przełączników terminów i wydarzeń. */
+export function summaryContentOf(d: Partial<UserDoc>): SummaryContent {
+  if (d.summaryContent) return { ...DEFAULT_USER.summaryContent, ...d.summaryContent }
+  const tasks = d.notif?.tasks !== false
+  const events = d.notif?.events !== false
+  return {
+    urgent: tasks,
+    dueToday: tasks,
+    dueTomorrow: tasks,
+    eventsToday: events,
+    eventsSoon: events,
+  }
 }
 
 // ── Nowy dom ───────────────────────────────────────────────────────────────

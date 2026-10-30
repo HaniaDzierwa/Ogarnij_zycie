@@ -93,6 +93,7 @@ Wersja testowa: https://ogarnij-zycie--test-56tdtc0y.web.app (kanał `test`, odn
 
 | Data | Etap | Uwaga | Kiedy | Status |
 | --- | --- | --- | --- | --- |
+| 2026-10-30 | po planie | Godziny powiadomień ustawiane przez każdego (np. raz o 12:00 albo 8:00, 12:00, 16:00) i wybór kratkami, co przychodzi. | teraz | zrobione (kod) – testy reguł u Hani |
 | 2026-10-25 | 7 | Usuwanie konta z aplikacji (założyciel z domownikami: usunąć dom czy przekazać) – najpierw „później”, potem „dorób już dziś”. | teraz | zrobione – testy reguł przeszły u Hani |
 | 2026-10-25 | 6 | Android: najpierw ikona domku (ekran startowy systemu), dopiero potem nasz ekran ładowania. | teraz | zrobione – do sprawdzenia |
 | 2026-10-25 | 6 | Android: animacja ekranu ładowania się zacina, jakby się ciągle odświeżała (na iPhonie dobrze). | teraz | poprawione – do sprawdzenia |
@@ -257,3 +258,4 @@ Wersja testowa: https://ogarnij-zycie--test-56tdtc0y.web.app (kanał `test`, odn
 - 2026-10-25 · Etap 7 · Hania – testy reguł (usuwanie konta, po poprawce „Termin zadania”) przeszły.
 - 2026-10-25 · Etap 7 · Za zgodą Hani: reguły usuwania konta wgrane (released rules), dane bez zmian; usuwanie konta opublikowane na kanale „test”. Na oficjalnej stronie – po sprawdzeniu i osobnej zgodzie.
 - 2026-10-25 · Publikacja: za zgodą Hani („wgraj na oficjalną”) wersja z usuwaniem konta opublikowana pod https://ogarnij-zycie.web.app.
+- 2026-10-30 · Po planie · Podsumowania o wybranych godzinach (decyzje Hani: podsumowanie zamiast porannego 8:00 i przypomnienia o terminach; kratki – jeden zestaw; zmiany od domowników na bieżąco; godziny dowolne co 15 min, 1–5; domyślnie 8:00 i 18:00; nic do zgłoszenia – nic; Pilne z nazwami; „za tydzień” raz dziennie; min. 1 godzina). Aplikacja: Ustawienia → Powiadomienia – „Podsumowania” (przełącznik), GODZINY (pola co 15 min, „×”, „+ Dodaj godzinę” do 5), CO PRZYCHODZI (5 kratek; bez żadnej – wskazówka), „Zmiany od domowników”; zniknęły „Terminy zadań”, „Wydarzenia z kalendarza” i „Godzina przypomnienia”. Profil: summaryTimes, summaryContent (stare konta – wartości zastępcze, nic się nie zmienia). Reguły: summaryTimes – lista do 5, summaryContent – 5 pól prawda/fałsz. Worker: summaryFor o godzinach każdego domownika (dziś bez minionych wydarzeń; tytuł Na dziś / Na jutro / Na dziś i jutro). Testy: 341 (aplikacja + Worker), testy reguł +1 – do uruchomienia u Hani. docs/POWIADOMIENIA.md (S1–S5), DESIGN.md (model).

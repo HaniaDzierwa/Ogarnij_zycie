@@ -97,5 +97,23 @@ export type NotificationSettings = {
   house: boolean
 }
 
+/**
+ * Co przychodzi w podsumowaniach o wybranych godzinach (kratki w Ustawieniach – jeden zestaw dla
+ * wszystkich godzin, decyzja Hani 2026-10-30).
+ */
+export type SummaryContent = {
+  /** „Pilne: Hydraulik, Recepta…” */
+  urgent: boolean
+  /** Terminy na dziś i po terminie. */
+  dueToday: boolean
+  dueTomorrow: boolean
+  eventsToday: boolean
+  /** Wydarzenia jutro i za tydzień – wg przypomnienia przy wydarzeniu. */
+  eventsSoon: boolean
+}
+
+/** Najwięcej godzin podsumowań na osobę. */
+export const MAX_SUMMARY_TIMES = 5
+
 /** Sprzątanie ogarniętych (Ustawienia → Porządki): po 7 / 30 dniach, null = nigdy. */
 export type CleanupDays = 7 | 30 | null

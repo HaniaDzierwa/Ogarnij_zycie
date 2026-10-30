@@ -229,7 +229,8 @@ service cloud.firestore {
     // ── Profil ──────────────────────────────────────────────────────────────
 
     function validUser(d) {
-      return d.keys().hasOnly(['name', 'houseId', 'notif', 'cleanupDays', 'taskReminderTime'])
+      return d.keys().hasOnly(['name', 'houseId', 'notif', 'cleanupDays', 'taskReminderTime',
+          'summaryTimes', 'summaryContent'])
         && str(d.name, 40)
         && (d.houseId == null || (d.houseId is string && existsAfter(
              /databases/$(database)/documents/houses/$(d.houseId)/members/$(request.auth.uid))))
@@ -238,7 +239,18 @@ service cloud.firestore {
         && d.notif.tasks is bool && d.notif.events is bool
         && d.notif.morning is bool && d.notif.house is bool
         && d.cleanupDays in [7, 30, null]
-        && isTime(d.taskReminderTime);
+        && isTime(d.taskReminderTime)
+        // godziny podsumowań (decyzja Hani 2026-10-30): lista, najwyżej 5; stare konta – bez pola
+        && (!('summaryTimes' in d) || (d.summaryTimes is list && d.summaryTimes.size() <= 5))
+        && (!('summaryContent' in d) || validSummaryContent(d.summaryContent));
+    }
+
+    /** Co przychodzi w podsumowaniach: pięć pól prawda / fałsz. */
+    function validSummaryContent(c) {
+      return c is map
+        && c.keys().hasOnly(['urgent', 'dueToday', 'dueTomorrow', 'eventsToday', 'eventsSoon'])
+        && c.urgent is bool && c.dueToday is bool && c.dueTomorrow is bool
+        && c.eventsToday is bool && c.eventsSoon is bool;
     }
 
     match /users/{uid} {

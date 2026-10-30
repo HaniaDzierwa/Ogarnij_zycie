@@ -9,10 +9,14 @@ import {
   newInviteCode,
   eventToDoc,
   newHouseDocs,
+  DEFAULT_USER,
+  normalizeTimes,
   paths,
   priorityFromDoc,
   priorityToDoc,
   stampToTimestamp,
+  summaryContentOf,
+  summaryTimesOf,
   taskFromDoc,
   taskToDoc,
   timestampToStamp,
@@ -54,6 +58,35 @@ describe('zadania', () => {
       done: false,
       deleted: false,
     })
+  })
+})
+
+describe('podsumowania (godziny i co przychodzi)', () => {
+  test('stare konto bez pól – jak dotąd: 8:00 i dawna godzina przypomnienia; treść wg przełączników', () => {
+    expect(summaryTimesOf({})).toEqual(['08:00', '18:00'])
+    expect(summaryTimesOf({ taskReminderTime: '20:15' })).toEqual(['08:00', '20:15'])
+    expect(summaryTimesOf({ taskReminderTime: '08:00' })).toEqual(['08:00'])
+    expect(
+      summaryContentOf({ notif: { tasks: true, events: false, morning: true, house: true } }),
+    ).toEqual({
+      urgent: true,
+      dueToday: true,
+      dueTomorrow: true,
+      eventsToday: false,
+      eventsSoon: false,
+    })
+  })
+  test('nowe pola: poprawne godziny, bez powtórzeń, rosnąco, najwyżej 5', () => {
+    expect(summaryTimesOf({ summaryTimes: ['16:00', '08:00', '12:00', '08:00', 'zle'] })).toEqual([
+      '08:00',
+      '12:00',
+      '16:00',
+    ])
+    expect(normalizeTimes(['01:00', '02:00', '03:00', '04:00', '05:00', '06:00'])).toHaveLength(5)
+    expect(
+      summaryContentOf({ summaryContent: { ...DEFAULT_USER.summaryContent, dueTomorrow: false } })
+        .dueTomorrow,
+    ).toBe(false)
   })
 })
 

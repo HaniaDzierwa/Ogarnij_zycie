@@ -13,6 +13,7 @@ import type {
   Member,
   NotificationSettings,
   PriorityDef,
+  SummaryContent,
   Task,
 } from './types.ts'
 
@@ -44,8 +45,10 @@ export type Store = {
   notifications: NotificationSettings
   /** Sprzątanie ogarniętych: po 7 / 30 dniach, null = nigdy. */
   cleanupDays: CleanupDays
-  /** Godzina przypomnienia o terminach zadań (dzień przed terminem), „HH:MM”. */
-  taskReminderTime: string
+  /** Godziny podsumowań „HH:MM” (posortowane, 1–5). */
+  summaryTimes: string[]
+  /** Co przychodzi w podsumowaniach. */
+  summaryContent: SummaryContent
   toast: Toast | null
   /** Kto i teraz – do oznaczania zmian. */
   who: () => Who
@@ -63,7 +66,8 @@ export type Store = {
   setEventTypes: (update: (types: EventType[]) => EventType[]) => void
   setNotifications: (update: (n: NotificationSettings) => NotificationSettings) => void
   setCleanupDays: (days: CleanupDays) => void
-  setTaskReminderTime: (time: string) => void
+  setSummaryTimes: (times: string[]) => void
+  setSummaryContent: (content: SummaryContent) => void
   /** Zapis subskrypcji powiadomień tego telefonu przy koncie (etap 6). */
   savePushSubscription: (id: string, sub: PushSubscriptionJSON) => Promise<void>
 }
