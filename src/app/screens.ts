@@ -14,6 +14,7 @@ export type ScreenId =
   | 'domownicy'
   | 'kategorie'
   | 'priorytety'
+  | 'powiadomienia'
   | 'usunKonto'
   | 'zapros'
   | 'dolacz'
@@ -62,6 +63,8 @@ export const paths = {
   /** Ustawienia → Zadania: kategorie i własne priorytety (decyzja Hani 2026-10-20). */
   kategorie: '/ustawienia/kategorie',
   priorytety: '/ustawienia/priorytety',
+  /** Ustawienia → Powiadomienia – szczegóły (decyzja Hani 2026-11-08). */
+  powiadomienia: '/ustawienia/powiadomienia',
   /** Usunięcie konta (etap 7). */
   usunKonto: '/ustawienia/usun-konto',
   zapros: '/ustawienia/domownicy/zapros',
@@ -189,6 +192,7 @@ export const screens: Screen[] = [
       { label: 'Zadania → Kategorie', to: paths.kategorie },
       { label: 'Zadania → Priorytety', to: paths.priorytety },
       { label: 'Porządki → Kosz', to: paths.kosz },
+      { label: 'Powiadomienia → szczegóły', to: paths.powiadomienia },
     ],
   },
   {
@@ -217,6 +221,16 @@ export const screens: Screen[] = [
     number: '5h',
     name: 'Priorytety',
     source: 'brak w projekcie – lista w stylu Kosza / Domowników (decyzja Hani 2026-10-20)',
+    tab: 'ustawienia',
+    back: { to: paths.ustawienia, label: 'USTAWIENIA' },
+    transitions: [{ label: 'Wróć do Ustawień', to: paths.ustawienia }],
+  },
+  {
+    id: 'powiadomienia',
+    path: paths.powiadomienia,
+    number: '5j',
+    name: 'Powiadomienia',
+    source: 'brak w projekcie – lista w stylu Domowników (decyzja Hani 2026-11-08)',
     tab: 'ustawienia',
     back: { to: paths.ustawienia, label: 'USTAWIENIA' },
     transitions: [{ label: 'Wróć do Ustawień', to: paths.ustawienia }],

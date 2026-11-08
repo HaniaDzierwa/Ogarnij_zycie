@@ -55,6 +55,9 @@ describe('karta „Włączyć przypomnienia?”', () => {
     expect(screen.queryByText(/Włączyć/)).toBeNull()
     cleanup()
     renderApp('/ustawienia')
+    expect(await screen.findByText(/^WYŁĄCZONE NA TYM TELEFONIE · /)).toBeDefined()
+    cleanup()
+    renderApp('/ustawienia/powiadomienia')
     expect(await screen.findByText('Ta przeglądarka ich nie obsługuje')).toBeDefined()
   })
 

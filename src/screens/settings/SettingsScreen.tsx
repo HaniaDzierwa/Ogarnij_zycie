@@ -1,9 +1,9 @@
-import { Fragment, useState, type ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { paths } from '../../app/screens.ts'
 import { useAuth } from '../../auth/auth.ts'
 import { Accent, Header } from '../../components/Header.tsx'
-import { ChevronRightIcon, TrashIcon, UsersIcon } from '../../components/icons.tsx'
+import { BellIcon, ChevronRightIcon, TrashIcon, UsersIcon } from '../../components/icons.tsx'
 import { Logo } from '../../components/Logo.tsx'
 import { TabBar } from '../../components/TabBar.tsx'
 import {
@@ -14,7 +14,6 @@ import {
   OfflineBadge,
   Screen,
   SectionLabel,
-  ToggleRow,
 } from '../../components/ui.tsx'
 import { useStore } from '../../data/store.ts'
 import { useBufferedText } from '../../components/useBufferedText.ts'
@@ -22,8 +21,7 @@ import { DEFAULT_HOUSE_NAME } from '../../house/house.ts'
 import { plural } from '../../data/plural.ts'
 import type { CleanupDays, NotificationSettings } from '../../data/types.ts'
 import { colors, fonts, priorities, shadows } from '../../theme'
-import { PushStatusRow } from '../../push/PushStatusRow.tsx'
-import { SummarySettings } from './SummarySettings.tsx'
+import type { PushState } from '../../push/push.ts'
 import { usePush } from '../../push/usePush.ts'
 import { trashItems, trashWhat } from '../tasks/tasksView.ts'
 
@@ -42,7 +40,8 @@ export function SettingsScreen() {
   const auth = useAuth()
   const navigate = useNavigate()
   const [askSignOut, setAskSignOut] = useState(false)
-  const { userName, members, currentUid, notifications, cleanupDays, tasks, events, today } = store
+  const { userName, members, currentUid, notifications, summaryTimes, cleanupDays } = store
+  const { tasks, events, today } = store
   // imię i nazwa domu – zapis po chwili przerwy w pisaniu (nie po każdej literze)
   const nick = useBufferedText(userName, store.setUserName)
   const house = useBufferedText(store.houseName, store.setHouseName)
@@ -51,21 +50,8 @@ export function SettingsScreen() {
   const other = others[0]
   const trash = trashItems(tasks, events, today)
 
-  // powiadomienia na tym telefonie – zgoda przy włączaniu przełącznika (decyzja Hani 2026-10-18)
+  // stan na tym telefonie – do opisu wiersza „Powiadomienia”; szczegóły na osobnym ekranie
   const push = usePush()
-  // podsumowania o wybranych godzinach + zmiany od domowników (decyzje Hani 2026-10-30)
-  const notifs: { id: keyof NotificationSettings; name: string; hint: string }[] = [
-    {
-      id: 'morning',
-      name: 'Podsumowania',
-      hint: 'Co pilne, terminy i wydarzenia – o wybranych godzinach',
-    },
-    {
-      id: 'house',
-      name: 'Zmiany od domowników',
-      hint: other ? `Gdy ${other.name} coś doda lub ogarnie` : 'Gdy domownik coś doda lub ogarnie',
-    },
-  ]
 
   return (
     <Screen gap={22}>
@@ -311,23 +297,14 @@ export function SettingsScreen() {
 
       <Section label="POWIADOMIENIA">
         <Card radius={22}>
-          <PushStatusRow push={push} />
-          {notifs.map((n, i) => (
-            <Fragment key={n.id}>
-              <ToggleRow
-                name={n.name}
-                hint={n.hint}
-                on={notifications[n.id]}
-                onToggle={() => {
-                  const turnOn = !notifications[n.id]
-                  store.setNotifications((s) => ({ ...s, [n.id]: !s[n.id] }))
-                  if (turnOn && push.state === 'off') push.enable()
-                }}
-                last={i === notifs.length - 1}
-              />
-              {n.id === 'morning' && notifications.morning && <SummarySettings />}
-            </Fragment>
-          ))}
+          <LinkRow
+            to={paths.powiadomienia}
+            icon={<BellIcon />}
+            iconBg={colors.sand}
+            iconFg={colors.brass700}
+            title="Powiadomienia"
+            meta={notifMeta(notifications, summaryTimes, push.state)}
+          />
         </Card>
       </Section>
 
@@ -403,6 +380,17 @@ export function SettingsScreen() {
       <TabBar active="ustawienia" />
     </Screen>
   )
+}
+
+/** „PODSUMOWANIA 8:00, 18:00 · ZMIANY OD DOMOWNIKÓW” – ogólnie, szczegóły na ekranie Powiadomienia. */
+function notifMeta(n: NotificationSettings, times: string[], phone: PushState | null): string {
+  const parts: string[] = []
+  // null – jeszcze sprawdzamy telefon
+  if (phone && phone !== 'on') parts.push('WYŁĄCZONE NA TYM TELEFONIE')
+  if (n.morning) parts.push(`PODSUMOWANIA ${times.map((t) => t.replace(/^0/, '')).join(', ')}`)
+  if (n.house) parts.push('ZMIANY OD DOMOWNIKÓW')
+  if (!n.morning && !n.house) parts.push('WSZYSTKO WYŁĄCZONE')
+  return parts.join(' · ')
 }
 
 /** „3 WBUDOWANE · 1 WŁASNY”. */

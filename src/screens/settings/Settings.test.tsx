@@ -34,10 +34,25 @@ test('sprzątanie ogarniętych i powiadomienia się przełączają', () => {
   )
   fireEvent.click(screen.getByRole('radio', { name: 'Nigdy' }))
   expect(screen.getByText('Ogarnięte zostają, dopóki ich nie wyczyścisz.')).toBeDefined()
+})
+
+test('Powiadomienia: w Ustawieniach jeden wiersz z opisem; szczegóły na osobnym ekranie', () => {
+  const router = renderAt('/ustawienia')
+  expect(screen.queryByRole('switch')).toBeNull()
+  fireEvent.click(screen.getByRole('link', { name: /^Powiadomienia.*PODSUMOWANIA 8:00, 18:00/ }))
+  expect(router.state.location.pathname).toBe('/ustawienia/powiadomienia')
+  expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Powiadomienia po swojemu')
+
   const house = screen.getByRole('switch', { name: /Zmiany od domowników/ })
   expect(house.getAttribute('aria-checked')).toBe('false')
   fireEvent.click(house)
   expect(house.getAttribute('aria-checked')).toBe('true')
+  fireEvent.click(screen.getByRole('switch', { name: /Podsumowania/ }))
+
+  fireEvent.click(screen.getByRole('link', { name: /USTAWIENIA/ }))
+  expect(router.state.location.pathname).toBe('/ustawienia')
+  expect(screen.getByRole('link', { name: /ZMIANY OD DOMOWNIKÓW/ })).toBeDefined()
+  expect(screen.queryByText(/PODSUMOWANIA 8:00/)).toBeNull()
 })
 
 test('Porządki → Kosz i Wspólny dom → Domownicy', () => {
@@ -156,7 +171,7 @@ const times = () =>
   screen.getAllByLabelText(/^Godzina podsumowania/).map((i) => (i as HTMLInputElement).value)
 
 test('Podsumowania: domyślnie 8:00 i 18:00; zmiana, dodawanie do 5, ostatniej nie da się usunąć', () => {
-  renderAt('/ustawienia')
+  renderAt('/ustawienia/powiadomienia')
   expect(screen.queryByRole('switch', { name: /Terminy zadań/ })).toBeNull()
   expect(screen.queryByRole('switch', { name: /Poranne podsumowanie/ })).toBeNull()
   expect(screen.getByRole('switch', { name: /Podsumowania/ }).getAttribute('aria-checked')).toBe(
@@ -185,7 +200,7 @@ test('Podsumowania: domyślnie 8:00 i 18:00; zmiana, dodawanie do 5, ostatniej n
 })
 
 test('Podsumowania: kratki „Co przychodzi”; bez żadnej – wskazówka; wyłączone – bez godzin', () => {
-  renderAt('/ustawienia')
+  renderAt('/ustawienia/powiadomienia')
   const box = (name: string) => screen.getByRole('checkbox', { name }) as HTMLInputElement
   const names = [
     'Pilne',
