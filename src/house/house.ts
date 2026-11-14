@@ -31,9 +31,12 @@ export type JoinErrorCode = 'not-found' | 'expired' | 'used' | 'offline' | 'owne
 
 export class JoinError extends Error {
   code: JoinErrorCode
-  constructor(code: JoinErrorCode) {
+  /** Kod błędu Firebase przy 'unknown' – dopisek w komunikacie, żeby dało się go zgłosić. */
+  detail?: string
+  constructor(code: JoinErrorCode, detail?: string) {
     super(code)
     this.code = code
+    this.detail = detail
   }
 }
 
@@ -78,6 +81,19 @@ export type HouseApi = {
 
 /** Nazwa domu, gdy pole zostanie puste. */
 export const DEFAULT_HOUSE_NAME = 'Nasz dom'
+
+/** Komunikat dla dowolnego błędu dołączania; nieznany – z kodem, np. „(kod: permission-denied)”. */
+export function joinErrorText(e: unknown): string {
+  const code = e instanceof JoinError ? e.code : 'unknown'
+  const detail =
+    e instanceof JoinError
+      ? e.detail
+      : typeof e === 'object' && e !== null && typeof (e as { code?: unknown }).code === 'string'
+        ? (e as { code: string }).code
+        : undefined
+  const text = joinErrorMessage(code)
+  return code === 'unknown' && detail ? `${text} (kod: ${detail})` : text
+}
 
 /** Komunikat po polsku dla błędu dołączania. */
 export function joinErrorMessage(code: JoinErrorCode): string {

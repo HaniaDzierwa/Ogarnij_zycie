@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { paths } from '../app/screens.ts'
 import { RIDGE_FAR, RIDGE_NEAR } from '../components/Header.tsx'
@@ -17,8 +17,11 @@ export function FirstRunScreen() {
   const house = useHouse()
   const navigate = useNavigate()
   const [isNew, setIsNew] = useState(true)
-  const [name, setName] = useState(house.profile?.name ?? '')
-  const [houseName, setHouseName] = useState('')
+  const [draft] = useState(readDraft)
+  const [name, setName] = useState(draft.name || house.profile?.name || '')
+  const [houseName, setHouseName] = useState(draft.houseName ?? '')
+  // wpisane pola przetrwają ponowne narysowanie ekranu (uwaga Hani 2026-11-14)
+  useEffect(() => saveDraft({ name, houseName }), [name, houseName])
   const [nameError, setNameError] = useState<string>()
   const [formError, setFormError] = useState<string>()
   const [busy, setBusy] = useState(false)
@@ -34,6 +37,7 @@ export function FirstRunScreen() {
     setBusy(true)
     try {
       await house.createHouse(houseName, name)
+      clearDraft()
       store.setUserName(name.trim())
       navigate(paths.start, { replace: true })
     } catch {
@@ -350,6 +354,34 @@ export function FirstRunScreen() {
       )}
     </div>
   )
+}
+
+/** Szkic pól „Załóż nowy dom” w pamięci karty przeglądarki (bez niej – po prostu puste pola). */
+const DRAFT_KEY = 'ogarnij-witaj-szkic'
+type Draft = { name?: string; houseName?: string }
+
+function readDraft(): Draft {
+  try {
+    return JSON.parse(sessionStorage.getItem(DRAFT_KEY) ?? '{}') as Draft
+  } catch {
+    return {}
+  }
+}
+
+function saveDraft(d: Draft) {
+  try {
+    sessionStorage.setItem(DRAFT_KEY, JSON.stringify(d))
+  } catch {
+    // brak pamięci karty (np. tryb prywatny) – nic nie szkodzi
+  }
+}
+
+function clearDraft() {
+  try {
+    sessionStorage.removeItem(DRAFT_KEY)
+  } catch {
+    // jw.
+  }
 }
 
 function OptionIcon({ bg, children }: { bg: string; children: React.ReactNode }) {

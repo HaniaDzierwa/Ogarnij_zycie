@@ -10,6 +10,7 @@ import {
   onSnapshot,
   setDoc,
   updateDoc,
+  waitForPendingWrites,
   writeBatch,
 } from 'firebase/firestore'
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
@@ -45,7 +46,8 @@ async function readInvite(code: string): Promise<InviteDoc & { createdAt: Timest
     snap = await getDocFromServer(doc(db, paths.invite(code)))
   } catch (e) {
     if (e instanceof FirebaseError && e.code === 'unavailable') throw new JoinError('offline')
-    throw new JoinError('unknown')
+    console.error('Nie udało się odczytać zaproszenia', e)
+    throw new JoinError('unknown', e instanceof FirebaseError ? e.code : undefined)
   }
   if (!snap.exists()) throw new JoinError('not-found')
   const d = snap.data() as InviteDoc & { createdAt: Timestamp }
@@ -91,17 +93,34 @@ export function FirebaseHouseProvider({ children }: { children: ReactNode }) {
   // na serwerze – profil bez domu, aplikacja wraca do „Pierwsze uruchomienie”.
   useEffect(() => {
     if (!uid || !houseId) return
-    const leave = () => updateDoc(doc(db, paths.user(uid)), { houseId: null }).catch(() => {})
-    return onSnapshot(
-      doc(db, `${paths.members(houseId)}/${uid}`),
+    const me = doc(db, `${paths.members(houseId)}/${uid}`)
+    let alive = true
+    // Odczyt mógł dotrzeć do serwera przed zapisem nowego domu („brak dostępu” – dom jeszcze nie
+    // istnieje). Wychodzimy dopiero, gdy po naszych zapisach serwer potwierdzi, że wpisu nie ma
+    // (uwaga Hani 2026-11-14: znikająca nazwa i powrót do „Witaj” przy zakładaniu domu).
+    const leaveIfGone = async () => {
+      try {
+        await waitForPendingWrites(db)
+        if ((await getDocFromServer(me)).exists()) return
+      } catch (e) {
+        if (!(e instanceof FirebaseError && e.code === 'permission-denied')) return
+      }
+      if (alive) updateDoc(doc(db, paths.user(uid)), { houseId: null }).catch(() => {})
+    }
+    const unsub = onSnapshot(
+      me,
       (snap) => {
         // z pamięci telefonu (np. bez internetu) nie wyciągamy wniosków
-        if (!snap.exists() && !snap.metadata.fromCache) leave()
+        if (!snap.exists() && !snap.metadata.fromCache) void leaveIfGone()
       },
       (e) => {
-        if (e instanceof FirebaseError && e.code === 'permission-denied') leave()
+        if (e instanceof FirebaseError && e.code === 'permission-denied') void leaveIfGone()
       },
     )
+    return () => {
+      alive = false
+      unsub()
+    }
   }, [uid, houseId])
 
   const api = useMemo<HouseApi>(
@@ -120,12 +139,16 @@ export function FirebaseHouseProvider({ children }: { children: ReactNode }) {
           newId: () => doc(collection(db, paths.categories(houseId))).id,
         }))
           batch.set(doc(db, d.path), d.data)
-        // Bez internetu zapis czeka w telefonie i wyśle się sam – nie czekamy na serwer dłużej niż chwilę;
-        // profil (z houseId) i tak pojawia się od razu z pamięci telefonu.
         const committed = batch.commit()
+        // Z internetem czekamy na serwer (do 15 s – słaby zasięg) – błąd widać na ekranie, a dom
+        // istnieje, zanim zaczniemy go czytać. Bez internetu zapis czeka w telefonie i wyśle się
+        // sam; profil (z houseId) i tak pojawia się od razu z pamięci telefonu.
+        const wait = navigator.onLine ? 15000 : 1500
+        let timer: ReturnType<typeof setTimeout> | undefined
+        const late = new Promise<'late'>((r) => (timer = setTimeout(() => r('late'), wait)))
         // odrzucenie po czasie (np. reguły) cofa zapis w telefonie – profil wraca do „bez domu”
-        committed.catch(() => {})
-        await Promise.race([committed, new Promise((r) => setTimeout(r, 1500))])
+        if ((await Promise.race([committed, late]).finally(() => clearTimeout(timer))) === 'late')
+          committed.catch(() => {})
       },
 
       createInvite: async ({ scope, houseName, memberNames }) => {
@@ -200,9 +223,10 @@ export function FirebaseHouseProvider({ children }: { children: ReactNode }) {
           await batch.commit()
         } catch (e) {
           // ktoś był szybszy albo kod właśnie wygasł – reguły odrzuciły
+          console.error('Nie udało się dołączyć do domu', e)
           if (e instanceof FirebaseError && e.code === 'permission-denied') {
             const again = await readInvite(code)
-            throw new JoinError(again.usedBy ? 'used' : 'unknown')
+            throw new JoinError(again.usedBy ? 'used' : 'unknown', e.code)
           }
           throw e
         }

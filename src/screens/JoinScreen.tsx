@@ -4,7 +4,7 @@ import { paths } from '../app/screens.ts'
 import { Accent, Header } from '../components/Header.tsx'
 import { Logo } from '../components/Logo.tsx'
 import { BottomActions, Card, Screen } from '../components/ui.tsx'
-import { JoinError, joinErrorMessage, useHouse, type InvitePreview } from '../house/house.ts'
+import { joinErrorText, useHouse, type InvitePreview } from '../house/house.ts'
 import { colors, fonts } from '../theme'
 
 const label = {
@@ -20,7 +20,7 @@ function formatCode(v: string): string {
   return d.length > 3 ? `${d.slice(0, 3)} ${d.slice(3)}` : d
 }
 
-const messageOf = (e: unknown) => joinErrorMessage(e instanceof JoinError ? e.code : 'unknown')
+const messageOf = (e: unknown) => joinErrorText(e)
 
 /**
  * 5e–f Dołącz do domu (Dolacz.dc.html, DolaczZnaleziono.dc.html) z tekstami z TEKSTY.md (#16, B6),

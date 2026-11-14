@@ -114,3 +114,15 @@ Gdyby coś poszło nie tak (np. wklejony zły klucz) – po prostu powtórz kome
 
 - `npx firebase deploy --only hosting` → adres docelowy `https://<projekt>.web.app`.
 - Opcjonalnie własna domena: Hosting → Add custom domain.
+
+## Porządki – domy osierocone przez błąd zakładania domu (opcjonalnie, 2026-11-14)
+
+Przed poprawką z 2026-11-14 nieudane próby „Załóż nowy dom” mogły zostawić w bazie domy, do których nikt nie wraca. Nikt ich nie widzi i nie przeszkadzają – usuwanie jest tylko dla porządku.
+
+1. Konsola Firebase → projekt **ogarnij-zycie** → **Firestore Database** → zakładka **Dane**.
+2. Kliknij kolekcję **houses**. Po kolei otwieraj domy (identyfikatory po lewej). Pole `name` to nazwa domu (np. „Nasz dom”).
+3. Dom jest osierocony, gdy:
+   - **nie jest** Twoim domem ani domem domowników (Twój dom rozpoznasz po zadaniach w podkolekcji `tasks`);
+   - pole `ownerUid` to Twoje konto (albo konto testowe), a podkolekcja `tasks` jest pusta.
+4. Taki dom usuwasz: trzy kropki **⋮** przy identyfikatorze domu → **Usuń dokument** → zaznacz **Usuń wszystkie zagnieżdżone kolekcje** → **Usuń**.
+5. **Nie usuwaj** domu, w którym są zadania, ani domu, którego nie jesteś pewna – w razie wątpliwości podaj mi identyfikator, a powiem, co to.

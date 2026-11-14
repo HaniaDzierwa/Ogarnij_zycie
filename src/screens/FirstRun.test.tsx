@@ -2,7 +2,10 @@ import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react'
 import { afterEach, expect, test } from 'vitest'
 import { renderApp } from '../test/renderApp.tsx'
 
-afterEach(cleanup)
+afterEach(() => {
+  cleanup()
+  sessionStorage.clear()
+})
 
 /** Pierwsze uruchomienie – świeże konto bez domu. */
 const renderAt = (url: string) => renderApp(url, { noHouse: true })
@@ -26,6 +29,25 @@ test('Pierwsze uruchomienie: imię i nazwa domu → „Zaczynamy” zakłada dom
   await waitFor(() => expect(router.state.location.pathname).toBe('/'))
   expect(created).toEqual([['Dom na Leśnej', 'Ola']])
   expect(screen.getByRole('heading', { level: 1 }).textContent).toContain('Ola')
+})
+
+test('Pierwsze uruchomienie: wpisane imię i nazwa domu nie znikają, gdy ekran rysuje się od nowa', async () => {
+  const created: string[][] = []
+  renderAt('/witaj')
+  fireEvent.change(screen.getByLabelText('JAK MASZ NA IMIĘ?'), { target: { value: 'Ola' } })
+  fireEvent.change(screen.getByLabelText('NAZWA DOMU'), { target: { value: 'Dom na Leśnej' } })
+  cleanup()
+  const router = renderApp('/witaj', {
+    noHouse: true,
+    onCreateHouse: (house, name) => created.push([house, name]),
+  })
+  expect((screen.getByLabelText('NAZWA DOMU') as HTMLInputElement).value).toBe('Dom na Leśnej')
+  expect((screen.getByLabelText('JAK MASZ NA IMIĘ?') as HTMLInputElement).value).toBe('Ola')
+  fireEvent.click(screen.getByRole('button', { name: /Zaczynamy/ }))
+  await waitFor(() => expect(router.state.location.pathname).toBe('/'))
+  expect(created).toEqual([['Dom na Leśnej', 'Ola']])
+  // po założeniu domu szkic znika
+  expect(sessionStorage.length).toBe(0)
 })
 
 test('Pierwsze uruchomienie: bez imienia – błąd; pusta nazwa domu – „Nasz dom”', async () => {

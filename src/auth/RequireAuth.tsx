@@ -34,8 +34,9 @@ export function RequireAuth({
     const back = encodeURIComponent(location.pathname + location.search)
     return <Navigate to={`${paths.logowanie}?dalej=${back}`} replace />
   }
-  if (house === 'any') return children
   if (!houseReady) return loading
+  // Dołącz do domu – z wczytanym profilem (imię z góry, ustawienia zachowane przy dołączaniu)
+  if (house === 'any') return children
   const hasHouse = !!profile?.houseId
   if (house === 'required' && !hasHouse) return <Navigate to={paths.pierwsze} replace />
   if (house === 'firstRun' && hasHouse) return <Navigate to={paths.start} replace />
