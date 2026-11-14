@@ -16,7 +16,9 @@
     "emulators": "firebase emulators:start --only auth,firestore",
     "ikony": "pwa-assets-generator",
     "dev:emulatory": "vite --mode emulatory",
-    "test:reguly": "firebase emulators:exec --only firestore --project demo-ogarnij-zycie \"vitest run --config vitest.rules.config.ts\""
+    "test:reguly": "firebase emulators:exec --only firestore --project demo-ogarnij-zycie \"vitest run --config vitest.rules.config.ts\"",
+    "baza:zrzut": "node scripts/baza/zrzut.ts",
+    "baza:wgraj": "node scripts/baza/wgraj.ts"
   },
   "dependencies": {
     "firebase": "^13.1.0",
@@ -38,6 +40,7 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.7",
+    "firebase-admin": "^14.5.1",
     "firebase-tools": "^15.34.1",
     "globals": "^17.13.0",
     "jsdom": "^30.1.3",

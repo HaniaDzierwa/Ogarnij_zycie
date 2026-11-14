@@ -126,3 +126,41 @@ Przed poprawką z 2026-11-14 nieudane próby „Załóż nowy dom” mogły zost
    - pole `ownerUid` to Twoje konto (albo konto testowe), a podkolekcja `tasks` jest pusta.
 4. Taki dom usuwasz: trzy kropki **⋮** przy identyfikatorze domu → **Usuń dokument** → zaznacz **Usuń wszystkie zagnieżdżone kolekcje** → **Usuń**.
 5. **Nie usuwaj** domu, w którym są zadania, ani domu, którego nie jesteś pewna – w razie wątpliwości podaj mi identyfikator, a powiem, co to.
+
+## Zrzut bazy i przeniesienie do innego projektu (inne konto Google) – 2026-11-14
+
+Plan Spark nie ma eksportu w konsoli, więc zrzut robi skrypt na Twoim komputerze (tylko **czyta** starą bazę). Wynik: folder `firebase-export-RRRR-MM-DD\` z dwoma plikami:
+- `firestore.json` – wszystkie dokumenty (domy, zadania, wydarzenia, kategorie, domownicy, profile);
+- `konta.json` – konta logowania (e‑mail i hasło zaszyfrowane przez Firebase – nie da się z nich odczytać haseł).
+
+Folder jest w `.gitignore`. To prywatne dane domu – nie wysyłaj go nikomu i nie wklejaj do czatu.
+
+### A. Zrzut ze starego projektu (ogarnij-zycie)
+1. Klucz konta serwisowego starego projektu: konsola Firebase → **ogarnij-zycie** → koło zębate → **Ustawienia projektu** → **Konta usługi** → **Wygeneruj nowy klucz prywatny** → **Wygeneruj klucz**. Plik trafi do **Pobrane**.
+2. W terminalu, w folderze projektu:
+   `npm run baza:zrzut -- --klucz="$HOME\Downloads\ogarnij-zycie-firebase-adminsdk-XXXX.json"`
+   (zamiast `XXXX` – końcówka nazwy pobranego pliku; klawisz Tab podpowie).
+3. Na końcu zobaczysz liczby dokumentów (np. `houses: 120`, `users: 2`) i kont oraz „✔ Gotowe”.
+4. **Parametry haseł** (żeby w nowym projekcie działały te same hasła): konsola → **Authentication** → **Users** → trzy kropki **⋮** nad listą (obok „Add user”) → **Password hash parameters**. Skopiuj cały blok `hash_config { … }` i zapisz w folderze projektu jako `parametry-hasel.txt` (jest w `.gitignore`).
+5. Usuń pobrany klucz z **Pobrane** i opróżnij Kosz Windows.
+
+### B. Nowy projekt na drugim koncie Google
+1. Zaloguj się w https://console.firebase.google.com na nowe konto → **Dodaj projekt** (Create project) → nazwa, np. `ogarnij-zycie-2` → bez Google Analytics → **Utwórz projekt**.
+2. **Authentication** → **Rozpocznij** → **E‑mail/hasło** → włącz → **Zapisz**.
+3. **Firestore Database** → **Utwórz bazę danych** → lokalizacja **eur3 (Europe)** (jak w starym) → tryb produkcyjny → **Utwórz**.
+4. Reguły z repozytorium do nowego projektu (w terminalu, zalogowanym na nowe konto: `npx firebase login:add`, potem):
+   `npx firebase deploy --only firestore:rules,firestore:indexes --project ID-NOWEGO-PROJEKTU --account NOWY@MAIL`
+5. Klucz konta serwisowego **nowego** projektu – jak w A.1, ale w nowym projekcie.
+
+### C. Wgranie do nowego projektu
+1. W terminalu:
+   `npm run baza:wgraj -- --klucz="$HOME\Downloads\ID-NOWEGO-PROJEKTU-firebase-adminsdk-XXXX.json" --folder=firebase-export-RRRR-MM-DD --hasla=parametry-hasel.txt`
+   - bez `--hasla=…` konta wgrają się bez haseł – każdy ustawi nowe przez „Nie pamiętam hasła”;
+   - skrypt **odmówi**, jeśli klucz jest do starego projektu albo nowa baza nie jest pusta.
+2. Na końcu: liczby dokumentów (te same co przy zrzucie, bez zaproszeń i subskrypcji powiadomień), „Konta logowania: N z N” i „✔ Gotowe”.
+3. Sprawdź w konsoli nowego projektu: **Firestore Database** (kolekcje `houses`, `users`) i **Authentication → Users** (te same e‑maile).
+4. Usuń klucz nowego projektu z **Pobrane**, opróżnij Kosz.
+
+Pominięte celowo: zaproszenia (ważne 10 minut) i subskrypcje powiadomień (związane z adresem strony – po przeniesieniu powiadomienia włącza się na telefonie od nowa).
+
+Sama baza w nowym projekcie nie zmienia aplikacji – strona dalej korzysta ze starego projektu. Przełączenie aplikacji (konfiguracja, Hosting, Worker) to osobny krok – napisz Claude, jeśli ma to zrobić.

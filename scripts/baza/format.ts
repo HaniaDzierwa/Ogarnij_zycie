@@ -1,0 +1,87 @@
+// Zapis wartości Firestore do zwykłego JSON-a i z powrotem (zrzut bazy – `npm run baza:zrzut`).
+// Typy specjalne Firestore dostają znacznik `__typ`, żeby wróciły jako te same typy.
+
+/** Jak rozpoznać i odtworzyć typy specjalne – podaje skrypt (klasy z firebase-admin). */
+export type SpecialTypes = {
+  isTimestamp: (v: unknown) => v is { seconds: number; nanoseconds: number }
+  isGeoPoint: (v: unknown) => v is { latitude: number; longitude: number }
+  isReference: (v: unknown) => v is { path: string }
+  timestamp: (seconds: number, nanoseconds: number) => unknown
+  geoPoint: (latitude: number, longitude: number) => unknown
+  reference: (path: string) => unknown
+}
+
+type Json = null | boolean | number | string | Json[] | { [k: string]: Json }
+
+/** Wartość z Firestore → JSON. */
+export function encode(v: unknown, t: SpecialTypes): Json {
+  if (v === null || typeof v === 'boolean' || typeof v === 'string') return v
+  if (typeof v === 'number') {
+    // NaN / nieskończoność nie mieszczą się w JSON-ie
+    return Number.isFinite(v) ? v : { __typ: 'liczba', wartosc: String(v) }
+  }
+  if (t.isTimestamp(v)) return { __typ: 'czas', s: v.seconds, ns: v.nanoseconds }
+  if (t.isGeoPoint(v)) return { __typ: 'miejsce', lat: v.latitude, lng: v.longitude }
+  if (t.isReference(v)) return { __typ: 'odnosnik', sciezka: v.path }
+  if (v instanceof Uint8Array) return { __typ: 'bajty', base64: Buffer.from(v).toString('base64') }
+  if (Array.isArray(v)) return v.map((x) => encode(x, t))
+  if (typeof v === 'object') {
+    const out: { [k: string]: Json } = {}
+    for (const [k, x] of Object.entries(v)) out[k] = encode(x, t)
+    return out
+  }
+  throw new Error(`Nieznany typ wartości: ${typeof v}`)
+}
+
+/** JSON → wartość do zapisu w Firestore. */
+export function decode(v: Json, t: SpecialTypes): unknown {
+  if (Array.isArray(v)) return v.map((x) => decode(x, t))
+  if (v === null || typeof v !== 'object') return v
+  switch (v.__typ) {
+    case 'czas':
+      return t.timestamp(v.s as number, v.ns as number)
+    case 'miejsce':
+      return t.geoPoint(v.lat as number, v.lng as number)
+    case 'odnosnik':
+      return t.reference(v.sciezka as string)
+    case 'bajty':
+      return new Uint8Array(Buffer.from(v.base64 as string, 'base64'))
+    case 'liczba':
+      return Number(v.wartosc)
+  }
+  const out: Record<string, unknown> = {}
+  for (const [k, x] of Object.entries(v)) out[k] = decode(x, t)
+  return out
+}
+
+/** Plik zrzutu bazy. */
+export type FirestoreDump = {
+  projekt: string
+  utworzono: string
+  dokumenty: { sciezka: string; dane: { [k: string]: Json } }[]
+}
+
+/** Konto z Authentication (z hasłem zaszyfrowanym przez Firebase – bez jawnych haseł). */
+export type AuthUserDump = {
+  uid: string
+  email?: string
+  emailVerified: boolean
+  displayName?: string
+  disabled: boolean
+  passwordHash?: string
+  passwordSalt?: string
+  creationTime?: string
+  lastSignInTime?: string
+}
+
+export type AuthDump = { projekt: string; utworzono: string; konta: AuthUserDump[] }
+
+/** Podsumowanie zrzutu: ile dokumentów w każdej kolekcji głównej. */
+export function countByCollection(paths: string[]): Record<string, number> {
+  const out: Record<string, number> = {}
+  for (const p of paths) {
+    const top = p.split('/')[0]
+    out[top] = (out[top] ?? 0) + 1
+  }
+  return out
+}

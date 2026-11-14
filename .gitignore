@@ -40,3 +40,6 @@ desktop.ini
 # Tymczasowe pliki
 *.tmp
 *.zip
+
+# Zrzut bazy (npm run baza:zrzut) – prywatne dane domu i parametry haseł
+parametry-hasel*.txt
