@@ -39,11 +39,17 @@ export function useItemSheets(
   const typeName = (id: string) => eventTypeOf(eventTypes, id).name
   const memberName = (uid: string | null) => members.find((m) => m.uid === uid)?.name ?? ''
 
-  const trashTask = (t: Task) =>
-    confirmDelete.ask('zadanie', t.title, () => {
+  const trashTask = (t: Task) => {
+    const closing = (fn: (t: Task) => void) => () => {
       if (taskId === t.id) setTaskId(null)
-      taskActions.trash(t)
-    })
+      fn(t)
+    }
+    const only =
+      t.repeat && !t.done
+        ? { label: taskActions.onlyThisLabel(t), run: closing(taskActions.trashOnlyOnce) }
+        : undefined
+    confirmDelete.ask('zadanie', t.title, closing(taskActions.trash), only)
+  }
   const removeEvent = (e: CalendarEvent) =>
     confirmDelete.ask('wydarzenie', e.title, () => {
       if (eventId === e.id) setEventId(null)

@@ -3,6 +3,7 @@
 
 import { builtInEventTypes, defaultCategories, type Priority } from '../theme'
 import { addDays, stamp, type DateKey } from './dates.ts'
+import type { Repeat } from './repeat.ts'
 import type {
   CalendarEvent,
   Category,
@@ -43,6 +44,8 @@ type TaskSeed = {
   /** W koszu: [dni temu, kto]. */
   deleted?: [number, string]
   by?: string
+  /** Zadanie cykliczne (etap 8). */
+  repeat?: Repeat
 }
 
 // Jak w Zadania.dc.html i Kosz.dc.html (projekt z 9 paź).
@@ -88,7 +91,14 @@ const taskSeed: TaskSeed[] = [
     ],
   },
   { title: 'Założyć opony zimowe', cat: 'car', prio: 'mid', done: [0, '11:40', 'krzys'] },
-  { title: 'Zebranie w szkole', cat: 'family', prio: 'mid', dueIn: 4, by: 'krzys' },
+  {
+    title: 'Zebranie w szkole',
+    cat: 'family',
+    prio: 'mid',
+    dueIn: 4,
+    by: 'krzys',
+    repeat: { every: 'month' },
+  },
   { title: 'Bilety do kina na sobotę', cat: 'family', prio: 'low' },
   { title: 'Wynieść śmieci', cat: 'home', prio: 'low', dueIn: 0, done: [0, '08:05', 'hania'] },
   { title: 'Odebrać pranie z pralni', cat: 'home', prio: 'low', done: [1, '18:20', 'krzys'] },
@@ -123,6 +133,7 @@ export function mockTasks(today: DateKey): Task[] {
     deleted: !!s.deleted,
     deletedAt: s.deleted ? stamp(addDays(today, -s.deleted[0]), '12:00') : null,
     deletedBy: s.deleted ? s.deleted[1] : null,
+    ...(s.repeat ? { repeat: s.repeat } : {}),
   }))
 }
 

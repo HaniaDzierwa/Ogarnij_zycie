@@ -405,3 +405,45 @@ test('zadanie z kosza wraca na swoje miejsce: kategoria, priorytet, termin, krok
   ])
     expect(screen.getByRole('button', { name: step })).toBeDefined()
 })
+
+// ── Zadania cykliczne (etap 8) ─────────────────────────────────────────────
+
+test('zadanie cykliczne: ↻ CO MIESIĄC; ogarnięcie → następne za miesiąc; COFNIJ cofa oba', () => {
+  vi.useFakeTimers()
+  renderAt('/zadania')
+  const row = () => screen.getAllByRole('button', { name: 'Otwórz zadanie Zebranie w szkole' })
+  expect(row()[0].textContent).toContain('CO MIESIĄC')
+  click('Oznacz jako ogarnięte: Zebranie w szkole')
+  act(() => vi.advanceTimersByTime(400))
+  // 13 października + miesiąc = 13 listopada
+  expect(screen.getByRole('status').textContent).toBe(
+    'Ogarnięte: Zebranie w szkole · następne: DO 13 LISCOFNIJ',
+  )
+  expect(row()).toHaveLength(1)
+  expect(row()[0].textContent).toContain('CO MIESIĄC')
+  expect(tab(/Do zrobienia/).textContent).toBe('Do zrobienia12')
+  expect(tab(/Ogarnięte/).textContent).toBe('Ogarnięte8')
+  click('COFNIJ')
+  expect(tab(/Ogarnięte/).textContent).toBe('Ogarnięte7')
+  expect(row()).toHaveLength(1)
+})
+
+test('zadanie cykliczne – usuwanie pyta: „Tylko to” zostawia następne, „Całe powtarzanie” nie', () => {
+  renderAt('/zadania')
+  click('Otwórz zadanie Zebranie w szkole')
+  expect(screen.getByText('POWTARZA SIĘ')).toBeDefined()
+  expect(screen.getByText('Co miesiąc, 13. dnia')).toBeDefined()
+  click(/^Usuń/)
+  const dialog = screen.getByRole('alertdialog')
+  expect(within(dialog).getByRole('button', { name: 'Całe powtarzanie' })).toBeDefined()
+  fireEvent.click(within(dialog).getByRole('button', { name: 'Tylko to – wróci do 13 lis' }))
+  expect(screen.getByRole('status').textContent).toBe(
+    'Pominięto: Zebranie w szkole · następne: DO 13 LISCOFNIJ',
+  )
+  expect(screen.getAllByRole('button', { name: 'Otwórz zadanie Zebranie w szkole' })).toHaveLength(
+    1,
+  )
+  expect(
+    screen.getByRole('button', { name: 'Otwórz zadanie Zebranie w szkole' }).textContent,
+  ).toContain('DO 13 LIS')
+})

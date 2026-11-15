@@ -37,6 +37,11 @@ export function eventWhen(e: Pick<CalendarEvent, 'date' | 'allDay' | 'from'>): s
 export function taskActivity(prev: Task[], next: Task[], today: DateKey): Activity[] {
   const before = byId(prev)
   const soon = new Set([today, addDays(today, 1)])
+  // zadania cykliczne, które tą zmianą ogarnięto / pominięto – ich następne wystąpienie to nie
+  // „nowe zadanie” (etap 8)
+  const cycled = new Set(
+    next.filter((t) => !t.repeat && before.get(t.id)?.repeat).map((t) => t.title),
+  )
   const out: Activity[] = []
   for (const t of next) {
     if (t.private) continue
@@ -45,7 +50,7 @@ export function taskActivity(prev: Task[], next: Task[], today: DateKey): Activi
       out.push({ kind, title: t.title, detail, date: null })
     // nowe dla innych: dodane albo „Tylko ja” → „Wspólne” (T1, T11)
     if (!p || p.private) {
-      if (!t.deleted && !t.done) add('task-added')
+      if (!t.deleted && !t.done && !(!p && t.repeat && cycled.has(t.title))) add('task-added')
       continue
     }
     // do Kosza – ale nie ogarnięte (sprzątanie, „Wyczyść”) (T9, T10)

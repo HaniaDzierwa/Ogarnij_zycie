@@ -110,3 +110,15 @@ describe('wydarzenia – co daje powiadomienie', () => {
     expect(eventWhen({ date: '2026-10-31', allDay: false, from: '17:00' })).toBe('so 31 paź, 17:00')
   })
 })
+
+describe('zadanie cykliczne (etap 8)', () => {
+  test('ogarnięcie: „task-done”, ale następne wystąpienie to nie „nowe zadanie”', () => {
+    const rep = { ...t, due: DAY, repeat: { every: 'week' as const } }
+    const done = { ...rep, done: true, doneAt: `${DAY}T10:00`, doneBy: 'krzys' }
+    delete (done as { repeat?: unknown }).repeat
+    const next = { ...rep, id: 'y', due: '2026-10-16' }
+    expect(taskActivity([rep], [done, next], DAY).map((a) => a.kind)).toEqual(['task-done'])
+    // zwykłe nowe zadanie cykliczne – „nowe zadanie” jak zawsze
+    expect(taskActivity([], [rep], DAY).map((a) => a.kind)).toEqual(['task-added'])
+  })
+})

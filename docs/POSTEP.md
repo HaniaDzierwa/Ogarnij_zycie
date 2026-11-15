@@ -22,8 +22,8 @@ Decyzje Hani 2026-11-15: układ 1c z kanwy „Zadania cykliczne”; „co X dni�
 
 | Krok | Status |
 | --- | --- |
-| 1 Logika powtarzania (`src/data/repeat.ts`), pole `repeat` / `skip` w modelu i regułach, testy | w toku |
-| 2 Zadania: ogarnięcie tworzy następne, COFNIJ cofa oba, usuwanie „Tylko to / Całe”, ↻ na liście i w arkuszu | – |
+| 1 Logika powtarzania (`src/data/repeat.ts`), pole `repeat` / `skip` w modelu i regułach, testy | zrobione – testy reguł czekają na emulator u Hani |
+| 2 Zadania: ogarnięcie tworzy następne, COFNIJ cofa oba, usuwanie „Tylko to / Całe”, ↻ na liście i w arkuszu | zrobione |
 | 3 Wydarzenia: powtórki w kalendarzu, na Starcie i w Workerze, usuwanie jednej powtórki | – |
 | 4 Zwarte arkusze: nowe zadanie, nowe wydarzenie, tryb edycji | – |
 | 5 Testy reguł u Hani, wersja testowa, demo, odbiór | – |

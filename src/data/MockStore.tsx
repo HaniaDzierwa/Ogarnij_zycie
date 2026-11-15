@@ -11,7 +11,9 @@ import {
   mockUserName,
 } from './mock.ts'
 import { DEFAULT_USER, normalizeTimes } from '../firebase/model.ts'
+import { newId } from './ids.ts'
 import { revertChanges } from './listDiff.ts'
+import { spawnRepeats } from './taskOps.ts'
 import { allPriorities } from './selectors.ts'
 import { StoreContext, useUndoToast, type Store } from './store.ts'
 import type { CalendarEvent, CleanupDays, CustomPriority, Task } from './types.ts'
@@ -42,7 +44,16 @@ export function MockStoreProvider({
   const [day] = useState(() => today ?? getToday())
   const [userName, setUserName] = useState(mockUserName)
   const [houseName, setHouseName] = useState('Dom na Leśnej')
-  const [tasks, setTasks] = useState(() => mockTasks(day))
+  const [tasks, setTasksState] = useState(() => mockTasks(day))
+  /** Ogarnięte zadanie cykliczne → obok następne (etap 8), jak w FirestoreStore. */
+  const withRepeats = useCallback(
+    (list: Task[]) => spawnRepeats(list, day, currentUid, () => newId('t')),
+    [day, currentUid],
+  )
+  const setTasks = useCallback(
+    (update: (list: Task[]) => Task[]) => setTasksState((cur) => withRepeats(update(cur))),
+    [withRepeats],
+  )
   const [categories, setCategories] = useState(mockCategories)
   const [customPriorities, setCustomPriorities] = useState(initialPriorities)
   const priorities = useMemo(() => allPriorities(customPriorities), [customPriorities])
@@ -59,12 +70,12 @@ export function MockStoreProvider({
   const changeTasks = useCallback(
     (text: string, update: (t: Task[]) => Task[]) => {
       const before = tasks
-      const after = update(tasks)
-      // „Cofnij” – tylko zadania zmienione tą akcją
-      show(text, () => setTasks((cur) => revertChanges(cur, before, after)))
-      setTasks(after)
+      const after = withRepeats(update(tasks))
+      // „Cofnij” – tylko zadania zmienione tą akcją (także następne wystąpienie cyklicznego)
+      show(text, () => setTasksState((cur) => revertChanges(cur, before, after)))
+      setTasksState(after)
     },
-    [tasks, show],
+    [tasks, show, withRepeats],
   )
 
   const changeEvents = useCallback(
@@ -132,6 +143,7 @@ export function MockStoreProvider({
       summaryContent,
       toast,
       who,
+      setTasks,
       changeTasks,
       changeEvents,
       undo,

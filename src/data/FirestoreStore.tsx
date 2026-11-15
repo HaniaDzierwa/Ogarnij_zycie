@@ -38,7 +38,9 @@ import { useHouse } from '../house/house.ts'
 import { builtInEventTypes } from '../theme'
 import { nowStamp, today as getToday } from './dates.ts'
 import { eventActivity, taskActivity, type Activity } from './activity.ts'
+import { newId } from './ids.ts'
 import { revertChanges } from './listDiff.ts'
+import { spawnRepeats } from './taskOps.ts'
 import { allPriorities } from './selectors.ts'
 import { StoreContext, useUndoToast, type Store } from './store.ts'
 import type {
@@ -301,13 +303,22 @@ function HouseData({ children }: { children: ReactNode }) {
     [houseId, uid],
   )
 
-  const setTasks = useMemo(
-    () =>
-      makeSetter<Task>('tasks', setTasksState, paths.tasks, taskToDoc, paths.privateTasks, (p, n) =>
-        taskActivity(p, n, day),
-      ),
-    [makeSetter, setTasksState, day],
+  /** Ogarnięte zadanie cykliczne → obok następne (etap 8). */
+  const withRepeats = useCallback(
+    (list: Task[]) => spawnRepeats(list, day, uid, () => newId('t')),
+    [day, uid],
   )
+  const setTasks = useMemo(() => {
+    const set = makeSetter<Task>(
+      'tasks',
+      setTasksState,
+      paths.tasks,
+      taskToDoc,
+      paths.privateTasks,
+      (p, n) => taskActivity(p, n, day),
+    )
+    return (update: (list: Task[]) => Task[]) => set((list) => withRepeats(update(list)))
+  }, [makeSetter, setTasksState, day, withRepeats])
   const setCategories = useMemo(
     () => makeSetter<Category>('categories', setCategoriesState, paths.categories, categoryToDoc),
     [makeSetter],
@@ -343,12 +354,13 @@ function HouseData({ children }: { children: ReactNode }) {
   const changeTasks = useCallback(
     (text: string, update: (t: Task[]) => Task[]) => {
       const before = latest.current.tasks
-      const after = update(before)
+      // następne wystąpienie zadania cyklicznego też cofa „Cofnij”
+      const after = withRepeats(update(before))
       // „Cofnij” – tylko zadania zmienione tą akcją; zmiany domownika z tych sekund zostają
       show(text, () => setTasks((cur) => revertChanges(cur, before, after)))
       setTasks(() => after)
     },
-    [setTasks, show],
+    [setTasks, show, withRepeats],
   )
   const changeEvents = useCallback(
     (text: string, update: (e: CalendarEvent[]) => CalendarEvent[]) => {

@@ -1,8 +1,11 @@
-import { expect, test } from 'vitest'
+import { describe, expect, test } from 'vitest'
 import {
   addSubtask,
   editTask,
   markDone,
+  nextDue,
+  spawnRepeats,
+  trashOnlyThis,
   moveToTrash,
   removeSubtask,
   taskEditOf,
@@ -95,4 +98,75 @@ test('„Zapisz” w arkuszu: zmienia pola; dodany niezrobiony krok przywraca og
   expect([saved.title, saved.done, saved.doneBy]).toEqual(['Prezent dla mamy', false, null])
   // bez zmian w krokach – stan ogarnięcia zostaje
   expect(editTask(done, { ...e, note: 'x' }, who).done).toBe(true)
+})
+
+// ── Zadania cykliczne (etap 8) ─────────────────────────────────────────────
+
+describe('zadanie cykliczne', () => {
+  const TODAY = '2026-11-18'
+  const weekly: Task = {
+    ...task,
+    id: 'w',
+    title: 'Wynieść śmieci',
+    due: '2026-11-20',
+    dueWeek: true,
+    repeat: { every: 'week' },
+    note: 'Plastik w czwartek',
+  }
+  let n = 0
+  const makeId = () => `n${++n}`
+  const krzys = { uid: 'krzys', at: '2026-11-18T19:00' }
+
+  test('ogarnięte → obok następne z terminem za tydzień, kroki odznaczone, notatka zostaje', () => {
+    const list = spawnRepeats([markDone(weekly, krzys)], TODAY, 'krzys', makeId)
+    expect(list).toHaveLength(2)
+    const [done, next] = list
+    expect(done.done).toBe(true)
+    expect(done.repeat).toBeUndefined()
+    expect(next).toMatchObject({
+      title: 'Wynieść śmieci',
+      due: '2026-11-27',
+      repeat: { every: 'week' },
+      done: false,
+      doneAt: null,
+      doneBy: null,
+      note: 'Plastik w czwartek',
+      createdBy: 'krzys',
+    })
+    expect(next.id).not.toBe(weekly.id)
+    expect(next.dueWeek).toBeUndefined()
+    expect(next.subtasks.every((s) => !s.done)).toBe(true)
+  })
+
+  test('drugie wywołanie nic nie zmienia; niezrobione, w koszu i zwykłe – bez zmian', () => {
+    const once = spawnRepeats([markDone(weekly, krzys)], TODAY, 'krzys', makeId)
+    expect(spawnRepeats(once, TODAY, 'krzys', makeId)).toBe(once)
+    const list = [weekly, moveToTrash(markDone(weekly, who), who), markDone(task, who)]
+    expect(spawnRepeats(list, TODAY, 'hania', makeId)).toBe(list)
+  })
+
+  test('spóźnione – następny termin po dziś; bez terminu – od dziś', () => {
+    const late = { ...weekly, due: '2026-11-06' }
+    expect(nextDue(late, TODAY)).toBe('2026-11-20')
+    expect(nextDue({ ...weekly, due: null }, TODAY)).toBe('2026-11-25')
+    expect(nextDue(task, TODAY)).toBeNull()
+  })
+
+  test('„Tylko to”: to do kosza bez powtarzania, następne na liście', () => {
+    const [trashed, next] = trashOnlyThis(weekly, krzys, TODAY, 'n9')
+    expect(trashed).toMatchObject({ id: 'w', deleted: true, deletedBy: 'krzys' })
+    expect(trashed.repeat).toBeUndefined()
+    expect(next).toMatchObject({ id: 'n9', due: '2026-11-27', repeat: { every: 'week' } })
+  })
+
+  test('edycja: wyłączenie powtarzania albo usunięcie terminu kasuje pole', () => {
+    expect(editTask(weekly, { ...taskEditOf(weekly), repeat: undefined }, who).repeat).toBe(
+      undefined,
+    )
+    expect(editTask(weekly, { ...taskEditOf(weekly), due: null }, who).repeat).toBeUndefined()
+    expect(
+      editTask(task, { ...taskEditOf(task), due: '2026-11-20', repeat: { every: 'day' } }, who)
+        .repeat,
+    ).toEqual({ every: 'day' })
+  })
 })

@@ -590,6 +590,7 @@ export function ConfirmDialog({
   onConfirm,
   onCancel,
   danger = false,
+  alt,
 }: {
   title: string
   message?: ReactNode
@@ -597,7 +598,18 @@ export function ConfirmDialog({
   onConfirm: () => void
   onCancel: () => void
   danger?: boolean
+  /** Trzecia możliwość (np. „Tylko to” przy powtarzaniu) – przyciski jeden pod drugim. */
+  alt?: { label: string; onClick: () => void }
 }) {
+  const confirmStyle = {
+    height: 48,
+    border: 0,
+    borderRadius: 24,
+    background: danger ? priorities.high.line : colors.green900,
+    color: danger ? colors.white : colors.cream,
+    fontSize: 15,
+    fontWeight: 800,
+  } as const
   return (
     <div
       role="alertdialog"
@@ -649,46 +661,69 @@ export function ConfirmDialog({
         {message && (
           <span style={{ fontSize: 15, lineHeight: 1.45, color: colors.muted2 }}>{message}</span>
         )}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-            gap: 8,
-            marginTop: 8,
-          }}
-        >
-          <button
-            type="button"
-            autoFocus
-            onClick={onCancel}
+        {alt ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
+            <button
+              type="button"
+              onClick={alt.onClick}
+              style={{
+                ...confirmStyle,
+                border: `1px solid ${danger ? '#E7B8A8' : colors.border}`,
+                background: colors.white,
+                color: danger ? priorities.high.line : colors.green900,
+              }}
+            >
+              {alt.label}
+            </button>
+            <button type="button" onClick={onConfirm} style={confirmStyle}>
+              {confirmLabel}
+            </button>
+            <button
+              type="button"
+              autoFocus
+              onClick={onCancel}
+              style={{
+                height: 44,
+                border: 0,
+                background: 'transparent',
+                color: colors.green900,
+                fontSize: 15,
+                fontWeight: 700,
+              }}
+            >
+              Anuluj
+            </button>
+          </div>
+        ) : (
+          <div
             style={{
-              height: 48,
-              border: `1px solid ${colors.border}`,
-              borderRadius: 24,
-              background: colors.white,
-              color: colors.green900,
-              fontSize: 15,
-              fontWeight: 700,
+              display: 'grid',
+              gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+              gap: 8,
+              marginTop: 8,
             }}
           >
-            Anuluj
-          </button>
-          <button
-            type="button"
-            onClick={onConfirm}
-            style={{
-              height: 48,
-              border: 0,
-              borderRadius: 24,
-              background: danger ? priorities.high.line : colors.green900,
-              color: danger ? colors.white : colors.cream,
-              fontSize: 15,
-              fontWeight: 800,
-            }}
-          >
-            {confirmLabel}
-          </button>
-        </div>
+            <button
+              type="button"
+              autoFocus
+              onClick={onCancel}
+              style={{
+                height: 48,
+                border: `1px solid ${colors.border}`,
+                borderRadius: 24,
+                background: colors.white,
+                color: colors.green900,
+                fontSize: 15,
+                fontWeight: 700,
+              }}
+            >
+              Anuluj
+            </button>
+            <button type="button" onClick={onConfirm} style={confirmStyle}>
+              {confirmLabel}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   )

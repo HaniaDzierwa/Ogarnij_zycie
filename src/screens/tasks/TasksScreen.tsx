@@ -84,11 +84,18 @@ export function TasksScreen() {
   const actions = useTaskActions()
   const toggleDone = actions.toggleDone
   const confirmDelete = useConfirmDelete()
-  const trash = (t: Task) =>
-    confirmDelete.ask('zadanie', t.title, () => {
+  const trash = (t: Task) => {
+    const closing = (fn: (t: Task) => void) => () => {
       if (detailId === t.id) setDetailId(null)
-      actions.trash(t)
-    })
+      fn(t)
+    }
+    // zadanie cykliczne (niezrobione): „Tylko to” albo „Całe powtarzanie” (decyzja Hani 2026-11-15)
+    const only =
+      t.repeat && !t.done
+        ? { label: actions.onlyThisLabel(t), run: closing(actions.trashOnlyOnce) }
+        : undefined
+    confirmDelete.ask('zadanie', t.title, closing(actions.trash), only)
+  }
 
   const addCategory = (name: string, color: string) => {
     const id = newId('k')

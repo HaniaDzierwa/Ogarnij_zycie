@@ -3,6 +3,7 @@ import { SwipeRow } from '../../components/SwipeRow.tsx'
 import { Box } from '../../components/ui.tsx'
 import { CheckIcon, TrashIcon, UndoIcon } from '../../components/icons.tsx'
 import { DueBadge } from '../../components/DueBadge.tsx'
+import { RepeatBadge } from '../../components/RepeatBadge.tsx'
 import { type DateKey } from '../../data/dates.ts'
 import { priorityOf, subtaskProgress } from '../../data/selectors.ts'
 import { useStore } from '../../data/store.ts'
@@ -171,6 +172,7 @@ export function TaskRow({
               {task.due && (
                 <DueBadge due={task.due} today={today} week={task.dueWeek} done={task.done} />
               )}
+              {task.repeat && !task.done && <RepeatBadge repeat={task.repeat} />}
               {task.private && (
                 <span
                   style={{

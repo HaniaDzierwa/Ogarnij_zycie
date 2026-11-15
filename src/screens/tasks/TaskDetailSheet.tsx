@@ -7,7 +7,8 @@ import {
   NoteText,
 } from '../../components/DetailSheet.tsx'
 import { Box, Chip, Dot, NoteField, Sheet } from '../../components/ui.tsx'
-import { CheckIcon, CloseIcon, PlusIcon, UndoIcon } from '../../components/icons.tsx'
+import { CheckIcon, CloseIcon, PlusIcon, RepeatIcon, UndoIcon } from '../../components/icons.tsx'
+import { repeatSummary } from '../../data/repeat.ts'
 import { DueBadge } from '../../components/DueBadge.tsx'
 import { type DateKey } from '../../data/dates.ts'
 import { DueField } from './DueField.tsx'
@@ -158,6 +159,12 @@ export function TaskDetailSheet({
                 'Bez terminu'
               )}
             </InfoRow>
+            {task.repeat && task.due && !task.done && (
+              <InfoRow label="POWTARZA SIĘ">
+                <RepeatIcon size={15} />
+                {repeatSummary(task.repeat, task.due)}
+              </InfoRow>
+            )}
             <InfoRow label="KTO WIDZI">{task.private ? 'Tylko ja' : 'Wspólne'}</InfoRow>
           </div>
 
