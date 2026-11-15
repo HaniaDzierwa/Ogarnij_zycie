@@ -2,6 +2,7 @@
 
 import { addDays, diffDays, weekStart, type DateKey } from './dates.ts'
 import { remindNote } from './eventOps.ts'
+import { occurrencesBetween, type Repeat } from './repeat.ts'
 import { builtInEventTypes, DEFAULT_PRIORITY, priorities, shade } from '../theme'
 import type { CalendarEvent, CustomPriority, EventType, PriorityDef, Task } from './types.ts'
 
@@ -91,6 +92,27 @@ export type CalendarItem = {
   to: string | null
   note: string
   taskId?: string
+  /** Powtórka wydarzenia cyklicznego – id wydarzenia (id wpisu to „id@dzień”). */
+  eventId?: string
+  repeat?: Repeat
+}
+
+/** Przedział dni (włącznie) – dla wydarzeń cyklicznych liczymy powtórki tylko w nim. */
+export type DayRange = { from: DateKey; to: DateKey }
+
+/**
+ * Wydarzenia w przedziale: zwykłe – jak są (bez względu na przedział, jak dotąd), cykliczne –
+ * każda powtórka jako kopia z jej dniem (`date`). Bez przedziału – cykliczne tylko w dniu startu.
+ */
+export function eventOccurrences(events: CalendarEvent[], range?: DayRange): CalendarEvent[] {
+  const out: CalendarEvent[] = []
+  for (const e of liveEvents(events)) {
+    if (!e.repeat || !range) out.push(e)
+    else
+      for (const date of occurrencesBetween(e.date, e.repeat, range.from, range.to, e.skip))
+        out.push({ ...e, date })
+  }
+  return out
 }
 
 export function calendarItems(
@@ -98,6 +120,7 @@ export function calendarItems(
   events: CalendarEvent[],
   categoryName: (id: string | null) => string,
   priorityLabel: (t: Task) => string,
+  range?: DayRange,
 ): CalendarItem[] {
   const deadlines: CalendarItem[] = openTasks(tasks)
     .filter((t) => t.due)
@@ -113,25 +136,29 @@ export function calendarItems(
         .join(' · '),
       taskId: t.id,
     }))
-  const evs: CalendarItem[] = liveEvents(events).map((e) => ({
-    id: e.id,
+  const evs: CalendarItem[] = eventOccurrences(events, range).map((e) => ({
+    id: e.repeat ? `${e.id}@${e.date}` : e.id,
     title: e.title,
     date: e.date,
     typeId: e.typeId,
     from: e.from,
     to: e.to,
     note: [e.private && PRIVATE_NOTE, e.note, remindNote(e.remind)].filter(Boolean).join(' · '),
+    ...(e.repeat ? { eventId: e.id, repeat: e.repeat } : {}),
   }))
   return [...deadlines, ...evs].sort(
     (a, b) => a.date.localeCompare(b.date) || (a.from ?? '').localeCompare(b.from ?? ''),
   )
 }
 
-/** Wydarzenia (bez terminów zadań) od dziś, najbliższe najpierw. */
+/**
+ * Wydarzenia (bez terminów zadań) od dziś, najbliższe najpierw. Cykliczne – najbliższe powtórki
+ * (w roku naprzód, żeby złapać też „co rok”) jako kopie z ich dniem.
+ */
 export function upcomingEvents(events: CalendarEvent[], today: DateKey, limit = 2) {
-  return liveEvents(events)
+  return eventOccurrences(events, { from: today, to: addDays(today, 366) })
     .filter((e) => diffDays(today, e.date) >= 0)
-    .sort((a, b) => a.date.localeCompare(b.date))
+    .sort((a, b) => a.date.localeCompare(b.date) || (a.from ?? '').localeCompare(b.from ?? ''))
     .slice(0, limit)
 }
 

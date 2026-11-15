@@ -14,6 +14,8 @@ import {
   toggleSubtask,
 } from './taskOps.ts'
 import type { Task } from './types.ts'
+import { editEvent, eventEditOf, skipOccurrence } from './eventOps.ts'
+import { mockEvents } from './mock.ts'
 
 const who = { uid: 'hania', at: '2026-10-09T10:00' }
 
@@ -168,5 +170,24 @@ describe('zadanie cykliczne', () => {
       editTask(task, { ...taskEditOf(task), due: '2026-11-20', repeat: { every: 'day' } }, who)
         .repeat,
     ).toEqual({ every: 'day' })
+  })
+})
+
+describe('wydarzenie cykliczne – operacje (etap 8)', () => {
+  const ev = { ...mockEvents('2026-10-09')[0], repeat: { every: 'week' as const } }
+
+  test('„Tylko to” dopisuje dzień do pominiętych (raz, posortowane)', () => {
+    const a = skipOccurrence(ev, '2026-10-23')
+    const b = skipOccurrence(a, '2026-10-16')
+    expect(b.skip).toEqual(['2026-10-16', '2026-10-23'])
+    expect(skipOccurrence(b, '2026-10-16')).toBe(b)
+  })
+
+  test('edycja zmienia wszystkie powtórki; wyłączenie powtarzania kasuje pominięte', () => {
+    const withSkip = skipOccurrence(ev, '2026-10-23')
+    const later = editEvent(withSkip, { ...eventEditOf(withSkip), from: '18:00' })
+    expect(later).toMatchObject({ from: '18:00', repeat: { every: 'week' }, skip: ['2026-10-23'] })
+    const once = editEvent(withSkip, { ...eventEditOf(withSkip), repeat: undefined })
+    expect('repeat' in once || 'skip' in once).toBe(false)
   })
 })

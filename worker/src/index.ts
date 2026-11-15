@@ -20,6 +20,7 @@ import {
   type User,
 } from './plan.ts'
 import { sendPush, type Subscription } from './webpush.ts'
+import { normalizeRepeat } from '../../src/data/repeat.ts'
 
 export interface Env {
   FIREBASE_PROJECT_ID: string
@@ -85,6 +86,8 @@ export function toEvent(doc: Doc): Event & { path: string } {
     allDay: d.allDay !== false,
     from: typeof d.from === 'string' ? d.from : null,
     remind,
+    repeat: normalizeRepeat(d.repeat),
+    skip: Array.isArray(d.skip) ? d.skip.filter((x): x is string => typeof x === 'string') : [],
     deleted: d.deleted === true,
     deletedAt: num(d.deletedAt),
   }

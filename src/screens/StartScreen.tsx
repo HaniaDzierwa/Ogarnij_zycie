@@ -11,6 +11,7 @@ import { Box, Card, Screen, OfflineBadge } from '../components/ui.tsx'
 import {
   DAYS_SHORT,
   MONTHS_SHORT,
+  addDays,
   diffDays,
   inDays,
   isDaytime,
@@ -30,6 +31,7 @@ import {
   weekDays,
 } from '../data/selectors.ts'
 import { PushCard } from '../push/PushCard.tsx'
+import { RepeatBadge } from '../components/RepeatBadge.tsx'
 import { colors, fonts, priorities, shadows } from '../theme'
 import { DueBadge } from '../components/DueBadge.tsx'
 import { useItemSheets } from './shared/useItemSheets.tsx'
@@ -63,6 +65,8 @@ export function StartScreen() {
     events,
     categoryName,
     (t) => priorityOf(prioList, t.priority).label,
+    // „Ten tydzień” – powtórki wydarzeń cyklicznych do końca tygodnia
+    { from: today, to: addDays(today, 7) },
   )
   const week = weekDays(today)
   const weekLeft = items.filter((i) => i.date >= today && i.date <= week[6])
@@ -386,7 +390,7 @@ export function StartScreen() {
               : `${DAYS_SHORT[d.getDay()]} ${e.from}${e.to ? `–${e.to}` : ''}`
             return (
               <div
-                key={e.id}
+                key={`${e.id}@${e.date}`}
                 style={{ borderRadius: 20, boxShadow: shadows.card, overflow: 'hidden' }}
               >
                 <SwipeRow
@@ -469,6 +473,12 @@ export function StartScreen() {
                         }}
                       >
                         {type.name.toUpperCase()} · {when}
+                        {e.repeat && (
+                          <>
+                            {' · '}
+                            <RepeatBadge repeat={e.repeat} />
+                          </>
+                        )}
                       </span>
                     </span>
                     <span

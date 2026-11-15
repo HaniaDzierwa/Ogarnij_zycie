@@ -116,3 +116,48 @@ describe('rodzaj wydarzenia', () => {
     expect(eventTypeOf([own], 'r1').name).toBe('Trening')
   })
 })
+
+describe('wydarzenia cykliczne (etap 8)', () => {
+  const basen = {
+    ...events[0],
+    id: 'b',
+    title: 'Basen',
+    date: '2026-10-02',
+    allDay: false,
+    from: '17:00',
+    repeat: { every: 'week' as const },
+    skip: ['2026-10-16'],
+  }
+  const urodziny = {
+    ...events[0],
+    id: 'u',
+    title: 'Urodziny Oli',
+    date: '2019-12-02',
+    repeat: { every: 'year' as const },
+  }
+  const label = (t: (typeof tasks)[number]) => priorityOf(allPriorities([]), t.priority).label
+
+  test('kalendarz: powtórki w przedziale jako osobne wpisy (id@dzień), bez pominiętych', () => {
+    const items = calendarItems([], [basen], catName, label, {
+      from: '2026-10-05',
+      to: '2026-10-31',
+    })
+    expect(items.map((i) => [i.id, i.date, i.eventId, i.repeat])).toEqual([
+      ['b@2026-10-09', '2026-10-09', 'b', { every: 'week' }],
+      ['b@2026-10-23', '2026-10-23', 'b', { every: 'week' }],
+      ['b@2026-10-30', '2026-10-30', 'b', { every: 'week' }],
+    ])
+    // bez przedziału – tylko dzień startu (jak zwykłe wydarzenie)
+    expect(calendarItems([], [basen], catName, label).map((i) => i.date)).toEqual(['2026-10-02'])
+  })
+
+  test('najbliższe wydarzenia: najbliższe powtórki, także „co rok”', () => {
+    const next = upcomingEvents([basen, urodziny], '2026-11-20', 3)
+    expect(next.map((e) => [e.title, e.date])).toEqual([
+      ['Basen', '2026-11-20'],
+      ['Basen', '2026-11-27'],
+      ['Urodziny Oli', '2026-12-02'],
+    ])
+    expect(upcomingEvents([{ ...basen, deleted: true }], '2026-11-20', 2)).toEqual([])
+  })
+})

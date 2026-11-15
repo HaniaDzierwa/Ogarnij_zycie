@@ -3,6 +3,8 @@
 // kratek, nic do zgłoszenia – nic nie wysyłamy;
 // zmiany domowników wg docs/POWIADOMIENIA.md (zatwierdzone 2026-10-25). „Tylko ja” nigdy nie trafia do innych.
 
+import { occursOn, type Repeat } from '../../src/data/repeat.ts'
+
 export const ZONE = 'Europe/Warsaw'
 export const CLEANUP_TIME = '03:00'
 export const TRASH_DAYS = 30
@@ -85,8 +87,18 @@ export type Event = {
   allDay: boolean
   from: string | null
   remind: 'none' | 'day' | 'week'
+  /** Wydarzenie cykliczne (etap 8) i pominięte powtórki. */
+  repeat?: Repeat | null
+  skip?: string[]
   deleted: boolean
   deletedAt: number | null
+}
+
+/** Wydarzenia (także powtórki cyklicznych) danego dnia – kopie z tym dniem. */
+export function eventsOn(events: Event[], day: string): Event[] {
+  return events
+    .filter((e) => occursOn(e.date, e.repeat, day, e.skip ?? []))
+    .map((e) => (e.date === day ? e : { ...e, date: day }))
 }
 export type Message = { title: string; body: string; url: string; tag: string }
 
@@ -156,7 +168,7 @@ export function summaryFor(
   // dzisiejsze – bez tych z godziną, która już minęła
   const eventsToday = pick(
     c.eventsToday,
-    live.filter((e) => e.date === day && (e.allDay || !e.from || e.from >= time)),
+    eventsOn(live, day).filter((e) => e.allDay || !e.from || e.from >= time),
   )
   const dueTomorrow = pick(
     c.dueTomorrow,
@@ -164,11 +176,11 @@ export function summaryFor(
   )
   const eventsTomorrow = pick(
     c.eventsSoon,
-    live.filter((e) => e.remind === 'day' && e.date === tomorrow),
+    eventsOn(live, tomorrow).filter((e) => e.remind === 'day'),
   )
   const eventsWeek = pick(
     c.eventsSoon && isFirstToday,
-    live.filter((e) => e.remind === 'week' && e.date === addDays(day, 7)),
+    eventsOn(live, addDays(day, 7)).filter((e) => e.remind === 'week'),
   )
 
   const titles = (xs: { title: string }[]) => list(xs.map((x) => x.title))

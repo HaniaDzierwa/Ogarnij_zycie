@@ -250,3 +250,36 @@ describe('codzienne sprzątanie', () => {
     expect(cleanupPlan(tasks, events, DAY, null).toTrash).toEqual([])
   })
 })
+
+describe('wydarzenia cykliczne w podsumowaniach (etap 8)', () => {
+  test('powtórka dziś, jutro i za tydzień; pominięta – nie; link do dnia powtórki', () => {
+    // DAY = niedziela 25 paź 2026
+    const yearly = event({
+      id: 'b',
+      title: 'Urodziny Oli',
+      date: '2019-10-26',
+      remind: 'day',
+      repeat: { every: 'year' },
+    })
+    const weekly = event({
+      id: 'w',
+      title: 'Basen',
+      date: '2026-10-04',
+      allDay: false,
+      from: '17:00',
+      repeat: { every: 'week' },
+    })
+    const skipped = event({
+      id: 's',
+      title: 'Joga',
+      date: '2026-10-18',
+      repeat: { every: 'week' },
+      skip: ['2026-10-25'],
+    })
+    const m = summaryFor(user, [], [yearly, weekly, skipped], DAY, '08:00', true)!
+    expect(m.body).toBe('Dziś: Basen 17:00 · Jutro: Urodziny Oli')
+    expect(summaryFor(user, [], [yearly], DAY, '08:00', true)!.url).toBe(
+      '/kalendarz?dzien=2026-10-26',
+    )
+  })
+})

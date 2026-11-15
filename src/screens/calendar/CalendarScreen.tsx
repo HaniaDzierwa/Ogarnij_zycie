@@ -21,6 +21,7 @@ import {
   diffDays,
   inDays,
   parseKey,
+  toKey,
   weekStart,
   type DateKey,
 } from '../../data/dates.ts'
@@ -44,6 +45,7 @@ import type { CalendarItem } from '../../data/selectors.ts'
 import type { EventType } from '../../data/types.ts'
 import { EventSheet } from './EventSheet.tsx'
 import { useItemSheets } from '../shared/useItemSheets.tsx'
+import { RepeatBadge } from '../../components/RepeatBadge.tsx'
 
 type View = 'week' | 'month'
 
@@ -80,11 +82,15 @@ export function CalendarScreen() {
   const categoryName = (id: string | null) =>
     categories.find((c) => c.id === id)?.name ?? 'Bez kategorii'
   const typeOf = (id: string) => eventTypeOf(eventTypes, id)
+  // Powtórki wydarzeń cyklicznych – od widocznego tygodnia / miesiąca do ~4 miesięcy dalej („Później”)
+  const monthFirst = toKey(new Date(month.y, month.m, 1))
+  const viewFrom = weekStart(sel) < monthFirst ? weekStart(sel) : monthFirst
   const items = calendarItems(
     tasks,
     events,
     categoryName,
     (t) => priorityOf(prioList, t.priority).label,
+    { from: addDays(viewFrom, -7), to: addDays(viewFrom, 160) },
   )
 
   const pick = (k: DateKey) => {
@@ -108,17 +114,18 @@ export function CalendarScreen() {
 
   // Arkusz wydarzenia albo zadania (termin zadania) – jak na liście zadań; po zamknięciu – dzień wpisu
   const items$ = useItemSheets({
-    onCloseEvent: (e) => pick(e.date),
+    onCloseEvent: (_e, day) => pick(day),
     onCloseTask: (t) => t.due && pick(t.due),
   })
   /** Wiersz w agendzie i w „Później”: dotknięcie = arkusz, w lewo = do kosza, w prawo = ogarnij (zadanie). */
   const rowActions = (e: CalendarItem) => {
     const task = e.taskId ? tasks.find((t) => t.id === e.taskId) : undefined
-    const event = task ? undefined : events.find((x) => x.id === e.id)
+    // powtórka wydarzenia cyklicznego – wydarzenie po eventId, dzień = dzień powtórki
+    const event = task ? undefined : events.find((x) => x.id === (e.eventId ?? e.id))
     return {
-      onOpen: () => (task ? items$.openTask(task) : event && items$.openEvent(event)),
+      onOpen: () => (task ? items$.openTask(task) : event && items$.openEvent(event, e.date)),
       onDone: task && (() => items$.toggleDone(task)),
-      onDelete: () => (task ? items$.trashTask(task) : event && items$.removeEvent(event)),
+      onDelete: () => (task ? items$.trashTask(task) : event && items$.removeEvent(event, e.date)),
     }
   }
 
@@ -622,6 +629,12 @@ function AgendaRow({
                 overflow: 'hidden',
               }}
             >
+              {item.repeat && (
+                <>
+                  <RepeatBadge repeat={item.repeat} />
+                  {' · '}
+                </>
+              )}
               {(
                 type.name + (item.note ? ` · ${item.note.replace(/\s+/g, ' ')}` : '')
               ).toUpperCase()}

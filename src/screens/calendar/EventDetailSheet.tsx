@@ -6,7 +6,8 @@ import {
   InfoRow,
   NoteText,
 } from '../../components/DetailSheet.tsx'
-import { CheckIcon, EventTypeIcon } from '../../components/icons.tsx'
+import { CheckIcon, EventTypeIcon, RepeatIcon } from '../../components/icons.tsx'
+import { repeatSummary } from '../../data/repeat.ts'
 import { Chip, Dot, NoteField, Sheet } from '../../components/ui.tsx'
 import { DAYS, MONTHS_GEN, parseKey, type DateKey } from '../../data/dates.ts'
 import { eventEditOf, REMINDS, setAllDay, type EventEdit } from '../../data/eventOps.ts'
@@ -39,9 +40,12 @@ export function EventDetailSheet({
   onSave,
   onDelete,
   onClose,
+  day,
 }: {
   event: CalendarEvent
   eventTypes: EventType[]
+  /** Wydarzenie cykliczne – dzień otwartej powtórki (brak = dzień wydarzenia). */
+  day?: DateKey
   /** „URODZINY · PIĄTEK, 16 PAŹDZIERNIKA” */
   status: string
   /** „Dodane: Hania” */
@@ -274,8 +278,14 @@ export function EventDetailSheet({
               <Dot color={type.fg} />
               {type.name}
             </InfoRow>
-            <InfoRow label="DZIEŃ">{dayName(event.date)}</InfoRow>
+            <InfoRow label="DZIEŃ">{dayName(day ?? event.date)}</InfoRow>
             <InfoRow label="GODZINA">{hours(event)}</InfoRow>
+            {event.repeat && (
+              <InfoRow label="POWTARZA SIĘ">
+                <RepeatIcon size={15} />
+                {repeatSummary(event.repeat, event.date)}
+              </InfoRow>
+            )}
             <InfoRow label="PRZYPOMNIJ">
               {REMINDS.find((r) => r.id === event.remind)?.name ?? 'Brak'}
             </InfoRow>
