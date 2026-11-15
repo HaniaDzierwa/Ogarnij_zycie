@@ -153,6 +153,25 @@ Funkcje są w aplikacji od etapów 1–2; w tym etapie poprawki z testów we dwo
 
 ---
 
+## Etap 8 – Powtarzanie i zwarte arkusze (decyzja Hani 2026-11-15)
+
+Projekt: kanwa „Zadania cykliczne” w Claude Design (ekrany 1c/1e – zadanie, 4b – wydarzenie, 5 – usuwanie powtórki). Hania zatwierdziła układ 1c i zmianę wyglądu arkuszy.
+
+- **Zwarte arkusze** „Nowe zadanie” / „Nowe wydarzenie” i tryb edycji: na wierzchu tylko nazwa; w jednej karcie wiersze z wartością, które rozwijają się po dotknięciu (jeden naraz) – zadanie: Kategoria · Priorytet · Termin · Powtarzaj · Kto widzi; wydarzenie: Rodzaj · Dzień · Godzina · Powtarzaj · Przypomnij · Kto widzi. Kroki i Notatka pod „+”. Kategorie, priorytety i rodzaje jako zawijane chipy (dowolnie wiele własnych).
+- **Powtarzaj**: Nie powtarzaj · Codziennie · Co tydzień · Co miesiąc · Co rok · Co X dni (2–365); pod spodem „Kolejne: …”.
+- **Zadanie cykliczne**: ogarnięcie tworzy następne z kolejnym terminem (liczonym **od terminu**, także „co X dni”; spóźnione – pierwszy termin po dziś); ogarnięte trafia do Ogarniętych; COFNIJ cofa oba. Kroki wracają odznaczone, notatka zostaje. Włączenie przy „Bez terminu” ustawia Dziś. Usunięcie pyta: „Tylko to” (następne się pojawi) / „Całe powtarzanie”.
+- **Wydarzenie cykliczne**: wszystkie powtórki widać w kalendarzu, na Starcie i w powiadomieniach; bez końca (na razie). Edycja zmienia wszystkie powtórki. Usunięcie pyta: „Tylko to – dzień” / „Wszystkie powtórki”. Urodziny same ustawiają „Co rok” i cały dzień.
+- Ikona ↻ z napisem (np. CO TYDZIEŃ) przy zadaniu na liście i przy wydarzeniu w kalendarzu; w arkuszu do odczytu wiersz „Powtarza się”.
+- Baza: opcjonalne pole `repeat` (zadania i wydarzenia) i `skip` (pominięte dni wydarzenia) – stare dokumenty bez zmian; reguły i testy reguł (emulator u Hani).
+
+**Odbiór:**
+- [ ] Zadanie co tydzień: ogarnięcie pokazuje następne z terminem za tydzień; COFNIJ cofa oba
+- [ ] Wydarzenie co rok / co tydzień widać w kalendarzu w kolejnych miesiącach i latach; „Tylko to” usuwa jedną powtórkę
+- [ ] Arkusze nowego zadania i wydarzenia mieszczą się na ekranie telefonu; edycja w tym samym stylu
+- [ ] Stare zadania i wydarzenia działają jak wcześniej; testy reguł przechodzą u Hani
+
+---
+
 ## Jak sprawdzamy każdy etap
 
 1. Demo: link do wersji testowej (kanał podglądu Firebase Hosting albo `npm run dev` w sieci domowej) + 2–5 rzeczy do kliknięcia z opisem oczekiwanego efektu.

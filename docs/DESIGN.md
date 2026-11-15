@@ -24,6 +24,7 @@ Styl „domowy elegancki”: butelkowa zieleń, mosiądz i krem, szeryfowy Fraun
 | 3 Zadania | `Zadania.dc.html` | Zakładki Do zrobienia / Ogarnięte, filtry, grupy, podzadania, gesty, arkusz zadania, arkusz „Nowe zadanie”, pasek „Cofnij”; wariant `demo` pokazuje stany |
 | 3a Gesty | `ZadaniaPrawo`, `ZadaniaLewo` | Odsłonięte tło przy przeciąganiu w prawo (ogarnij) i w lewo (do kosza) |
 | 3a Arkusz zadania | `ZadaniaArkusz` | **Najpierw do odczytu** (kategoria, priorytet, termin, kto widzi, kroki do odhaczania, notatka); „Edytuj” w prawym górnym rogu → edycja (nazwa, kategoria, priorytet, termin, kroki, notatka, kto widzi) z wyraźnym „Zapisz” u góry i „Anuluj”; zamknięcie bez zapisu – „Odrzucić zmiany?”; na dole mniejsze Usuń / Ogarnij (decyzja Hani 2026-10-25) |
+| 3b Zwarte arkusze i powtarzanie (etap 8) | kanwa „Zadania cykliczne” w Claude Design – ekrany 1c/1e (zadanie), 4b (wydarzenie), 5 (usuwanie powtórki) | **Zastępuje** układ arkuszy „Nowe zadanie”, „Nowe wydarzenie” i trybu edycji z `Zadania.dc.html` / `Kalendarz.dc.html` (decyzja Hani 2026-11-15). Na wierzchu: mały napis „NOWE ZADANIE” + nazwa (Fraunces 24, linia pod spodem). Karta (biała, promień 20) z wierszami 56 px: ikona mosiężna 20 px · nazwa 16/700 · wartość 14/800 brass-700 (priorytet/rodzaj jako kolorowa plakietka) · strzałka ˅ (obrót przy rozwinięciu). Rozwinięty jeden wiersz naraz; wybór kategorii / priorytetu / rodzaju / przypomnienia zwija go. Powtarzaj: siatka 2 × 3 równych przycisków (40 px, promień 20), przy „Co X dni” pole „Co [ 3 ] dni” (48 px), pod spodem linijka 13 px „Co tydzień w piątek. Kolejne: …”. „+ Kroki” / „+ Notatka” – przerywana ramka mosiężna. Lista i kalendarz: ↻ 13 px + „CO TYDZIEŃ” (11/800, muted) |
 | 3a Wyczyść ogarnięte | `ZadaniaWyczysc` | Zakładka Ogarnięte + arkusz: starsze niż 7 dni / 30 dni / wszystkie |
 | 3a Kosz | `Kosz.dc.html` (+ `KoszPotwierdzenie`) | Wspólny kosz zadań i wydarzeń (wejście z Ustawień): chipy Wszystko / Zadania / Wydarzenia, licznik dni, Przywróć, Opróżnij kosz z potwierdzeniem |
 | 4a Kalendarz – usuwanie | `KalendarzLewo`, `KalendarzArkusz` | Przeciągnięcie wydarzenia w lewo = do kosza; klik w wydarzenie = arkusz wydarzenia. Arkusz wydarzenia jak arkusz zadania: najpierw do odczytu (rodzaj, dzień, godzina, przypomnienie, kto widzi, notatka), „Edytuj” → edycja (także DZIEŃ) z „Zapisz”; na dole mniejsze Usuń / Gotowe (decyzja Hani 2026-10-25 – zastępuje edycję w miejscu z 2026-10-18). Nowe wydarzenie: pole DZIEŃ do zmiany (domyślnie dzień wybrany w kalendarzu); po dodaniu kalendarz pokazuje ten dzień |
@@ -172,12 +173,14 @@ houses/{houseId}/priorities/{id}    name, color, order(liczba, może być ułame
 houses/{houseId}/tasks/{id}         title, categoryId|null, priority(high|mid|low|id własnego), due('RRRR-MM-DD'|null), dueWeek(true – opcjonalne, 2026-11-15), done,
                                     subtasks[{id,title,done}], note (notatka, do 500), createdBy, doneAt(Timestamp|null), doneBy,
                                     deleted, deletedAt(Timestamp|null), deletedBy, updatedAt, updatedBy
+                                    repeat{every(day|week|month|year|days), n} – opcjonalne (etap 8), tylko przy terminie
 houses/{houseId}/private/{uid}/tasks/{id}    jak tasks – „Tylko ja”: widzi i zmienia tylko autor (decyzja Hani 2026-10-25)
 houses/{houseId}/private/{uid}/events/{id}   jak events – „Tylko ja”
 houses/{houseId}/eventTypes/{id}    name, dot, bg, fg, icon, system, updatedAt, updatedBy
                                     (wbudowane id: task, birthday, party, event, doctor)
 houses/{houseId}/events/{id}        title, date('RRRR-MM-DD'), allDay, from|null, to|null, typeId, remind(none|day|week),
-                                    note, createdBy, deleted, deletedAt(Timestamp|null), deletedBy, updatedAt, updatedBy
+                                    note, createdBy, deleted, deletedAt(Timestamp|null), deletedBy, updatedAt, updatedBy,
+                                    repeat{every, n} i skip['RRRR-MM-DD'] (pominięte powtórki) – opcjonalne (etap 8)
 invites/{code}                      houseId, createdBy, expiresAt, usedBy|null, scope   (etap 4)
 ```
 

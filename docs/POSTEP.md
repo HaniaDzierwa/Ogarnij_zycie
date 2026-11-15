@@ -1,6 +1,6 @@
 # Postęp prac
 
-Aktualny etap: **4 – Wspólny dom** (w toku)
+Aktualny etap: **8 – Powtarzanie i zwarte arkusze** (w toku, gałąź `etap-8-powtarzanie`)
 
 | Etap | Status | Akceptacja |
 | --- | --- | --- |
@@ -12,8 +12,21 @@ Aktualny etap: **4 – Wspólny dom** (w toku)
 | 5 Kategorie, Kalendarz, Start i wspólne testowanie (dawniej 4–6 + odbiór 3) | zakończony | 2026-10-25 |
 | 6 Ustawienia i push (dawniej 7) | zakończony | 2026-10-25 |
 | 7 Testy i publikacja (dawniej 9) | zakończony; usuwanie konta – dorobione 2026-10-25 | 2026-10-25 |
+| 8 Powtarzanie i zwarte arkusze | w toku | – |
 
 Kolejność etapów zmieniona 2026-10-20 (decyzja Hani: testować dopiero we dwoje) – szczegóły w PLAN.md. Wpisy w dzienniku sprzed tej daty używają dawnej numeracji.
+
+## Etap 8 – kroki (Powtarzanie i zwarte arkusze)
+
+Decyzje Hani 2026-11-15: układ 1c z kanwy „Zadania cykliczne”; „co X dni” liczone od terminu; usuwanie zadania cyklicznego pyta „Tylko to / Całe powtarzanie”; edycja wydarzenia zmienia wszystkie powtórki; wydarzenia bez „Do kiedy”.
+
+| Krok | Status |
+| --- | --- |
+| 1 Logika powtarzania (`src/data/repeat.ts`), pole `repeat` / `skip` w modelu i regułach, testy | w toku |
+| 2 Zadania: ogarnięcie tworzy następne, COFNIJ cofa oba, usuwanie „Tylko to / Całe”, ↻ na liście i w arkuszu | – |
+| 3 Wydarzenia: powtórki w kalendarzu, na Starcie i w Workerze, usuwanie jednej powtórki | – |
+| 4 Zwarte arkusze: nowe zadanie, nowe wydarzenie, tryb edycji | – |
+| 5 Testy reguł u Hani, wersja testowa, demo, odbiór | – |
 
 ## Etap 6 – kroki (Ustawienia i powiadomienia push)
 
