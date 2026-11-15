@@ -164,3 +164,7 @@ Folder jest w `.gitignore`. To prywatne dane domu – nie wysyłaj go nikomu i n
 Pominięte celowo: zaproszenia (ważne 10 minut) i subskrypcje powiadomień (związane z adresem strony – po przeniesieniu powiadomienia włącza się na telefonie od nowa).
 
 Sama baza w nowym projekcie nie zmienia aplikacji – strona dalej korzysta ze starego projektu. Przełączenie aplikacji (konfiguracja, Hosting, Worker) to osobny krok – napisz Claude, jeśli ma to zrobić.
+
+**Zrzut bez klucza (2026-11-15):** gdy Firebase CLI na komputerze jest zalogowane na konto właściciela projektu (`npx firebase login`), zamiast kroków A.1–A.3 i A.5 wystarczy:
+`npm run baza:zrzut-cli`
+Wynik jest taki sam (folder `firebase-export-RRRR-MM-DD\` z `firestore.json` i `konta.json`), tylko odczyt. Parametry haseł (A.4) – nadal z konsoli. Do wgrania w nowym projekcie (C) potrzebny jest klucz **nowego** projektu.

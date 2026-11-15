@@ -54,6 +54,61 @@ export function decode(v: Json, t: SpecialTypes): unknown {
   return out
 }
 
+/** Wartość z REST API Firestore (zrzut przez logowanie Firebase CLI). */
+export type RestValue = {
+  nullValue?: null
+  booleanValue?: boolean
+  integerValue?: string
+  doubleValue?: number | string
+  timestampValue?: string
+  stringValue?: string
+  bytesValue?: string
+  referenceValue?: string
+  geoPointValue?: { latitude?: number; longitude?: number }
+  arrayValue?: { values?: RestValue[] }
+  mapValue?: { fields?: Record<string, RestValue> }
+}
+
+/** Wartość z REST API → ten sam JSON co `encode` (wspólny format zrzutu). */
+export function fromRest(v: RestValue): Json {
+  if ('nullValue' in v) return null
+  if (v.booleanValue !== undefined) return v.booleanValue
+  if (v.integerValue !== undefined) return Number(v.integerValue)
+  if (v.doubleValue !== undefined) {
+    const n = Number(v.doubleValue)
+    return Number.isFinite(n) ? n : { __typ: 'liczba', wartosc: String(v.doubleValue) }
+  }
+  if (v.timestampValue !== undefined) {
+    // „2026-10-25T14:38:29.123456Z” – ułamek sekundy do nanosekund
+    const m = /^(.*?)(?:\.(\d+))?Z$/.exec(v.timestampValue)
+    if (!m) throw new Error(`Zła data: ${v.timestampValue}`)
+    return {
+      __typ: 'czas',
+      s: Date.parse(`${m[1]}Z`) / 1000,
+      ns: Number((m[2] ?? '').padEnd(9, '0').slice(0, 9)),
+    }
+  }
+  if (v.stringValue !== undefined) return v.stringValue
+  if (v.bytesValue !== undefined) return { __typ: 'bajty', base64: v.bytesValue }
+  if (v.referenceValue !== undefined)
+    return { __typ: 'odnosnik', sciezka: v.referenceValue.replace(/^.*?\/documents\//, '') }
+  if (v.geoPointValue)
+    return {
+      __typ: 'miejsce',
+      lat: v.geoPointValue.latitude ?? 0,
+      lng: v.geoPointValue.longitude ?? 0,
+    }
+  if (v.arrayValue) return (v.arrayValue.values ?? []).map(fromRest)
+  if (v.mapValue) return fromRestFields(v.mapValue.fields ?? {})
+  throw new Error(`Nieznana wartość: ${JSON.stringify(v)}`)
+}
+
+export function fromRestFields(fields: Record<string, RestValue>): { [k: string]: Json } {
+  const out: { [k: string]: Json } = {}
+  for (const [k, x] of Object.entries(fields)) out[k] = fromRest(x)
+  return out
+}
+
 /** Plik zrzutu bazy. */
 export type FirestoreDump = {
   projekt: string

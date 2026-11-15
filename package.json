@@ -18,7 +18,8 @@
     "dev:emulatory": "vite --mode emulatory",
     "test:reguly": "firebase emulators:exec --only firestore --project demo-ogarnij-zycie \"vitest run --config vitest.rules.config.ts\"",
     "baza:zrzut": "node scripts/baza/zrzut.ts",
-    "baza:wgraj": "node scripts/baza/wgraj.ts"
+    "baza:wgraj": "node scripts/baza/wgraj.ts",
+    "baza:zrzut-cli": "node scripts/baza/zrzut-cli.ts"
   },
   "dependencies": {
     "firebase": "^13.1.0",
