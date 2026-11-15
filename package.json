@@ -20,7 +20,8 @@
     "baza:zrzut": "node scripts/baza/zrzut.ts",
     "baza:wgraj": "node scripts/baza/wgraj.ts",
     "baza:zrzut-cli": "node scripts/baza/zrzut-cli.ts",
-    "baza:usun-puste-domy": "node scripts/baza/usun-puste-domy.ts"
+    "baza:usun-puste-domy": "node scripts/baza/usun-puste-domy.ts",
+    "baza:usun-konta": "node scripts/baza/usun-konta.ts"
   },
   "dependencies": {
     "firebase": "^13.1.0",
