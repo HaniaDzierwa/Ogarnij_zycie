@@ -7,6 +7,10 @@ afterEach(cleanup)
 
 // Dzień z projektu: piątek 9 października 2026.
 const renderAt = (url: string) => renderApp(url)
+/** Zwarte arkusze (etap 8): wiersz karty – „Dzień”, „Rodzaj”, „Godzina”… */
+const rowBtn = (sheet: HTMLElement, name: string) =>
+  within(sheet).getByRole('button', { name: new RegExp(`^${name}`) })
+const openRow = (sheet: HTMLElement, name: string) => fireEvent.click(rowBtn(sheet, name))
 
 const agenda = () => screen.getByRole('heading', { level: 2, name: /,/ }).closest('section')!
 
@@ -94,16 +98,16 @@ describe('ekran Kalendarz', () => {
   test('nowe wydarzenie z nowym rodzajem trafia do agendy wybranego dnia', () => {
     renderAt('/kalendarz?nowe=wydarzenie')
     const sheet = screen.getByRole('dialog', { name: 'Nowe wydarzenie' })
-    expect(within(sheet).getByText('PIĄTEK, 9 PAŹDZIERNIKA')).toBeDefined()
+    expect(rowBtn(sheet, 'Dzień').textContent).toContain('Dziś')
     fireEvent.change(within(sheet).getByLabelText('NAZWA'), { target: { value: 'Basen z Olą' } })
+    openRow(sheet, 'Rodzaj')
     fireEvent.click(within(sheet).getByRole('button', { name: '+ Nowy rodzaj' }))
     fireEvent.change(within(sheet).getByLabelText('NAZWA RODZAJU'), {
       target: { value: 'Trening' },
     })
     fireEvent.click(within(sheet).getByRole('button', { name: 'Dodaj rodzaj' }))
-    expect(
-      within(sheet).getByRole('button', { name: 'Trening' }).getAttribute('aria-pressed'),
-    ).toBe('true')
+    // nowy rodzaj wybrany, wiersz zwinięty
+    expect(rowBtn(sheet, 'Rodzaj').textContent).toContain('TRENING')
     fireEvent.click(within(sheet).getByRole('button', { name: 'Dodaj do kalendarza' }))
 
     expect(screen.queryByRole('dialog')).toBeNull()
@@ -116,10 +120,11 @@ describe('ekran Kalendarz', () => {
   test('nowe wydarzenie: dzień do zmiany w arkuszu (domyślnie wybrany w kalendarzu)', () => {
     renderAt('/kalendarz?nowe=wydarzenie')
     const sheet = screen.getByRole('dialog', { name: 'Nowe wydarzenie' })
+    openRow(sheet, 'Dzień')
     const day = within(sheet).getByLabelText('DZIEŃ') as HTMLInputElement
     expect(day.value).toBe('2026-10-09')
     fireEvent.change(day, { target: { value: '2026-10-21' } })
-    expect(within(sheet).getByText('ŚRODA, 21 PAŹDZIERNIKA')).toBeDefined()
+    expect(rowBtn(sheet, 'Dzień').textContent).toContain('Śr 21 paź')
     fireEvent.change(within(sheet).getByLabelText('NAZWA'), { target: { value: 'Dentysta' } })
     fireEvent.click(within(sheet).getByRole('button', { name: 'Dodaj do kalendarza' }))
     expect(agenda().textContent).toContain('Środa, 21 października')
@@ -131,7 +136,8 @@ describe('ekran Kalendarz', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Dodaj' }))
     fireEvent.click(screen.getByRole('menuitem', { name: 'Wydarzenie w kalendarzu' }))
     const sheet = screen.getByRole('dialog', { name: 'Nowe wydarzenie' })
-    expect(within(sheet).getByText('SOBOTA, 10 PAŹDZIERNIKA')).toBeDefined()
+    openRow(sheet, 'Dzień')
+    expect((within(sheet).getByLabelText('DZIEŃ') as HTMLInputElement).value).toBe('2026-10-10')
   })
 })
 
@@ -149,8 +155,11 @@ describe('edycja i usuwanie – jak w Zadaniach', () => {
     fireEvent.change(within(sheet).getByLabelText('NAZWA'), {
       target: { value: 'Kino z Krzysiem i Olą' },
     })
+    openRow(sheet, 'Rodzaj')
     fireEvent.click(within(sheet).getByRole('button', { name: 'Impreza' }))
+    openRow(sheet, 'Przypomnij')
     fireEvent.click(within(sheet).getByRole('button', { name: 'Brak' }))
+    openRow(sheet, 'Godzina')
     fireEvent.change(within(sheet).getByLabelText('OD'), { target: { value: '20:00' } })
     fireEvent.click(within(sheet).getByRole('button', { name: 'Zapisz' }))
     expect(within(sheet).getByText(/20:00/)).toBeDefined()
@@ -165,6 +174,7 @@ describe('edycja i usuwanie – jak w Zadaniach', () => {
     fireEvent.click(row('Kino z Krzysiem'))
     const sheet = screen.getByRole('dialog', { name: 'Wydarzenie' })
     fireEvent.click(within(sheet).getByRole('button', { name: 'Edytuj' }))
+    openRow(sheet, 'Dzień')
     fireEvent.change(within(sheet).getByLabelText('DZIEŃ'), { target: { value: '2026-10-12' } })
     fireEvent.click(within(sheet).getByRole('button', { name: 'Zapisz' }))
     fireEvent.click(within(sheet).getByRole('button', { name: 'Gotowe' }))
@@ -293,6 +303,7 @@ describe('notatka przy wydarzeniu', () => {
     renderAt('/kalendarz?nowe=wydarzenie')
     const sheet = screen.getByRole('dialog', { name: 'Nowe wydarzenie' })
     fireEvent.change(within(sheet).getByLabelText('NAZWA'), { target: { value: 'Basen' } })
+    fireEvent.click(within(sheet).getByRole('button', { name: 'Notatka' }))
     fireEvent.change(within(sheet).getByLabelText(/NOTATKA/), {
       target: { value: 'Zabrać czepki' },
     })
@@ -309,5 +320,53 @@ describe('notatka przy wydarzeniu', () => {
     fireEvent.click(within(detail).getByRole('button', { name: 'Zapisz' }))
     fireEvent.click(within(detail).getByRole('button', { name: 'Gotowe' }))
     expect(agenda().textContent).toContain('ZABRAĆ CZEPKI I KLAPKI')
+  })
+})
+
+describe('wydarzenia cykliczne (etap 8)', () => {
+  test('Urodziny same ustawiają „Co rok” i cały dzień; powtórka za rok w kalendarzu', () => {
+    renderAt('/kalendarz?nowe=wydarzenie')
+    const sheet = screen.getByRole('dialog', { name: 'Nowe wydarzenie' })
+    fireEvent.change(within(sheet).getByLabelText('NAZWA'), { target: { value: 'Urodziny Oli' } })
+    openRow(sheet, 'Rodzaj')
+    fireEvent.click(within(sheet).getByRole('button', { name: 'Urodziny' }))
+    expect(rowBtn(sheet, 'Powtarzaj').textContent).toContain('Co rok')
+    expect(rowBtn(sheet, 'Godzina').textContent).toContain('Cały dzień')
+    openRow(sheet, 'Powtarzaj')
+    expect(
+      within(sheet).getByText('Co rok, 9 października. Kolejne: 9 paź 2027, 9 paź 2028…'),
+    ).toBeDefined()
+    fireEvent.click(within(sheet).getByRole('button', { name: 'Dodaj do kalendarza' }))
+    expect(agenda().textContent).toContain('CO ROK')
+  })
+
+  test('powtórka w innym tygodniu; „Tylko to” usuwa jedną, reszta zostaje', () => {
+    renderAt('/kalendarz?nowe=wydarzenie')
+    const sheet = screen.getByRole('dialog', { name: 'Nowe wydarzenie' })
+    fireEvent.change(within(sheet).getByLabelText('NAZWA'), { target: { value: 'Basen' } })
+    openRow(sheet, 'Powtarzaj')
+    fireEvent.click(within(sheet).getByRole('radio', { name: 'Co tydzień' }))
+    fireEvent.click(within(sheet).getByRole('button', { name: 'Dodaj do kalendarza' }))
+
+    // tydzień później – ta sama godzina, z ↻
+    fireEvent.click(screen.getByRole('button', { name: 'Następny tydzień' }))
+    expect(agenda().textContent).toContain('Piątek, 16 października')
+    const basen = () => within(agenda()).queryByRole('button', { name: /^Basen/ })
+    expect(basen()!.textContent).toContain('CO TYDZIEŃ')
+
+    fireEvent.click(basen()!)
+    const detail = screen.getByRole('dialog', { name: 'Wydarzenie' })
+    expect(within(detail).getByText('Piątek, 16 października')).toBeDefined()
+    expect(within(detail).getByText('Co tydzień w piątek')).toBeDefined()
+    fireEvent.click(within(detail).getByRole('button', { name: 'Usuń' }))
+    const ask = screen.getByRole('alertdialog', { name: 'Usunąć wydarzenie?' })
+    expect(within(ask).getByRole('button', { name: 'Wszystkie powtórki' })).toBeDefined()
+    fireEvent.click(within(ask).getByRole('button', { name: 'Tylko to – pt 16 paź' }))
+    expect(basen()).toBeNull()
+    expect(screen.getByRole('status').textContent).toContain('Usunięto: Basen · pt 16 paź')
+
+    // tydzień dalej – jest
+    fireEvent.click(screen.getByRole('button', { name: 'Następny tydzień' }))
+    expect(basen()).not.toBeNull()
   })
 })

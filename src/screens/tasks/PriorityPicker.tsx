@@ -3,8 +3,8 @@ import { useStore } from '../../data/store.ts'
 import { colors } from '../../theme'
 
 /**
- * Wybór priorytetu (arkusz nowego zadania i arkusz zadania): wbudowane i własne priorytety domu
- * w kolejności, po 3 w rzędzie.
+ * Wybór priorytetu (arkusze zadania): wbudowane i własne priorytety domu w kolejności, jako
+ * zawijane chipy z kwadracikiem w kolorze – mieści dowolnie wiele własnych (etap 8, ekran 1e).
  */
 export function PriorityPicker({
   value,
@@ -18,7 +18,7 @@ export function PriorityPicker({
     <div
       role="radiogroup"
       aria-label="Priorytet"
-      style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 8 }}
+      style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}
     >
       {priorities.map((p) => {
         const on = value === p.id
@@ -30,24 +30,22 @@ export function PriorityPicker({
             aria-checked={on}
             onClick={() => onChange(p.id)}
             style={{
-              display: 'flex',
+              display: 'inline-flex',
               alignItems: 'center',
-              justifyContent: 'center',
-              gap: 8,
-              height: 48,
-              padding: '0 8px',
-              borderRadius: 16,
-              fontSize: 15,
+              gap: 7,
+              height: 36,
+              padding: '0 14px',
+              borderRadius: 18,
+              fontSize: 14,
               fontWeight: 700,
-              border: on ? `2px solid ${p.line}` : `1px solid ${colors.border}`,
-              background: on ? p.bg : colors.white,
-              color: on ? p.fg : colors.green900,
+              border: `1px solid ${on ? colors.green900 : colors.border}`,
+              background: on ? colors.green900 : 'transparent',
+              color: on ? colors.cream : colors.green900,
               whiteSpace: 'nowrap',
-              minWidth: 0,
             }}
           >
-            <Box color={p.line} size={14} />
-            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.label}</span>
+            <Box color={on ? colors.brass300 : p.line} size={12} />
+            {p.label}
           </button>
         )
       })}

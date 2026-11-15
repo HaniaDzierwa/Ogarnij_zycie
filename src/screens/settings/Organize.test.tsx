@@ -81,6 +81,7 @@ test('Priorytety: wbudowane bez edycji; nowy „Na weekend” po „Ważne” �
 
   router.navigate('/zadania?nowe=zadanie')
   const sheet = await screen.findByRole('dialog', { name: 'Nowe zadanie' })
+  fireEvent.click(within(sheet).getByRole('button', { name: /^Priorytet/ }))
   const radios = within(within(sheet).getByRole('radiogroup', { name: 'Priorytet' }))
     .getAllByRole('radio')
     .map((r) => r.textContent)
@@ -103,6 +104,7 @@ test('Priorytety: własny z zadaniem nie do usunięcia; bez zadań – usuwa si�
   fireEvent.click(await screen.findByText('Przegląd techniczny'))
   const detail = screen.getByRole('dialog')
   fireEvent.click(within(detail).getByRole('button', { name: 'Edytuj' }))
+  fireEvent.click(within(detail).getByRole('button', { name: /^Priorytet/ }))
   fireEvent.click(within(detail).getByRole('radio', { name: 'Kiedyś' }))
   fireEvent.click(within(detail).getByRole('button', { name: 'Zapisz' }))
   click('Zamknij')

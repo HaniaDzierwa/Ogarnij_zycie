@@ -1,22 +1,14 @@
-import { newId } from '../../data/ids.ts'
 import { useState } from 'react'
-import { Chip, Dot, Field, NoteField, Sheet } from '../../components/ui.tsx'
-import { CloseIcon, PlusIcon } from '../../components/icons.tsx'
-import { type DateKey } from '../../data/dates.ts'
-import { DueField } from './DueField.tsx'
-import type { DueValue } from './duePresets.ts'
-import type { Category, Subtask, Task } from '../../data/types.ts'
-import { colors, DEFAULT_PRIORITY, fonts, type Priority } from '../../theme'
-import { NewCategoryButton, NewCategoryForm } from './NewCategoryForm.tsx'
-import { PriorityPicker } from './PriorityPicker.tsx'
 import { SheetSubmit } from '../../components/SheetSubmit.tsx'
-import { VisibilityField } from '../../components/VisibilityField.tsx'
+import { Sheet } from '../../components/ui.tsx'
+import { type DateKey } from '../../data/dates.ts'
+import type { TaskEdit } from '../../data/taskOps.ts'
+import type { Category } from '../../data/types.ts'
+import { DEFAULT_PRIORITY } from '../../theme'
+import { TaskForm } from './TaskForm.tsx'
 
 /** Nowe zadanie z formularza (resztę pól – kto, kiedy – uzupełnia ekran). */
-export type TaskDraft = Pick<
-  Task,
-  'title' | 'categoryId' | 'priority' | 'due' | 'dueWeek' | 'subtasks' | 'note' | 'private'
->
+export type TaskDraft = TaskEdit
 
 type Props = {
   onClose: () => void
@@ -28,219 +20,49 @@ type Props = {
 }
 
 /**
- * Arkusz „Nowe zadanie”: tytuł, kategoria, priorytet, kroki, termin („Inna data” – kalendarz telefonu).
+ * Arkusz „Nowe zadanie” w układzie 1c (etap 8, decyzja Hani 2026-11-15): nazwa, karta
+ * Kategoria · Priorytet · Termin · Powtarzaj · Kto widzi, „+ Kroki” / „+ Notatka”.
  * Otwierany warunkowo – stan formularza startuje od nowa przy każdym otwarciu.
  */
 export function TaskSheet({ onClose, categories, today, onAddCategory, onSave }: Props) {
-  const [title, setTitle] = useState('')
-  const [categoryId, setCategoryId] = useState<string | null>(categories[0]?.id ?? null)
-  const [priority, setPriority] = useState<Priority>(DEFAULT_PRIORITY)
-  // nowe – domyślnie „Wspólne” (decyzja Hani 2026-10-25)
-  const [isPrivate, setPrivate] = useState(false)
-  const [dueValue, setDueValue] = useState<DueValue>({ due: null, dueWeek: false })
-  const [steps, setSteps] = useState<Subtask[]>([])
-  const [note, setNote] = useState('')
-  const [step, setStep] = useState('')
-  const [addingCategory, setAddingCategory] = useState(false)
+  const [draft, setDraft] = useState<TaskEdit>(() => ({
+    title: '',
+    categoryId: categories[0]?.id ?? null,
+    priority: DEFAULT_PRIORITY,
+    due: null,
+    dueWeek: false,
+    subtasks: [],
+    note: '',
+    // nowe – domyślnie „Wspólne” (decyzja Hani 2026-10-25)
+    private: false,
+  }))
 
-  const addStep = () => {
-    const s = step.trim()
-    if (!s) return
-    setSteps((list) => [...list, { id: newId('s'), title: s, done: false }])
-    setStep('')
-  }
   const submit = () => {
-    const t = title.trim()
-    if (!t) return
+    const title = draft.title.trim()
+    if (!title) return
+    const { repeat, ...rest } = draft
     onSave({
-      title: t,
-      categoryId,
-      priority,
-      due: dueValue.due,
-      dueWeek: dueValue.dueWeek,
-      subtasks: steps,
-      note: note.trim(),
-      private: isPrivate,
+      ...rest,
+      title,
+      note: draft.note.trim(),
+      ...(repeat && draft.due ? { repeat } : {}),
     })
   }
 
   return (
     <Sheet open onClose={onClose} label="Nowe zadanie">
-      <span style={{ fontFamily: fonts.serif, fontSize: 28, fontWeight: 500 }}>
-        Nowe <em style={{ color: colors.brass700 }}>zadanie</em>
-      </span>
-      <Field
-        id="tytul"
-        label="CO TRZEBA ZROBIĆ?"
-        placeholder="np. Odebrać paczkę z paczkomatu"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        onKeyDown={(e) => e.key === 'Enter' && submit()}
+      <TaskForm
+        mode="new"
+        value={draft}
+        onChange={(fn) => setDraft(fn)}
+        categories={categories}
+        today={today}
+        onAddCategory={onAddCategory}
+        onSubmit={submit}
       />
-
-      <Group label="KATEGORIA">
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-          {categories.map((c) => (
-            <Chip
-              key={c.id}
-              on={categoryId === c.id}
-              onClick={() => setCategoryId(c.id)}
-              dot={<Dot color={categoryId === c.id ? colors.brass300 : c.color} />}
-            >
-              {c.name}
-            </Chip>
-          ))}
-          {!addingCategory && <NewCategoryButton onClick={() => setAddingCategory(true)} />}
-        </div>
-        {addingCategory && (
-          <NewCategoryForm
-            id="nowa-kategoria-arkusz"
-            onCancel={() => setAddingCategory(false)}
-            onAdd={(name, color) => {
-              setCategoryId(onAddCategory(name, color))
-              setAddingCategory(false)
-            }}
-          />
-        )}
-      </Group>
-
-      <Group label="PRIORYTET">
-        <PriorityPicker value={priority} onChange={setPriority} />
-      </Group>
-
-      <Group
-        label={
-          <>
-            KROKI <span style={{ fontWeight: 600, letterSpacing: '0.4px' }}>(opcjonalnie)</span>
-          </>
-        }
-      >
-        {steps.map((s) => (
-          <div
-            key={s.id}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 10,
-              minHeight: 40,
-              paddingLeft: 4,
-            }}
-          >
-            <span
-              style={{
-                width: 18,
-                height: 18,
-                borderRadius: 6,
-                flex: 'none',
-                ...(s.done
-                  ? { background: colors.green900 }
-                  : { border: `2px solid ${colors.brass500}` }),
-              }}
-            />
-            <span
-              style={{
-                flex: 1,
-                fontSize: 15,
-                ...(s.done ? { color: '#8A968E', textDecoration: 'line-through' } : {}),
-              }}
-            >
-              {s.title}
-            </span>
-            <button
-              type="button"
-              onClick={() => setSteps((list) => list.filter((x) => x.id !== s.id))}
-              aria-label={`Usuń podzadanie: ${s.title}`}
-              style={{
-                width: 36,
-                height: 40,
-                border: 0,
-                background: 'transparent',
-                color: '#9AA59D',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <CloseIcon />
-            </button>
-          </div>
-        ))}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 6,
-            padding: '4px 4px 4px 16px',
-            border: `1px solid ${colors.border}`,
-            borderRadius: 24,
-            background: colors.white,
-          }}
-        >
-          <label htmlFor="nowe-pod" className="sr-only">
-            Nowe podzadanie
-          </label>
-          <input
-            id="nowe-pod"
-            type="text"
-            placeholder="np. Kupić kartkę"
-            value={step}
-            onChange={(e) => setStep(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && addStep()}
-            style={{
-              flex: 1,
-              minWidth: 0,
-              height: 40,
-              border: 0,
-              background: 'transparent',
-              fontSize: 16,
-              color: colors.green900,
-              outline: 'none',
-            }}
-          />
-          <button
-            type="button"
-            onClick={addStep}
-            aria-label="Dodaj podzadanie"
-            style={{
-              width: 40,
-              height: 40,
-              border: 0,
-              borderRadius: 20,
-              background: colors.sand,
-              color: colors.green900,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flex: 'none',
-            }}
-          >
-            <PlusIcon size={18} strokeWidth={2.4} />
-          </button>
-        </div>
-      </Group>
-
-      <Group label="TERMIN">
-        <DueField id="termin-data" value={dueValue} today={today} onChange={setDueValue} />
-      </Group>
-
-      <NoteField id="notatka-zadania" value={note} onChange={setNote} />
-
-      <VisibilityField value={isPrivate} onChange={setPrivate} />
-
-      <SheetSubmit ready={!!title.trim()} onSubmit={submit}>
+      <SheetSubmit ready={!!draft.title.trim()} onSubmit={submit}>
         Dodaj zadanie
       </SheetSubmit>
     </Sheet>
-  )
-}
-
-function Group({ label, children }: { label: React.ReactNode; children: React.ReactNode }) {
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-      <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '1.4px', color: colors.muted }}>
-        {label}
-      </span>
-      {children}
-    </div>
   )
 }

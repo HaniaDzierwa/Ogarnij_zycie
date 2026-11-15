@@ -8,15 +8,14 @@ import {
 } from '../../components/DetailSheet.tsx'
 import { CheckIcon, EventTypeIcon, RepeatIcon } from '../../components/icons.tsx'
 import { repeatSummary } from '../../data/repeat.ts'
-import { Chip, Dot, NoteField, Sheet } from '../../components/ui.tsx'
+import { Dot, Sheet } from '../../components/ui.tsx'
 import { DAYS, MONTHS_GEN, parseKey, type DateKey } from '../../data/dates.ts'
 import { eventEditOf, REMINDS, setAllDay, type EventEdit } from '../../data/eventOps.ts'
 import { eventTypeOf } from '../../data/selectors.ts'
+import { useStore } from '../../data/store.ts'
 import type { CalendarEvent, EventType } from '../../data/types.ts'
 import { colors, fonts } from '../../theme'
-import { Group } from './EventSheet.tsx'
-import { label, timeInput } from './formStyles.ts'
-import { VisibilityField } from '../../components/VisibilityField.tsx'
+import { EventForm } from './EventForm.tsx'
 
 /** „Piątek, 16 października” */
 function dayName(k: DateKey): string {
@@ -55,6 +54,7 @@ export function EventDetailSheet({
   onDelete: () => void
   onClose: () => void
 }) {
+  const { today } = useStore()
   const [draft, setDraft] = useState<EventEdit | null>(null)
   const [base, setBase] = useState<EventEdit | null>(null)
   const [discard, setDiscard] = useState<'close' | 'cancel' | null>(null)
@@ -94,150 +94,15 @@ export function EventDetailSheet({
       />
 
       {draft ? (
-        <>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <label htmlFor="wyd-nazwa" style={label}>
-              NAZWA
-            </label>
-            <input
-              id="wyd-nazwa"
-              type="text"
-              autoFocus
-              maxLength={200}
-              value={draft.title}
-              onChange={(e) => change((d) => ({ ...d, title: e.target.value }))}
-              style={{
-                height: 52,
-                border: `1px solid ${colors.border}`,
-                borderRadius: 14,
-                padding: '0 14px',
-                background: colors.white,
-                fontFamily: fonts.serif,
-                fontSize: 22,
-                fontWeight: 500,
-                color: colors.green900,
-                outlineColor: colors.green900,
-                minWidth: 0,
-              }}
-            />
-          </div>
-
-          <Group label="RODZAJ">
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-              {eventTypes
-                .filter((t) => !t.system)
-                .map((t) => {
-                  const on = draft.typeId === t.id
-                  return (
-                    <Chip
-                      key={t.id}
-                      on={on}
-                      onClick={() => change((d) => ({ ...d, typeId: t.id }))}
-                      dot={<Dot color={on ? colors.brass300 : t.fg} />}
-                    >
-                      {t.name}
-                    </Chip>
-                  )
-                })}
-            </div>
-          </Group>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <label htmlFor="wyd-dzien" style={label}>
-              DZIEŃ
-            </label>
-            <input
-              id="wyd-dzien"
-              type="date"
-              value={draft.date}
-              onChange={(e) => e.target.value && change((d) => ({ ...d, date: e.target.value }))}
-              style={{ ...timeInput, fontFamily: fonts.sans, fontSize: 16, fontWeight: 600 }}
-            />
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <label
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: 12,
-                minHeight: 44,
-              }}
-            >
-              <span style={label}>CAŁY DZIEŃ</span>
-              <input
-                type="checkbox"
-                checked={draft.allDay}
-                onChange={() => change((d) => setAllDay(d, !d.allDay))}
-                style={{ width: 22, height: 22, accentColor: colors.green900 }}
-              />
-            </label>
-            {!draft.allDay && (
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-                  gap: 10,
-                }}
-              >
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  <label htmlFor="wyd-od" style={label}>
-                    OD
-                  </label>
-                  <input
-                    id="wyd-od"
-                    type="time"
-                    step={300}
-                    value={draft.from ?? ''}
-                    onChange={(e) => change((d) => ({ ...d, from: e.target.value || null }))}
-                    style={timeInput}
-                  />
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  <label htmlFor="wyd-do" style={label}>
-                    DO{' '}
-                    <span style={{ fontWeight: 600, letterSpacing: '0.4px' }}>(opcjonalnie)</span>
-                  </label>
-                  <input
-                    id="wyd-do"
-                    type="time"
-                    step={300}
-                    value={draft.to ?? ''}
-                    onChange={(e) => change((d) => ({ ...d, to: e.target.value || null }))}
-                    style={timeInput}
-                  />
-                </div>
-              </div>
-            )}
-          </div>
-
-          <Group label="PRZYPOMNIJ">
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-              {REMINDS.map((r) => (
-                <Chip
-                  key={r.id}
-                  on={draft.remind === r.id}
-                  onClick={() => change((d) => ({ ...d, remind: r.id }))}
-                >
-                  {r.name}
-                </Chip>
-              ))}
-            </div>
-          </Group>
-
-          <NoteField
-            id="wyd-notatka"
-            value={draft.note}
-            onChange={(note) => change((d) => ({ ...d, note }))}
-          />
-
-          <VisibilityField
-            value={draft.private}
-            authorUid={event.createdBy}
-            onChange={(p) => change((d) => ({ ...d, private: p }))}
-          />
-        </>
+        <EventForm
+          mode="edit"
+          value={draft}
+          onChange={change}
+          eventTypes={eventTypes}
+          today={today}
+          authorUid={event.createdBy}
+          onSubmit={save}
+        />
       ) : (
         <>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>

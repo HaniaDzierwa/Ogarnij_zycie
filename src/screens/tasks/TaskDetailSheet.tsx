@@ -6,21 +6,18 @@ import {
   InfoRow,
   NoteText,
 } from '../../components/DetailSheet.tsx'
-import { Box, Chip, Dot, NoteField, Sheet } from '../../components/ui.tsx'
-import { CheckIcon, CloseIcon, PlusIcon, RepeatIcon, UndoIcon } from '../../components/icons.tsx'
+import { Box, Dot, Sheet } from '../../components/ui.tsx'
+import { CheckIcon, RepeatIcon, UndoIcon } from '../../components/icons.tsx'
 import { repeatSummary } from '../../data/repeat.ts'
 import { DueBadge } from '../../components/DueBadge.tsx'
 import { type DateKey } from '../../data/dates.ts'
-import { DueField } from './DueField.tsx'
-import { newId } from '../../data/ids.ts'
 import { priorityOf } from '../../data/selectors.ts'
 import { useStore } from '../../data/store.ts'
 import { taskEditOf, type TaskEdit } from '../../data/taskOps.ts'
 import type { Category, Task } from '../../data/types.ts'
 import { colors, fonts, noCategory } from '../../theme'
-import { PriorityPicker } from './PriorityPicker.tsx'
-import { VisibilityField } from '../../components/VisibilityField.tsx'
 import { DoneBox, SubtaskToggle } from './TaskRow.tsx'
+import { TaskForm } from './TaskForm.tsx'
 
 type Props = {
   task: Task
@@ -97,12 +94,14 @@ export function TaskDetailSheet({
       />
 
       {draft ? (
-        <TaskEditForm
-          draft={draft}
-          task={task}
+        <TaskForm
+          mode="edit"
+          value={draft}
+          onChange={(fn) => setDraft((d) => (d ? fn(d) : d))}
           categories={categories}
           today={today}
-          onChange={(fn) => setDraft((d) => (d ? fn(d) : d))}
+          authorUid={task.createdBy}
+          onSubmit={save}
         />
       ) : (
         <>
@@ -233,212 +232,5 @@ export function TaskDetailSheet({
         />
       )}
     </Sheet>
-  )
-}
-
-/** Tryb edycji: nazwa, kategoria, priorytet, termin, kroki, notatka, „Kto widzi”. */
-function TaskEditForm({
-  draft,
-  task,
-  categories,
-  today,
-  onChange,
-}: {
-  draft: TaskEdit
-  task: Task
-  categories: Category[]
-  today: DateKey
-  onChange: (fn: (d: TaskEdit) => TaskEdit) => void
-}) {
-  const [step, setStep] = useState('')
-  const addStep = () => {
-    const s = step.trim()
-    if (!s) return
-    onChange((d) => ({
-      ...d,
-      subtasks: [...d.subtasks, { id: newId('s'), title: s, done: false }],
-    }))
-    setStep('')
-  }
-
-  return (
-    <>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-        <label
-          htmlFor="det-tytul"
-          style={{ fontSize: 11, fontWeight: 800, letterSpacing: '1.4px', color: colors.muted }}
-        >
-          NAZWA
-        </label>
-        <input
-          id="det-tytul"
-          type="text"
-          autoFocus
-          maxLength={200}
-          value={draft.title}
-          onChange={(e) => onChange((d) => ({ ...d, title: e.target.value }))}
-          style={{
-            height: 52,
-            border: `1px solid ${colors.border}`,
-            borderRadius: 14,
-            padding: '0 14px',
-            background: colors.white,
-            fontFamily: fonts.serif,
-            fontSize: 22,
-            fontWeight: 500,
-            color: colors.green900,
-            outlineColor: colors.green900,
-            minWidth: 0,
-          }}
-        />
-      </div>
-
-      <Group label="KATEGORIA">
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-          {categories.map((c) => {
-            const on = draft.categoryId === c.id
-            return (
-              <Chip
-                key={c.id}
-                on={on}
-                onClick={() => onChange((d) => ({ ...d, categoryId: c.id }))}
-                dot={<Dot color={on ? colors.brass300 : c.color} />}
-              >
-                {c.name}
-              </Chip>
-            )
-          })}
-        </div>
-      </Group>
-
-      <Group label="PRIORYTET">
-        <PriorityPicker
-          value={draft.priority}
-          onChange={(id) => onChange((d) => ({ ...d, priority: id }))}
-        />
-      </Group>
-
-      <Group label="TERMIN">
-        <DueField
-          id="det-termin"
-          value={{ due: draft.due, dueWeek: !!draft.dueWeek }}
-          today={today}
-          onChange={(v) => onChange((d) => ({ ...d, ...v }))}
-        />
-      </Group>
-
-      <Group label="KROKI">
-        {draft.subtasks.map((s) => (
-          <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: 4, paddingLeft: 4 }}>
-            <span
-              style={{
-                flex: 1,
-                minWidth: 0,
-                fontSize: 15,
-                color: s.done ? colors.muted : colors.green900,
-                textDecoration: s.done ? 'line-through' : 'none',
-              }}
-            >
-              {s.title}
-            </span>
-            <button
-              type="button"
-              onClick={() =>
-                onChange((d) => ({ ...d, subtasks: d.subtasks.filter((x) => x.id !== s.id) }))
-              }
-              aria-label={`Usuń krok: ${s.title}`}
-              style={{
-                width: 36,
-                height: 44,
-                border: 0,
-                background: 'transparent',
-                color: '#9AA59D',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flex: 'none',
-              }}
-            >
-              <CloseIcon />
-            </button>
-          </div>
-        ))}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 6,
-            padding: '4px 4px 4px 16px',
-            border: `1px solid ${colors.border}`,
-            borderRadius: 24,
-            background: colors.white,
-          }}
-        >
-          <label htmlFor="det-krok" className="sr-only">
-            Nowy krok
-          </label>
-          <input
-            id="det-krok"
-            type="text"
-            placeholder="Dodaj krok…"
-            value={step}
-            onChange={(e) => setStep(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && addStep()}
-            style={{
-              flex: 1,
-              minWidth: 0,
-              height: 40,
-              border: 0,
-              background: 'transparent',
-              fontSize: 16,
-              color: colors.green900,
-              outline: 'none',
-            }}
-          />
-          <button
-            type="button"
-            onClick={addStep}
-            aria-label="Dodaj krok"
-            style={{
-              width: 40,
-              height: 40,
-              border: 0,
-              borderRadius: 20,
-              background: colors.green900,
-              color: colors.brass300,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flex: 'none',
-            }}
-          >
-            <PlusIcon size={18} strokeWidth={2.4} />
-          </button>
-        </div>
-      </Group>
-
-      <NoteField
-        id="det-notatka"
-        value={draft.note}
-        onChange={(note) => onChange((d) => ({ ...d, note }))}
-      />
-
-      <VisibilityField
-        value={draft.private}
-        authorUid={task.createdBy}
-        onChange={(p) => onChange((d) => ({ ...d, private: p }))}
-      />
-    </>
-  )
-}
-
-function Group({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-      <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '1.4px', color: colors.muted }}>
-        {label}
-      </span>
-      {children}
-    </div>
   )
 }

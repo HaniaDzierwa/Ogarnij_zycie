@@ -10,12 +10,15 @@ export function VisibilityField({
   value,
   onChange,
   authorUid,
+  bare = false,
 }: {
   /** true – „Tylko ja”. */
   value: boolean
   onChange: (isPrivate: boolean) => void
   /** Autor istniejącego zadania / wydarzenia; brak – nowe (autor to ja). */
   authorUid?: string
+  /** Bez etykiety „KTO WIDZI” (w wierszu karty – etap 8). */
+  bare?: boolean
 }) {
   const { currentUid, members } = useStore()
   const mine = !authorUid || authorUid === currentUid
@@ -23,9 +26,13 @@ export function VisibilityField({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-      <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '1.4px', color: colors.muted }}>
-        KTO WIDZI
-      </span>
+      {!bare && (
+        <span
+          style={{ fontSize: 11, fontWeight: 800, letterSpacing: '1.4px', color: colors.muted }}
+        >
+          KTO WIDZI
+        </span>
+      )}
       {mine ? (
         <>
           <Segmented

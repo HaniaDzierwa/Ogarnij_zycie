@@ -11,6 +11,9 @@ const renderAt = (url: string, today = '2026-10-09') => renderApp(url, { today }
 
 const tab = (name: RegExp) => screen.getByRole('tab', { name })
 const click = (name: string | RegExp) => fireEvent.click(screen.getByRole('button', { name }))
+/** Zwarte arkusze (etap 8): rozwinięcie wiersza karty – „Termin”, „Priorytet”… */
+const openRow = (sheet: HTMLElement, name: string) =>
+  fireEvent.click(within(sheet).getByRole('button', { name: new RegExp(`^${name}`) }))
 
 test('nagłówek i zakładki: 12 otwartych, 4 pilne; Do zrobienia 12 · Ogarnięte 7', () => {
   renderAt('/zadania')
@@ -102,6 +105,7 @@ test('arkusz zadania: najpierw do odczytu, „Edytuj” → zmiany → „Zapisz
   fireEvent.change(within(sheet).getByLabelText('NAZWA'), {
     target: { value: 'Baterie AAA do pilota' },
   })
+  openRow(sheet, 'Priorytet')
   fireEvent.click(within(sheet).getByRole('radio', { name: /Pilne/ }))
   fireEvent.click(within(sheet).getByRole('button', { name: 'Zapisz' }))
   // po zapisie – znów odczyt, z nowymi danymi
@@ -163,6 +167,7 @@ test('arkusz: „Ogarnij” zamyka i ogarnia; „Usuń” przenosi do kosza', ()
 test('arkusz: termin spoza chipów = chip z datą + kalendarz', () => {
   renderAt('/zadania')
   const sheet = editTask('Zapłacić rachunek za prąd')
+  openRow(sheet, 'Termin')
   expect(
     within(sheet).getByRole('button', { name: 'CZ 15 PAŹ' }).getAttribute('aria-pressed'),
   ).toBe('true')
@@ -298,6 +303,7 @@ test('arkusz: w niedzielę „W tym tygodniu” to nie „Dziś” – plakietka
   renderAt('/zadania', '2026-10-18')
   const sheet = editTask('Baterie AA do pilota')
   const chip = (name: string) => within(sheet).getByRole('button', { name })
+  openRow(sheet, 'Termin')
   fireEvent.click(chip('W tym tygodniu'))
   expect(chip('W tym tygodniu').getAttribute('aria-pressed')).toBe('true')
   expect(chip('Dziś').getAttribute('aria-pressed')).toBe('false')
@@ -310,6 +316,7 @@ test('arkusz: w niedzielę „W tym tygodniu” to nie „Dziś” – plakietka
   fireEvent.click(within(sheet).getByRole('button', { name: 'Zapisz' }))
   // po zapisie arkusz pamięta wybór „W tym tygodniu”
   fireEvent.click(within(sheet).getByRole('button', { name: 'Edytuj' }))
+  openRow(sheet, 'Termin')
   expect(chip('W tym tygodniu').getAttribute('aria-pressed')).toBe('true')
 })
 
@@ -319,6 +326,7 @@ test('nowe zadanie „W przyszłym tygodniu”: na liście PRZYSZŁY TYDZ. z zeg
   fireEvent.change(within(sheet).getByLabelText('CO TRZEBA ZROBIĆ?'), {
     target: { value: 'Umyć okna' },
   })
+  openRow(sheet, 'Termin')
   fireEvent.click(within(sheet).getByRole('button', { name: 'W przyszłym tygodniu' }))
   expect(within(sheet).getByText('Na liście:').textContent).toContain('PRZYSZŁY TYDZ.')
   fireEvent.click(within(sheet).getByRole('button', { name: 'Dodaj zadanie' }))
@@ -334,6 +342,8 @@ test('notatka: przy nowym zadaniu i w arkuszu zadania („Zapisz”)', () => {
   fireEvent.change(within(sheet).getByLabelText('CO TRZEBA ZROBIĆ?'), {
     target: { value: 'Odebrać paczkę' },
   })
+  // notatka schowana pod „+ Notatka” (etap 8)
+  fireEvent.click(within(sheet).getByRole('button', { name: 'Notatka' }))
   fireEvent.change(within(sheet).getByLabelText(/NOTATKA/), {
     target: { value: 'Paczkomat przy Biedronce, kod 4821' },
   })
@@ -446,4 +456,51 @@ test('zadanie cykliczne – usuwanie pyta: „Tylko to” zostawia następne, �
   expect(
     screen.getByRole('button', { name: 'Otwórz zadanie Zebranie w szkole' }).textContent,
   ).toContain('DO 13 LIS')
+})
+
+test('nowe zadanie (zwarty arkusz): powtarzanie bez terminu ustawia Dziś; ↻ na liście', () => {
+  renderAt('/zadania?nowe=zadanie')
+  const sheet = screen.getByRole('dialog', { name: 'Nowe zadanie' })
+  // na wierzchu tylko nazwa; reszta w wierszach z wartością
+  expect(within(sheet).getByRole('button', { name: /^Termin/ }).textContent).toContain(
+    'Bez terminu',
+  )
+  expect(within(sheet).getByRole('button', { name: /^Powtarzaj/ }).textContent).toContain('Nie')
+  expect(within(sheet).queryByRole('radiogroup', { name: 'Jak często' })).toBeNull()
+  fireEvent.change(within(sheet).getByLabelText('CO TRZEBA ZROBIĆ?'), {
+    target: { value: 'Podlać kwiaty' },
+  })
+  openRow(sheet, 'Powtarzaj')
+  fireEvent.click(within(sheet).getByRole('radio', { name: 'Co X dni' }))
+  const days = within(sheet).getByLabelText('Co ile dni') as HTMLInputElement
+  expect(days.value).toBe('3')
+  fireEvent.change(days, { target: { value: '5' } })
+  fireEvent.blur(days)
+  // piątek 9 paź + 5 dni
+  expect(within(sheet).getByText('Co 5 dni. Kolejne: śr 14 paź, pn 19 paź…')).toBeDefined()
+  expect(within(sheet).getByRole('button', { name: /^Termin/ }).textContent).toContain('DZIŚ')
+  expect(within(sheet).getByRole('button', { name: /^Powtarzaj/ }).textContent).toContain(
+    'Co 5 dni',
+  )
+  fireEvent.click(within(sheet).getByRole('button', { name: 'Dodaj zadanie' }))
+  const row = screen.getByRole('button', { name: 'Otwórz zadanie Podlać kwiaty' })
+  expect(row.textContent).toContain('CO 5 DNI')
+})
+
+test('zwarty arkusz: jeden wiersz rozwinięty naraz; „Bez terminu” wyłącza powtarzanie', () => {
+  renderAt('/zadania')
+  const sheet = editTask('Zebranie w szkole')
+  openRow(sheet, 'Termin')
+  expect(within(sheet).getByRole('button', { name: 'Bez terminu' })).toBeDefined()
+  openRow(sheet, 'Powtarzaj')
+  // Termin zwinięty, Powtarzaj rozwinięty
+  expect(within(sheet).queryByRole('button', { name: 'Bez terminu' })).toBeNull()
+  expect(
+    within(sheet).getByRole('radio', { name: 'Co miesiąc' }).getAttribute('aria-checked'),
+  ).toBe('true')
+  openRow(sheet, 'Termin')
+  fireEvent.click(within(sheet).getByRole('button', { name: 'Bez terminu' }))
+  expect(within(sheet).getByRole('button', { name: /^Powtarzaj/ }).textContent).toContain('Nie')
+  fireEvent.click(within(sheet).getByRole('button', { name: 'Zapisz' }))
+  expect(within(sheet).queryByText('POWTARZA SIĘ')).toBeNull()
 })

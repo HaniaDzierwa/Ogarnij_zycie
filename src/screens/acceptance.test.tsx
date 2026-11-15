@@ -50,6 +50,7 @@ test('liczby na Starcie zgadzają się z listą zadań – przed i po zmianach',
   fireEvent.change(within(sheet).getByLabelText('CO TRZEBA ZROBIĆ?'), {
     target: { value: 'Pilne nowe' },
   })
+  fireEvent.click(within(sheet).getByRole('button', { name: /^Priorytet/ }))
   fireEvent.click(within(sheet).getByRole('radio', { name: 'Pilne' }))
   fireEvent.click(within(sheet).getByRole('button', { name: 'Dodaj zadanie' }))
   await check()

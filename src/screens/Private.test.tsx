@@ -11,6 +11,8 @@ const agenda = () => screen.getByRole('heading', { level: 2, name: /,/ }).closes
 test('nowe zadanie: domyślnie „Wspólne”; „Tylko ja” – na liście z dopiskiem TYLKO JA', () => {
   renderApp('/zadania?nowe=zadanie')
   const sheet = screen.getByRole('dialog', { name: 'Nowe zadanie' })
+  // zwarty arkusz (etap 8): „Kto widzi” – wiersz karty
+  fireEvent.click(within(sheet).getByRole('button', { name: /^Kto widzi/ }))
   expect(within(sheet).getByRole('radio', { name: 'Wspólne' }).getAttribute('aria-checked')).toBe(
     'true',
   )
@@ -31,6 +33,7 @@ test('arkusz własnego zadania: przełączenie na „Tylko ja” i z powrotem', 
   const detail = screen.getByRole('dialog', { name: 'Zadanie' })
   const setVisibility = (name: string) => {
     fireEvent.click(within(detail).getByRole('button', { name: 'Edytuj' }))
+    fireEvent.click(within(detail).getByRole('button', { name: /^Kto widzi/ }))
     fireEvent.click(within(detail).getByRole('radio', { name }))
     fireEvent.click(within(detail).getByRole('button', { name: 'Zapisz' }))
   }
@@ -46,6 +49,7 @@ test('cudze wspólne zadanie: bez przełącznika, „Zmienić może tylko Krzyś
   fireEvent.click(screen.getByText('Zebranie w szkole'))
   const detail = screen.getByRole('dialog', { name: 'Zadanie' })
   fireEvent.click(within(detail).getByRole('button', { name: 'Edytuj' }))
+  fireEvent.click(within(detail).getByRole('button', { name: /^Kto widzi/ }))
   expect(within(detail).queryByRole('radio', { name: 'Tylko ja' })).toBeNull()
   expect(within(detail).getByText(/Zmienić może tylko Krzyś/)).toBeDefined()
 })
@@ -54,6 +58,7 @@ test('nowe wydarzenie „Tylko ja” – w agendzie z dopiskiem „Tylko ja”',
   renderApp('/kalendarz?nowe=wydarzenie')
   const sheet = screen.getByRole('dialog', { name: 'Nowe wydarzenie' })
   fireEvent.change(within(sheet).getByLabelText('NAZWA'), { target: { value: 'Fryzjer' } })
+  fireEvent.click(within(sheet).getByRole('button', { name: /^Kto widzi/ }))
   fireEvent.click(within(sheet).getByRole('radio', { name: 'Tylko ja' }))
   fireEvent.click(within(sheet).getByRole('button', { name: 'Dodaj do kalendarza' }))
   expect(agenda().textContent).toContain('Fryzjer')
