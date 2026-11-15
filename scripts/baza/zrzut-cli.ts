@@ -101,6 +101,35 @@ type CliUser = {
 }
 const cliUsers = (JSON.parse(readFileSync(tmp, 'utf8')) as { users: CliUser[] }).users
 rmSync(tmp)
+
+// parametry haseł (to samo co w konsoli: Authentication → Users → ⋮ → „Password hash parameters”)
+// – bez nich hasła w nowym projekcie nie zadziałają; zapis w formacie, który czyta `baza:wgraj --hasla`
+const config = await fetch(
+  `https://identitytoolkit.googleapis.com/admin/v2/projects/${project}/config`,
+  { headers: { Authorization: `Bearer ${await token()}`, 'x-goog-user-project': project } },
+)
+const hash = config.ok
+  ? (
+      (await config.json()) as {
+        signIn?: {
+          hashConfig?: {
+            algorithm?: string
+            signerKey?: string
+            saltSeparator?: string
+            rounds?: number
+            memoryCost?: number
+          }
+        }
+      }
+    ).signIn?.hashConfig
+  : undefined
+const hashFile = join(folder, 'parametry-hasel.txt')
+if (hash?.signerKey)
+  writeFileSync(
+    hashFile,
+    `hash_config {\n  algorithm: ${hash.algorithm},\n  base64_signer_key: ${hash.signerKey},\n  base64_salt_separator: ${hash.saltSeparator},\n  rounds: ${hash.rounds},\n  mem_cost: ${hash.memoryCost},\n}\n`,
+  )
+else console.error(`\n! Nie udało się pobrać parametrów haseł (${config.status}).`)
 const when = (ms?: string) => (ms ? new Date(Number(ms)).toUTCString() : undefined)
 const users: AuthDump['konta'] = cliUsers.map((u) => ({
   uid: u.localId,
@@ -134,5 +163,10 @@ for (const [k, n] of Object.entries(countByCollection(docs.map((d) => d.sciezka)
 console.log(`Razem dokumentów: ${docs.length}`)
 console.log(
   `Kont logowania: ${users.length} (z hasłami: ${users.filter((u) => u.passwordHash).length})`,
+)
+console.log(
+  hash?.signerKey
+    ? `Parametry haseł: ${hashFile} (wgrywanie: --hasla=${hashFile})`
+    : 'Parametry haseł: brak – bez nich hasła w nowym projekcie trzeba będzie ustawić od nowa.',
 )
 console.log(`\n✔ Gotowe: ${folder}\\firestore.json i konta.json`)
