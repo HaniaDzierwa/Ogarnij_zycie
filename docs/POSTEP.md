@@ -12,7 +12,8 @@ Aktualny etap: **8 – Powtarzanie i zwarte arkusze** (w toku, gałąź `etap-8-
 | 5 Kategorie, Kalendarz, Start i wspólne testowanie (dawniej 4–6 + odbiór 3) | zakończony | 2026-10-25 |
 | 6 Ustawienia i push (dawniej 7) | zakończony | 2026-10-25 |
 | 7 Testy i publikacja (dawniej 9) | zakończony; usuwanie konta – dorobione 2026-10-25 | 2026-10-25 |
-| 8 Powtarzanie i zwarte arkusze | w toku | – |
+| 8 Powtarzanie i zwarte arkusze | opublikowany (oficjalna strona 2026-11-16), czeka na odbiór | – |
+| 9 Zdjęcia w zadaniach | zaplanowany (PLAN.md) – projekt w Claude Design, dopracowanie i start po odbiorze etapu 8 | – |
 
 Kolejność etapów zmieniona 2026-10-20 (decyzja Hani: testować dopiero we dwoje) – szczegóły w PLAN.md. Wpisy w dzienniku sprzed tej daty używają dawnej numeracji.
 
@@ -293,3 +294,4 @@ Wersja testowa: https://ogarnij-zycie--test-56tdtc0y.web.app (kanał `test`, odn
 - 2026-11-16 · Etap 8 · Krok 5: Hania uruchomiła `npm run test:reguly` – wszystkie testy reguł przeszły. Za zgodą Hani Claude wgrał reguły (`npx firebase deploy --only firestore:rules` – „released rules”) i opublikował wersję testową na kanale `test` (https://ogarnij-zycie--test-56tdtc0y.web.app, do 2026-12-16). Czeka: wgranie Workera (Hania, `npx wrangler deploy --config worker/wrangler.toml`), demo na telefonie, odbiór. · Sprawdzenie: lista do kliknięcia w czacie.
 - 2026-11-16 · Etap 8 · Krok 5: za zgodą Hani Claude wgrał Workera (`npx wrangler deploy --config worker/wrangler.toml`, wersja 1132da7a) – podsumowania uwzględniają powtórki wydarzeń; podgląd dziennika: przebiegi z harmonogramu „Ok”. · Sprawdzenie: wrangler tail.
 - 2026-11-16 · Etap 8 · Za zgodą Hani Claude opublikował etap 8 na oficjalnej stronie (`npx firebase deploy --only hosting` → https://ogarnij-zycie.web.app), z commita c9715f4. Odbiór etapu 8 (demo na telefonie, checklista) – dalej do zrobienia. · Sprawdzenie: oficjalna strona po odświeżeniu.
+- 2026-11-16 · Etap 9 · Plan: zdjęcia w zadaniach – projekt w Claude Design (kanwa „Zdjęcia w zadaniach”), decyzja techniczna (Firestore, zmniejszanie na telefonie do 1600 px + kafelek + miniatura na listę; bez Storage i R2), pytania do Hani – w PLAN.md. Dopracowanie i wdrożenie z Hanią (zaplanowane na 2026-11-17), po odbiorze etapu 8.

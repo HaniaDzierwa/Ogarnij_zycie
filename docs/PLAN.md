@@ -172,6 +172,37 @@ Projekt: kanwa „Zadania cykliczne” w Claude Design (ekrany 1c/1e – zadanie
 
 ---
 
+## Etap 9 – Zdjęcia w zadaniach (plan z 2026-11-16, do dopracowania z Hanią)
+
+**Status:** projekt w Claude Design (kanwa „Zdjęcia w zadaniach”: 1 Nowe zadanie – zdjęcia, 2 Arkusz do odczytu, 3 Lista, 4 Podgląd). Start po odbiorze etapu 8 („akceptuję”) i dopracowaniu projektu.
+
+**Dlaczego tak (decyzja techniczna):** zostajemy na darmowym planie Spark – **bez Firebase Storage** (wymaga planu Blaze z kartą, a Hania nie ma teraz dostępu do konsoli) i bez Cloudflare R2 (Worker musiałby dostać publiczny adres i własną kontrolę dostępu). Zdjęcia trafiają do Firestore jako zmniejszone pliki.
+
+- **Zmniejszanie na telefonie:** po wybraniu zdjęcia (aparat albo galeria – zwykły wybór telefonu, `<input type="file" accept="image/*">`) aplikacja robi trzy wersje:
+  - **pełna** – 1600 px po dłuższym boku, WebP (na iPhonie, gdy Safari nie zapisze WebP – JPEG), ok. 250–450 KB; wczytywana dopiero w podglądzie,
+  - **kafelek** – ok. 300 px, kilkanaście KB; w arkuszu zadania,
+  - **miniatura na listę** – ok. 120 px, 3–5 KB, tylko pierwszego zdjęcia, zapisana razem z zadaniem (lista bez dodatkowych odczytów, także offline).
+- **Baza (do ustalenia przy wdrożeniu):** zdjęcia jako osobne dokumenty, np. `houses/{dom}/photos/{id}` (pełna wersja i kafelek; jeden dokument < 1 MB) z odnośnikiem do zadania; „Tylko ja” – w części prywatnej, jak zadania. Przy zadaniu: liczba zdjęć i miniatura pierwszego (pola opcjonalne – stare zadania bez zmian). Reguły: tylko domownicy, limit rozmiaru, limit zdjęć na zadanie; testy reguł w emulatorze u Hani.
+- **Wygląd (projekt):** w arkuszu „+ Zdjęcie” obok „+ Kroki” / „+ Notatka”; po pierwszym zdjęciu sekcja ZDJĘCIA pod notatką – kafelki 3 w rzędzie, licznik „N z 5”, kafelek „Dodaj”, × na kafelku (z COFNIJ), „Zmniejszam…” na świeżo dodanym. Arkusz do odczytu – rząd miniatur, dotknięcie otwiera podgląd. Lista – ikona aparatu z liczbą i miniatura pierwszego zdjęcia (44 px). Podgląd na cały ekran – ciemne tło, „1 / 3”, przesuwanie, powiększanie palcami, „Usuń zdjęcie” z potwierdzeniem.
+- **Zasady:** zadanie do Kosza – zdjęcia razem z nim, po 30 dniach znikają na zawsze (sprzątanie także w Workerze); zadanie cykliczne – zdjęcia zostają przy ogarniętym, następne startuje bez zdjęć; bez internetu – zdjęcie widać od razu, wyśle się po powrocie sieci.
+- **Miejsce:** 1 GB darmowej bazy ≈ 2,5–4 tys. zdjęć.
+- **Szacunek:** ok. jeden wieczór pracy Claude'a + testy Hani na iPhonie i Androidzie (możliwa jedna runda poprawek pod Safari).
+
+**Do decyzji Hani (przed startem):**
+1. Limit zdjęć na zadanie – 5 wystarczy?
+2. Zdjęcia także przy wydarzeniach?
+3. Pobieranie zdjęcia na telefon z podglądu – potrzebne?
+4. Czy wstawić do projektu 2–3 prawdziwe zdjęcia, żeby ocenić miniatury i podgląd?
+
+**Odbiór (wstępnie):**
+- [ ] Zdjęcie z aparatu i z galerii dodaje się na iPhonie i Androidzie, widać je od razu (także bez internetu)
+- [ ] Lista zadań dalej szybka; miniatura i liczba zdjęć przy zadaniu
+- [ ] Podgląd: przesuwanie, powiększanie, usuwanie z COFNIJ
+- [ ] Zadanie w Koszu i przywrócone – zdjęcia razem z nim; „Tylko ja” – zdjęć nie widzą domownicy
+- [ ] Testy reguł przechodzą u Hani
+
+---
+
 ## Jak sprawdzamy każdy etap
 
 1. Demo: link do wersji testowej (kanał podglądu Firebase Hosting albo `npm run dev` w sieci domowej) + 2–5 rzeczy do kliknięcia z opisem oczekiwanego efektu.
