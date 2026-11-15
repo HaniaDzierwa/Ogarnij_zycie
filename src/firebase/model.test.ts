@@ -53,6 +53,39 @@ describe('zadania', () => {
     expect(taskFromDoc(task.id, { ...doc, dueWeek: undefined }).dueWeek).toBeUndefined()
   })
 
+  test('zadanie cykliczne: repeat w bazie tylko przy terminie; uszkodzone pole = bez powtarzania', () => {
+    const task = {
+      ...mockTasks(DAY)[0],
+      due: '2026-10-16',
+      repeat: { every: 'days', n: 3 } as const,
+    }
+    const doc = taskToDoc(task, 'hania')
+    expect(doc.repeat).toEqual({ every: 'days', n: 3 })
+    expect(taskFromDoc(task.id, { ...doc })).toEqual(task)
+    expect('repeat' in taskToDoc({ ...task, due: null }, 'hania')).toBe(false)
+    expect('repeat' in taskToDoc({ ...task, repeat: undefined }, 'hania')).toBe(false)
+    expect(taskFromDoc(task.id, { ...doc, repeat: { every: 'co godzinę' } as never }).repeat).toBe(
+      undefined,
+    )
+    expect(taskFromDoc(task.id, { ...doc, due: null }).repeat).toBeUndefined()
+  })
+
+  test('wydarzenie cykliczne: repeat i skip (bez powtórzeń, posortowane); stare bez pól', () => {
+    const ev = mockEvents(DAY)[0]
+    const rep = {
+      ...ev,
+      repeat: { every: 'week' } as const,
+      skip: ['2026-10-30', '2026-10-23', '2026-10-30'],
+    }
+    const doc = eventToDoc(rep, 'hania')
+    expect(doc.skip).toEqual(['2026-10-23', '2026-10-30'])
+    expect(eventFromDoc(ev.id, { ...doc })).toEqual({ ...rep, skip: ['2026-10-23', '2026-10-30'] })
+    const plain = eventToDoc(ev, 'hania')
+    expect('repeat' in plain || 'skip' in plain).toBe(false)
+    expect('skip' in eventToDoc({ ...ev, skip: ['2026-10-23'] }, 'hania')).toBe(false)
+    expect(eventFromDoc(ev.id, { ...plain })).toEqual(ev)
+  })
+
   test('ogarnięte i w koszu: doneAt / deletedAt jako Timestamp', () => {
     const done = mockTasks(DAY).find((t) => t.done)!
     const doc = taskToDoc(done, 'hania')

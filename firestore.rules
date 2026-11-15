@@ -104,10 +104,20 @@ service cloud.firestore {
       return list is list && list.size() <= 50;
     }
 
+    // Powtarzanie (etap 8, 2026-11-15): { every, n } – n (2–365) tylko przy „co X dni”
+    function validRepeat(r) {
+      return r is map
+        && r.keys().hasOnly(['every', 'n'])
+        && r.every in ['day', 'week', 'month', 'year', 'days']
+        && (r.every == 'days'
+          ? ('n' in r && r.n is int && r.n >= 2 && r.n <= 365)
+          : !('n' in r));
+    }
+
     function validTask(d) {
-      return d.keys().hasOnly(['title', 'categoryId', 'priority', 'due', 'dueWeek', 'done', 'subtasks',
-          'note', 'createdBy', 'doneAt', 'doneBy', 'deleted', 'deletedAt', 'deletedBy', 'updatedAt',
-          'updatedBy'])
+      return d.keys().hasOnly(['title', 'categoryId', 'priority', 'due', 'dueWeek', 'repeat', 'done',
+          'subtasks', 'note', 'createdBy', 'doneAt', 'doneBy', 'deleted', 'deletedAt', 'deletedBy',
+          'updatedAt', 'updatedBy'])
         && text(d.title, 200)
         && strOrNull(d.categoryId, 100)
         // wbudowany (high / mid / low) albo id własnego priorytetu
@@ -115,6 +125,8 @@ service cloud.firestore {
         && (d.due == null || isDay(d.due))
         // „W tym / w przyszłym tygodniu” (od 2026-11-15) – tylko przy terminie; starsze go nie mają
         && (!('dueWeek' in d) || (d.dueWeek is bool && d.due != null))
+        // zadanie cykliczne – tylko przy terminie; starsze go nie mają
+        && (!('repeat' in d) || (validRepeat(d.repeat) && d.due != null))
         && d.done is bool
         && validSubtasks(d.subtasks)
         // notatka (od 2026-10-20) – starsze zadania mogą jej nie mieć
@@ -138,8 +150,8 @@ service cloud.firestore {
     }
 
     function validEvent(d) {
-      return d.keys().hasOnly(['title', 'date', 'allDay', 'from', 'to', 'typeId', 'remind', 'createdBy',
-          'note', 'deleted', 'deletedAt', 'deletedBy', 'updatedAt', 'updatedBy'])
+      return d.keys().hasOnly(['title', 'date', 'allDay', 'from', 'to', 'typeId', 'remind', 'repeat',
+          'skip', 'createdBy', 'note', 'deleted', 'deletedAt', 'deletedBy', 'updatedAt', 'updatedBy'])
         && text(d.title, 200)
         && isDay(d.date)
         && d.allDay is bool
@@ -147,6 +159,9 @@ service cloud.firestore {
         && (d.to == null || isTime(d.to))
         && text(d.typeId, 100)
         && d.remind in ['none', 'day', 'week']
+        // wydarzenie cykliczne (etap 8) i pominięte powtórki – tylko przy powtarzaniu
+        && (!('repeat' in d) || validRepeat(d.repeat))
+        && (!('skip' in d) || ('repeat' in d && d.skip is list && d.skip.size() <= 200))
         && author(d)
         && str(d.note, 500)
         && d.deleted is bool

@@ -2,6 +2,7 @@
 
 import type { Priority } from '../theme'
 import type { DateKey } from './dates.ts'
+import type { Repeat } from './repeat.ts'
 
 export type Category = { id: string; name: string; color: string; order: number }
 
@@ -32,6 +33,8 @@ export type Task = {
    * „W TYM TYG.” / „KONIEC TYG.” zamiast daty. Brak = zwykła data (starsze zadania).
    */
   dueWeek?: boolean
+  /** Zadanie cykliczne (etap 8) – tylko przy terminie; ogarnięcie tworzy następne. */
+  repeat?: Repeat
   done: boolean
   subtasks: Subtask[]
   /** „Luźna” notatka (do 500 znaków). */
@@ -72,6 +75,10 @@ export type CalendarEvent = {
   to: string | null
   typeId: string
   remind: Remind
+  /** Wydarzenie cykliczne (etap 8): powtórki od `date`, bez końca. */
+  repeat?: Repeat
+  /** Pominięte powtórki („Usuń → Tylko to”). */
+  skip?: DateKey[]
   /** uid domownika, który dodał wydarzenie. */
   createdBy: string
   /** „Tylko ja” – widzi tylko autor (w bazie w osobnym miejscu); false – „Wspólne”. */

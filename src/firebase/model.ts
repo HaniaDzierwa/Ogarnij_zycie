@@ -4,6 +4,7 @@
 import { Timestamp, serverTimestamp, type FieldValue } from 'firebase/firestore'
 import type { Activity } from '../data/activity.ts'
 import { toKey, type Stamp } from '../data/dates.ts'
+import { normalizeRepeat, repeatDoc, type Repeat } from '../data/repeat.ts'
 import { MAX_SUMMARY_TIMES } from '../data/types.ts'
 import type {
   CalendarEvent,
@@ -153,6 +154,15 @@ export type EventDoc = Omit<CalendarEvent, 'id' | 'private' | 'deletedAt'> & {
 
 const changed = (uid: string): Changed => ({ updatedAt: serverTimestamp(), updatedBy: uid })
 
+/** Najwięcej pominiętych powtórek przy wydarzeniu (te same w regułach). */
+export const MAX_SKIP = 200
+
+/** Pole „repeat” z bazy – tylko poprawne; brak / śmieci = bez powtarzania. */
+function withRepeat(x: unknown): { repeat?: Repeat } {
+  const repeat = normalizeRepeat(x)
+  return repeat ? { repeat } : {}
+}
+
 // ── Zadania ────────────────────────────────────────────────────────────────
 
 export function taskToDoc(t: Task, uid: string): TaskDoc {
@@ -163,6 +173,8 @@ export function taskToDoc(t: Task, uid: string): TaskDoc {
     due: t.due,
     // tylko gdy ustawione – starsze wersje aplikacji i reguły bez tego pola dalej działają
     ...(t.dueWeek && t.due ? { dueWeek: true } : {}),
+    // powtarzanie (etap 8) – jak dueWeek: tylko gdy jest, i tylko przy terminie
+    ...(t.repeat && t.due ? { repeat: repeatDoc(t.repeat) } : {}),
     done: t.done,
     subtasks: t.subtasks.map(({ id, title, done }) => ({ id, title, done })),
     note: t.note,
@@ -186,6 +198,7 @@ export function taskFromDoc(id: string, d: Partial<TaskDoc>, isPrivate = false):
     priority: typeof d.priority === 'string' && d.priority ? d.priority : DEFAULT_PRIORITY,
     due: d.due ?? null,
     ...(d.dueWeek === true && d.due ? { dueWeek: true } : {}),
+    ...withRepeat(d.due ? d.repeat : null),
     done: !!d.done,
     subtasks: (d.subtasks ?? []).map((s: Subtask) => ({
       id: s.id,
@@ -213,6 +226,8 @@ export function eventToDoc(e: CalendarEvent, uid: string): EventDoc {
     to: e.allDay ? null : e.to,
     typeId: e.typeId,
     remind: e.remind,
+    ...(e.repeat ? { repeat: repeatDoc(e.repeat) } : {}),
+    ...(e.repeat && e.skip?.length ? { skip: [...new Set(e.skip)].sort().slice(-MAX_SKIP) } : {}),
     createdBy: e.createdBy,
     note: e.note,
     deleted: e.deleted,
@@ -233,6 +248,10 @@ export function eventFromDoc(id: string, d: Partial<EventDoc>, isPrivate = false
     to: d.to ?? null,
     typeId: d.typeId ?? 'event',
     remind: REMINDS.includes(d.remind as Remind) ? (d.remind as Remind) : 'none',
+    ...withRepeat(d.repeat),
+    ...(normalizeRepeat(d.repeat) && Array.isArray(d.skip)
+      ? { skip: d.skip.filter((x): x is string => typeof x === 'string') }
+      : {}),
     createdBy: d.createdBy ?? '',
     note: d.note ?? '',
     deleted: !!d.deleted,

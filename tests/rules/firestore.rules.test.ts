@@ -340,6 +340,44 @@ describe('poprawność danych', () => {
     await assertFails(raw({ dueWeek: 'tak' }, '2026-11-22'))
     await assertFails(raw({ dueWeek: true }, null))
   })
+  test('zadanie cykliczne (repeat): poprawne pole, tylko przy terminie', async () => {
+    await assertSucceeds(put(sampleTask({ due: '2026-11-20', repeat: { every: 'week' } })))
+    await assertSucceeds(put(sampleTask({ due: '2026-11-20', repeat: { every: 'days', n: 3 } })))
+    const raw = (repeat: unknown, due: string | null) =>
+      setDoc(doc(db('hania'), taskPath('dom1', 'z8')), {
+        ...taskToDoc(sampleTask({ id: 'z8', due }), 'hania'),
+        repeat,
+      })
+    await assertSucceeds(raw({ every: 'year' }, '2026-11-20'))
+    await assertFails(raw({ every: 'week' }, null))
+    await assertFails(raw({ every: 'hourly' }, '2026-11-20'))
+    await assertFails(raw({ every: 'days' }, '2026-11-20'))
+    await assertFails(raw({ every: 'days', n: 1 }, '2026-11-20'))
+    await assertFails(raw({ every: 'days', n: 366 }, '2026-11-20'))
+    await assertFails(raw({ every: 'days', n: 2.5 }, '2026-11-20'))
+    await assertFails(raw({ every: 'week', n: 3 }, '2026-11-20'))
+    await assertFails(raw({ every: 'week', admin: true }, '2026-11-20'))
+    await assertFails(raw('co tydzień', '2026-11-20'))
+  })
+  test('wydarzenie cykliczne: repeat i pominięte dni (skip) tylko przy powtarzaniu', async () => {
+    const ev = { ...mockEvents(DAY)[0], id: 'e8', createdBy: 'hania' }
+    const path = `${paths.events('dom1')}/e8`
+    const raw = (extra: Record<string, unknown>) =>
+      setDoc(doc(db('hania'), path), { ...eventToDoc(ev, 'hania'), ...extra })
+    await assertSucceeds(
+      setDoc(
+        doc(db('hania'), path),
+        eventToDoc({ ...ev, repeat: { every: 'year' }, skip: ['2027-10-09'] }, 'hania'),
+      ),
+    )
+    await assertSucceeds(raw({ repeat: { every: 'days', n: 14 } }))
+    await assertFails(raw({ repeat: { every: 'days', n: 0 } }))
+    await assertFails(raw({ skip: ['2027-10-09'] }))
+    await assertFails(raw({ repeat: { every: 'week' }, skip: '2027-10-09' }))
+    await assertFails(
+      raw({ repeat: { every: 'week' }, skip: Array.from({ length: 201 }, () => '2027-10-09') }),
+    )
+  })
   test('notatka do 500 znaków', async () => {
     await assertSucceeds(put(sampleTask({ note: 'Kod do domofonu 4821' })))
     await assertFails(put(sampleTask({ note: 'x'.repeat(501) })))
