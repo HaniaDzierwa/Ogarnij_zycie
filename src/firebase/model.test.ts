@@ -42,6 +42,17 @@ describe('zadania', () => {
     }
   })
 
+  test('termin „na tydzień”: dueWeek w bazie tylko gdy ustawione (i jest termin)', () => {
+    const task = { ...mockTasks(DAY)[0], due: '2026-10-11', dueWeek: true }
+    const doc = taskToDoc(task, 'hania')
+    expect(doc.dueWeek).toBe(true)
+    expect(taskFromDoc(task.id, { ...doc })).toEqual(task)
+    expect('dueWeek' in taskToDoc({ ...task, dueWeek: false }, 'hania')).toBe(false)
+    expect('dueWeek' in taskToDoc({ ...task, due: null }, 'hania')).toBe(false)
+    // starsze zadanie bez pola – zwykła data
+    expect(taskFromDoc(task.id, { ...doc, dueWeek: undefined }).dueWeek).toBeUndefined()
+  })
+
   test('ogarnięte i w koszu: doneAt / deletedAt jako Timestamp', () => {
     const done = mockTasks(DAY).find((t) => t.done)!
     const doc = taskToDoc(done, 'hania')

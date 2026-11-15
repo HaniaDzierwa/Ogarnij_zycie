@@ -161,6 +161,8 @@ export function taskToDoc(t: Task, uid: string): TaskDoc {
     categoryId: t.categoryId,
     priority: t.priority,
     due: t.due,
+    // tylko gdy ustawione – starsze wersje aplikacji i reguły bez tego pola dalej działają
+    ...(t.dueWeek && t.due ? { dueWeek: true } : {}),
     done: t.done,
     subtasks: t.subtasks.map(({ id, title, done }) => ({ id, title, done })),
     note: t.note,
@@ -183,6 +185,7 @@ export function taskFromDoc(id: string, d: Partial<TaskDoc>, isPrivate = false):
     // wbudowany albo własny – nieznany id pokaże się jako „Ważne” (priorityOf)
     priority: typeof d.priority === 'string' && d.priority ? d.priority : DEFAULT_PRIORITY,
     due: d.due ?? null,
+    ...(d.dueWeek === true && d.due ? { dueWeek: true } : {}),
     done: !!d.done,
     subtasks: (d.subtasks ?? []).map((s: Subtask) => ({
       id: s.id,

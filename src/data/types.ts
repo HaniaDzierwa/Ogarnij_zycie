@@ -27,6 +27,11 @@ export type Task = {
   categoryId: string | null
   priority: Priority
   due: DateKey | null
+  /**
+   * Termin wybrany jako „W tym / w przyszłym tygodniu” (due = niedziela) – plakietka
+   * „W TYM TYG.” / „KONIEC TYG.” zamiast daty. Brak = zwykła data (starsze zadania).
+   */
+  dueWeek?: boolean
   done: boolean
   subtasks: Subtask[]
   /** „Luźna” notatka (do 500 znaków). */

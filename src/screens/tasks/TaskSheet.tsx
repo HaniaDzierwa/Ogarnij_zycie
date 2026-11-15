@@ -2,7 +2,9 @@ import { newId } from '../../data/ids.ts'
 import { useState } from 'react'
 import { Chip, Dot, Field, NoteField, Sheet } from '../../components/ui.tsx'
 import { CloseIcon, PlusIcon } from '../../components/icons.tsx'
-import { addDays, dueLabel, weekStart, type DateKey } from '../../data/dates.ts'
+import { type DateKey } from '../../data/dates.ts'
+import { DueField } from './DueField.tsx'
+import type { DueValue } from './duePresets.ts'
 import type { Category, Subtask, Task } from '../../data/types.ts'
 import { colors, DEFAULT_PRIORITY, fonts, type Priority } from '../../theme'
 import { NewCategoryButton, NewCategoryForm } from './NewCategoryForm.tsx'
@@ -10,22 +12,11 @@ import { PriorityPicker } from './PriorityPicker.tsx'
 import { SheetSubmit } from '../../components/SheetSubmit.tsx'
 import { VisibilityField } from '../../components/VisibilityField.tsx'
 
-const PRESETS = ['Bez terminu', 'Dziś', 'Jutro', 'W tym tygodniu'] as const
-type Preset = (typeof PRESETS)[number]
-type DueChoice = Preset | 'Inna data'
-
 /** Nowe zadanie z formularza (resztę pól – kto, kiedy – uzupełnia ekran). */
 export type TaskDraft = Pick<
   Task,
-  'title' | 'categoryId' | 'priority' | 'due' | 'subtasks' | 'note' | 'private'
+  'title' | 'categoryId' | 'priority' | 'due' | 'dueWeek' | 'subtasks' | 'note' | 'private'
 >
-
-function presetDate(p: Preset, today: DateKey): DateKey | null {
-  if (p === 'Dziś') return today
-  if (p === 'Jutro') return addDays(today, 1)
-  if (p === 'W tym tygodniu') return addDays(weekStart(today), 6)
-  return null
-}
 
 type Props = {
   onClose: () => void
@@ -46,14 +37,11 @@ export function TaskSheet({ onClose, categories, today, onAddCategory, onSave }:
   const [priority, setPriority] = useState<Priority>(DEFAULT_PRIORITY)
   // nowe – domyślnie „Wspólne” (decyzja Hani 2026-10-25)
   const [isPrivate, setPrivate] = useState(false)
-  const [choice, setChoice] = useState<DueChoice>('Bez terminu')
-  const [customDate, setCustomDate] = useState<DateKey>(addDays(today, 7))
+  const [dueValue, setDueValue] = useState<DueValue>({ due: null, dueWeek: false })
   const [steps, setSteps] = useState<Subtask[]>([])
   const [note, setNote] = useState('')
   const [step, setStep] = useState('')
   const [addingCategory, setAddingCategory] = useState(false)
-
-  const due = choice === 'Inna data' ? customDate : presetDate(choice, today)
 
   const addStep = () => {
     const s = step.trim()
@@ -68,7 +56,8 @@ export function TaskSheet({ onClose, categories, today, onAddCategory, onSave }:
       title: t,
       categoryId,
       priority,
-      due,
+      due: dueValue.due,
+      dueWeek: dueValue.dueWeek,
       subtasks: steps,
       note: note.trim(),
       private: isPrivate,
@@ -231,39 +220,7 @@ export function TaskSheet({ onClose, categories, today, onAddCategory, onSave }:
       </Group>
 
       <Group label="TERMIN">
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-          {PRESETS.map((d) => (
-            <Chip key={d} on={choice === d} onClick={() => setChoice(d)}>
-              {d}
-            </Chip>
-          ))}
-          <Chip on={choice === 'Inna data'} onClick={() => setChoice('Inna data')}>
-            {choice === 'Inna data' ? dueLabel(customDate, today) : 'Inna data'}
-          </Chip>
-        </div>
-        {choice === 'Inna data' && (
-          <>
-            <label htmlFor="termin-data" className="sr-only">
-              Data terminu
-            </label>
-            <input
-              id="termin-data"
-              type="date"
-              value={customDate}
-              onChange={(e) => e.target.value && setCustomDate(e.target.value)}
-              style={{
-                height: 48,
-                border: `1px solid ${colors.border}`,
-                borderRadius: 14,
-                padding: '0 14px',
-                fontSize: 16,
-                color: colors.green900,
-                background: colors.white,
-                outlineColor: colors.green900,
-              }}
-            />
-          </>
-        )}
+        <DueField id="termin-data" value={dueValue} today={today} onChange={setDueValue} />
       </Group>
 
       <NoteField id="notatka-zadania" value={note} onChange={setNote} />

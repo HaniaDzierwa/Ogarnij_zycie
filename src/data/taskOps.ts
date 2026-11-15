@@ -51,7 +51,7 @@ export function addSubtask(task: Task, sub: Subtask, who: Who): Task {
 /** Pola zmieniane w arkuszu zadania („Edytuj” → „Zapisz”). */
 export type TaskEdit = Pick<
   Task,
-  'title' | 'categoryId' | 'priority' | 'due' | 'subtasks' | 'note' | 'private'
+  'title' | 'categoryId' | 'priority' | 'due' | 'dueWeek' | 'subtasks' | 'note' | 'private'
 >
 
 export const taskEditOf = ({
@@ -59,10 +59,20 @@ export const taskEditOf = ({
   categoryId,
   priority,
   due,
+  dueWeek,
   subtasks,
   note,
   private: isPrivate,
-}: Task): TaskEdit => ({ title, categoryId, priority, due, subtasks, note, private: isPrivate })
+}: Task): TaskEdit => ({
+  title,
+  categoryId,
+  priority,
+  due,
+  dueWeek: !!dueWeek && due !== null,
+  subtasks,
+  note,
+  private: isPrivate,
+})
 
 /** „Zapisz” w arkuszu – kroki dalej decydują o ogarnięciu (dodany krok przywraca zadanie). */
 export function editTask(task: Task, edit: TaskEdit, who: Who): Task {

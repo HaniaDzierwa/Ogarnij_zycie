@@ -101,6 +101,34 @@ export function dueLabel(due: DateKey, today: DateKey): string {
   return `DO ${d.getDate()} ${MONTHS_SHORT[d.getMonth()]}`
 }
 
+/** Niedziela tygodnia, w którym jest dany dzień. */
+export function weekEnd(k: DateKey): DateKey {
+  return addDays(weekStart(k), 6)
+}
+
+/** Jak mocno plakietka terminu ma się wyróżniać (jedna skala, decyzja Hani 2026-11-15). */
+export type DueLevel = 'far' | 'soon' | 'today' | 'late'
+
+/**
+ * Plakietka terminu: napis i poziom. `week` – termin wybrany jako „W tym / w przyszłym tygodniu”
+ * (zapisany jako niedziela tego tygodnia): „W TYM TYG.” (w sobotę – poziom jutra),
+ * w niedzielę „KONIEC TYG.” (poziom dziś), „PRZYSZŁY TYDZ.”; po niedzieli – „PO TERMINIE”.
+ */
+export function dueBadge(
+  due: DateKey,
+  today: DateKey,
+  week = false,
+): { label: string; level: DueLevel } {
+  const n = diffDays(today, due)
+  const level: DueLevel = n < 0 ? 'late' : n === 0 ? 'today' : n === 1 ? 'soon' : 'far'
+  if (week && n >= 0) {
+    if (n === 0) return { label: 'KONIEC TYG.', level }
+    if (due === weekEnd(today)) return { label: 'W TYM TYG.', level }
+    if (due === addDays(weekEnd(today), 7)) return { label: 'PRZYSZŁY TYDZ.', level }
+  }
+  return { label: dueLabel(due, today), level }
+}
+
 /** „dziś”, „jutro”, „za 7 dni” */
 export function inDays(n: number): string {
   if (n === 0) return 'dziś'

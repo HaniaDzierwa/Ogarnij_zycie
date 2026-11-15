@@ -17,7 +17,8 @@ import {
   ToggleRow,
 } from '../components/ui.tsx'
 import { PlusIcon } from '../components/icons.tsx'
-import { colors, defaultCategories, priorities, todayBadge } from '../theme'
+import { DueBadge } from '../components/DueBadge.tsx'
+import { colors, defaultCategories, priorities } from '../theme'
 
 /** Galeria elementów wspólnych – do porównania z projektem (etap 1, krok 1). */
 export function ElementsScreen() {
@@ -142,32 +143,10 @@ export function ElementsScreen() {
             >
               <Box color={p.line} />
               <span style={{ flex: 1, fontSize: 16, fontWeight: 700 }}>{p.label}</span>
-              {i === 0 ? (
-                <span
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 800,
-                    letterSpacing: '0.6px',
-                    color: todayBadge.fg,
-                    background: todayBadge.bg,
-                    padding: '4px 10px',
-                    borderRadius: 10,
-                  }}
-                >
-                  DZIŚ
-                </span>
-              ) : (
-                <span
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 800,
-                    letterSpacing: '0.6px',
-                    color: colors.brass700,
-                  }}
-                >
-                  {i === 1 ? 'JUTRO' : 'DO 15 PAŹ'}
-                </span>
-              )}
+              <DueBadge
+                due={['2026-10-09', '2026-10-10', '2026-10-15'][i] ?? '2026-10-15'}
+                today="2026-10-09"
+              />
             </div>
           ))}
         </Card>

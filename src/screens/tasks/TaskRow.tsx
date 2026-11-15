@@ -2,11 +2,12 @@ import { useState } from 'react'
 import { SwipeRow } from '../../components/SwipeRow.tsx'
 import { Box } from '../../components/ui.tsx'
 import { CheckIcon, TrashIcon, UndoIcon } from '../../components/icons.tsx'
-import { dueLabel, type DateKey } from '../../data/dates.ts'
+import { DueBadge } from '../../components/DueBadge.tsx'
+import { type DateKey } from '../../data/dates.ts'
 import { priorityOf, subtaskProgress } from '../../data/selectors.ts'
 import { useStore } from '../../data/store.ts'
 import type { Task } from '../../data/types.ts'
-import { colors, fonts, priorities, todayBadge } from '../../theme'
+import { colors, fonts, priorities } from '../../theme'
 import type { GroupBy } from './tasksView.ts'
 
 type Props = {
@@ -50,8 +51,6 @@ export function TaskRow({
   const p = priorityOf(useStore().priorities, task.priority)
   const pct = subtaskProgress(task)
   const subDone = task.subtasks.filter((s) => s.done).length
-  const due = task.due ? dueLabel(task.due, today) : null
-  const urgentDue = !task.done && (due === 'DZIŚ' || due === 'PO TERMINIE')
   const byCat = groupBy === 'cat'
   const hasSteps = !task.done && task.subtasks.length > 0
   const done = kind === 'done'
@@ -169,33 +168,9 @@ export function TaskRow({
               >
                 {(byCat ? p.label : categoryName).toUpperCase()}
               </span>
-              {due &&
-                (urgentDue ? (
-                  <span
-                    style={{
-                      fontSize: 11,
-                      fontWeight: 800,
-                      letterSpacing: '0.6px',
-                      color: todayBadge.fg,
-                      background: todayBadge.bg,
-                      padding: '3px 9px',
-                      borderRadius: 10,
-                    }}
-                  >
-                    {due}
-                  </span>
-                ) : (
-                  <span
-                    style={{
-                      fontSize: 12,
-                      fontWeight: 800,
-                      letterSpacing: '0.6px',
-                      color: colors.brass700,
-                    }}
-                  >
-                    {due}
-                  </span>
-                ))}
+              {task.due && (
+                <DueBadge due={task.due} today={today} week={task.dueWeek} done={task.done} />
+              )}
               {task.private && (
                 <span
                   style={{

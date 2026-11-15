@@ -12,7 +12,6 @@ import {
   DAYS_SHORT,
   MONTHS_SHORT,
   diffDays,
-  dueLabel,
   inDays,
   isDaytime,
   longDayLabel,
@@ -31,7 +30,8 @@ import {
   weekDays,
 } from '../data/selectors.ts'
 import { PushCard } from '../push/PushCard.tsx'
-import { colors, fonts, priorities, shadows, todayBadge } from '../theme'
+import { colors, fonts, priorities, shadows } from '../theme'
+import { DueBadge } from '../components/DueBadge.tsx'
 import { useItemSheets } from './shared/useItemSheets.tsx'
 
 /** 2 Start (Kategorie.dc.html, StartDzien / StartNoc). Podgląd pory: `?pora=dzien|noc`. */
@@ -281,7 +281,6 @@ export function StartScreen() {
         ) : (
           <Card radius={20}>
             {nearestUrgent.map((t, i) => {
-              const label = t.due ? dueLabel(t.due, today) : null
               return (
                 <div
                   key={t.id}
@@ -359,36 +358,7 @@ export function StartScreen() {
                             {categoryName(t.categoryId).toUpperCase()}
                           </span>
                         </span>
-                        {label === 'DZIŚ' || label === 'PO TERMINIE' ? (
-                          <span
-                            style={{
-                              fontSize: 11,
-                              fontWeight: 800,
-                              letterSpacing: '0.6px',
-                              color: todayBadge.fg,
-                              background: todayBadge.bg,
-                              padding: '4px 10px',
-                              borderRadius: 10,
-                              whiteSpace: 'nowrap',
-                            }}
-                          >
-                            {label}
-                          </span>
-                        ) : (
-                          label && (
-                            <span
-                              style={{
-                                fontSize: 11,
-                                fontWeight: 800,
-                                letterSpacing: '0.6px',
-                                color: colors.brass700,
-                                whiteSpace: 'nowrap',
-                              }}
-                            >
-                              {label}
-                            </span>
-                          )
-                        )}
+                        {t.due && <DueBadge due={t.due} today={today} week={t.dueWeek} />}
                       </button>
                     </div>
                   </SwipeRow>

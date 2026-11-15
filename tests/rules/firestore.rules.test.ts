@@ -329,6 +329,17 @@ describe('poprawność danych', () => {
     await assertFails(put(sampleTask({ due: '9 października' })))
     await assertSucceeds(put(sampleTask({ due: '2026-10-16' })))
   })
+  test('termin „na tydzień” (dueWeek): tak/nie, tylko przy terminie', async () => {
+    await assertSucceeds(put(sampleTask({ due: '2026-11-22', dueWeek: true })))
+    const raw = (extra: Record<string, unknown>, due: string | null) =>
+      setDoc(doc(db('hania'), taskPath('dom1', 'z7')), {
+        ...taskToDoc(sampleTask({ id: 'z7', due }), 'hania'),
+        ...extra,
+      })
+    await assertSucceeds(raw({ dueWeek: false }, '2026-11-22'))
+    await assertFails(raw({ dueWeek: 'tak' }, '2026-11-22'))
+    await assertFails(raw({ dueWeek: true }, null))
+  })
   test('notatka do 500 znaków', async () => {
     await assertSucceeds(put(sampleTask({ note: 'Kod do domofonu 4821' })))
     await assertFails(put(sampleTask({ note: 'x'.repeat(501) })))

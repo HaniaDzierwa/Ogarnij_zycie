@@ -8,7 +8,9 @@ import {
 } from '../../components/DetailSheet.tsx'
 import { Box, Chip, Dot, NoteField, Sheet } from '../../components/ui.tsx'
 import { CheckIcon, CloseIcon, PlusIcon, UndoIcon } from '../../components/icons.tsx'
-import { addDays, dueLabel, weekStart, type DateKey } from '../../data/dates.ts'
+import { DueBadge } from '../../components/DueBadge.tsx'
+import { type DateKey } from '../../data/dates.ts'
+import { DueField } from './DueField.tsx'
 import { newId } from '../../data/ids.ts'
 import { priorityOf } from '../../data/selectors.ts'
 import { useStore } from '../../data/store.ts'
@@ -18,16 +20,6 @@ import { colors, fonts, noCategory } from '../../theme'
 import { PriorityPicker } from './PriorityPicker.tsx'
 import { VisibilityField } from '../../components/VisibilityField.tsx'
 import { DoneBox, SubtaskToggle } from './TaskRow.tsx'
-
-const PRESETS = ['Bez terminu', 'Dziś', 'Jutro', 'W tym tygodniu'] as const
-type Preset = (typeof PRESETS)[number]
-
-function presetDate(p: Preset, today: DateKey): DateKey | null {
-  if (p === 'Dziś') return today
-  if (p === 'Jutro') return addDays(today, 1)
-  if (p === 'W tym tygodniu') return addDays(weekStart(today), 6)
-  return null
-}
 
 type Props = {
   task: Task
@@ -159,7 +151,13 @@ export function TaskDetailSheet({
               <Box color={prio.line} size={14} />
               {prio.label}
             </InfoRow>
-            <InfoRow label="TERMIN">{task.due ? dueLabel(task.due, today) : 'Bez terminu'}</InfoRow>
+            <InfoRow label="TERMIN">
+              {task.due ? (
+                <DueBadge due={task.due} today={today} week={task.dueWeek} done={task.done} />
+              ) : (
+                'Bez terminu'
+              )}
+            </InfoRow>
             <InfoRow label="KTO WIDZI">{task.private ? 'Tylko ja' : 'Wspólne'}</InfoRow>
           </div>
 
@@ -246,16 +244,6 @@ function TaskEditForm({
   onChange: (fn: (d: TaskEdit) => TaskEdit) => void
 }) {
   const [step, setStep] = useState('')
-  // Kliknięty przycisk wygrywa, gdy dwa dają tę samą datę (w niedzielę „Dziś” = „W tym tygodniu”,
-  // w sobotę „Jutro” = „W tym tygodniu”); bez kliknięcia – pierwszy pasujący do terminu.
-  const [picked, setPicked] = useState<Preset | null>(null)
-  const preset =
-    picked && presetDate(picked, today) === draft.due
-      ? picked
-      : PRESETS.find((p) => presetDate(p, today) === draft.due)
-  const [customOpen, setCustomOpen] = useState(false)
-  const showCustom = customOpen || (!preset && draft.due !== null)
-  const setDue = (due: DateKey | null) => onChange((d) => ({ ...d, due }))
   const addStep = () => {
     const s = step.trim()
     if (!s) return
@@ -324,53 +312,12 @@ function TaskEditForm({
       </Group>
 
       <Group label="TERMIN">
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-          {PRESETS.map((p) => (
-            <Chip
-              key={p}
-              on={!showCustom && preset === p}
-              onClick={() => {
-                setCustomOpen(false)
-                setPicked(p)
-                setDue(presetDate(p, today))
-              }}
-            >
-              {p}
-            </Chip>
-          ))}
-          <Chip
-            on={showCustom}
-            onClick={() => {
-              setCustomOpen(true)
-              if (!draft.due) setDue(addDays(today, 7))
-            }}
-          >
-            {showCustom && draft.due ? dueLabel(draft.due, today) : 'Inna data'}
-          </Chip>
-        </div>
-        {showCustom && (
-          <>
-            <label htmlFor="det-termin" className="sr-only">
-              Data terminu
-            </label>
-            <input
-              id="det-termin"
-              type="date"
-              value={draft.due ?? ''}
-              onChange={(e) => e.target.value && setDue(e.target.value)}
-              style={{
-                height: 48,
-                border: `1px solid ${colors.border}`,
-                borderRadius: 14,
-                padding: '0 14px',
-                fontSize: 16,
-                color: colors.green900,
-                background: colors.white,
-                outlineColor: colors.green900,
-              }}
-            />
-          </>
-        )}
+        <DueField
+          id="det-termin"
+          value={{ due: draft.due, dueWeek: !!draft.dueWeek }}
+          today={today}
+          onChange={(v) => onChange((d) => ({ ...d, ...v }))}
+        />
       </Group>
 
       <Group label="KROKI">

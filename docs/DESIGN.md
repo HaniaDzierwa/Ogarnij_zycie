@@ -154,7 +154,9 @@ Zakupy `#5E8C6A` · Dom `#B8925A` · Zdrowie `#A4492F` · Urzędy `#6E5F8C` · A
 - Na Starcie najpierw „Pilne”, potem „Najbliższe wydarzenia” (min. 2).
 - Strzałki tygodnia w kalendarzu pod nagłówkiem, nie w nim.
 - Tryb dzień/noc nagłówka Startu i ekranu ładowania wg godziny (6:00–18:00 dzień).
-- Termin zadania (jedna zasada, 2026-10-18): dziś → **DZIŚ** (czerwona plakietka), jutro → **JUTRO**, w ciągu 7 dni → dzień i data (**WT 13 PAŹ**), dalej → **DO 30 PAŹ**.
+- Termin zadania (jedna zasada, 2026-10-18): dziś → **DZIŚ** , jutro → **JUTRO**, w ciągu 7 dni → dzień i data (**WT 13 PAŹ**), dalej → **DO 30 PAŹ**. Wygląd plakietki – niżej (2026-11-15).
+- Plakietka terminu (decyzja Hani 2026-11-15, zastępuje czerwone DZIŚ i złoty napis): **obwódka + zegar** przy każdym terminie (lista, Start, arkusz), jedna skala: dalszy termin → beżowa obwódka `#D9D0BE` (napis `#7A5C2C`); jutro → złota `#B8925A` (`#6E5220`); dziś → czerwona `#A4492F` (`#8C3D27`); po terminie → pełna czerwień `#A4492F`, biały napis. Obwódka, nie wypełnienie – żeby nie mylić z plakietką priorytetu (PILNE / WAŻNE). Przy ogarniętym zadaniu – zawsze beżowa.
+- Termin „W tym tygodniu” / „W przyszłym tygodniu” (2026-11-15): zapisuje niedzielę tego / następnego tygodnia i zapamiętuje, że chodziło o tydzień (`dueWeek`). Plakietka: **W TYM TYG.** (pn–pt beżowa, w sobotę złota jak jutro), w niedzielę **KONIEC TYG.** (czerwona obwódka jak dziś), **PRZYSZŁY TYDZ.** (od poniedziałku – W TYM TYG.), po niedzieli **PO TERMINIE**. Przyciski terminu w arkuszach zawsze te same: Bez terminu, Dziś, Jutro, W tym tygodniu, W przyszłym tygodniu, Inna data; pod nimi podgląd „Na liście: …”. Na Starcie i w powiadomieniach niedzielne KONIEC TYG. liczy się jak termin dziś.
 - „Najbliższe wydarzenia” na Starcie (2026-10-18): dwa najbliższe wydarzenia dowolnego rodzaju (bez terminów zadań).
 
 ## Model danych (etap 2 – `src/firebase/model.ts`)
@@ -167,7 +169,7 @@ houses/{houseId}                    name (wpisuje założyciel), ownerUid, creat
 houses/{houseId}/members/{uid}      name, role(owner|member), scope{all, categoryIds[], calendar}, joinedAt
 houses/{houseId}/categories/{id}    name, color, order, updatedAt, updatedBy
 houses/{houseId}/priorities/{id}    name, color, order(liczba, może być ułamek), updatedAt, updatedBy – tylko własne
-houses/{houseId}/tasks/{id}         title, categoryId|null, priority(high|mid|low|id własnego), due('RRRR-MM-DD'|null), done,
+houses/{houseId}/tasks/{id}         title, categoryId|null, priority(high|mid|low|id własnego), due('RRRR-MM-DD'|null), dueWeek(true – opcjonalne, 2026-11-15), done,
                                     subtasks[{id,title,done}], note (notatka, do 500), createdBy, doneAt(Timestamp|null), doneBy,
                                     deleted, deletedAt(Timestamp|null), deletedBy, updatedAt, updatedBy
 houses/{houseId}/private/{uid}/tasks/{id}    jak tasks – „Tylko ja”: widzi i zmienia tylko autor (decyzja Hani 2026-10-25)

@@ -60,8 +60,18 @@ export function shade(hex: string, f: number): string {
   return `rgb(${mix(n >> 16)}, ${mix((n >> 8) & 255)}, ${mix(n & 255)})`
 }
 
-/** Plakietka „DZIŚ” przy niezrobionym zadaniu. */
-export const todayBadge = { bg: '#A4492F', fg: '#FFFFFF' } as const
+/**
+ * Plakietka terminu – obwódka + zegar, jedna skala (decyzja Hani 2026-11-15):
+ * dalszy termin → beżowa obwódka, jutro / sobota przy „W TYM TYG.” → złota,
+ * dziś / „KONIEC TYG.” → czerwona, po terminie → pełna czerwień.
+ * Obwódka (nie wypełnienie), żeby nie mylić z plakietką priorytetu.
+ */
+export const dueBadgeColors = {
+  far: { border: '#D9D0BE', bg: 'transparent', fg: '#7A5C2C' },
+  soon: { border: '#B8925A', bg: 'transparent', fg: '#6E5220' },
+  today: { border: '#A4492F', bg: 'transparent', fg: '#8C3D27' },
+  late: { border: '#A4492F', bg: '#A4492F', fg: '#FFFFFF' },
+} as const
 
 export const defaultCategories = [
   { name: 'Zakupy', color: '#5E8C6A' },

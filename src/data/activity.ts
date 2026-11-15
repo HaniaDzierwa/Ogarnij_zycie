@@ -2,7 +2,7 @@
 // przez Hanię 2026-10-25). Aplikacja porównuje listę przed i po zmianie; Worker rozsyła wpisy.
 // „Tylko ja” nigdy nie daje wpisu (Z2).
 
-import { addDays, DAYS_SHORT, dueLabel, MONTHS_SHORT, parseKey, type DateKey } from './dates.ts'
+import { addDays, DAYS_SHORT, dueBadge, MONTHS_SHORT, parseKey, type DateKey } from './dates.ts'
 import type { CalendarEvent, Task } from './types.ts'
 
 export type ActivityKind =
@@ -60,7 +60,7 @@ export function taskActivity(prev: Task[], next: Task[], today: DateKey): Activi
     }
     if (t.done) continue
     if (t.due !== p.due && t.due !== null && soon.has(t.due))
-      add('task-due-soon', dueLabel(t.due, today))
+      add('task-due-soon', dueBadge(t.due, today, t.dueWeek).label)
     if (t.priority === 'high' && p.priority !== 'high') add('task-urgent')
   }
   return out

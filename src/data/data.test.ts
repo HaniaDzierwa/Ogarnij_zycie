@@ -1,5 +1,13 @@
 import { describe, expect, test } from 'vitest'
-import { addDays, dueLabel, longDayLabel, shortDayLabel, weekStart } from './dates.ts'
+import {
+  addDays,
+  dueBadge,
+  dueLabel,
+  longDayLabel,
+  shortDayLabel,
+  weekEnd,
+  weekStart,
+} from './dates.ts'
 import { mockCategories, mockEvents, mockTasks } from './mock.ts'
 import {
   allPriorities,
@@ -34,7 +42,28 @@ describe('daty', () => {
     expect(dueLabel('2026-10-08', DAY)).toBe('PO TERMINIE')
   })
 
-  test('tydzień zaczyna się w poniedziałek', () => {
+  test('plakietka terminu: jedna skala far → soon → today → late', () => {
+    expect(dueBadge(DAY, DAY)).toEqual({ label: 'DZIŚ', level: 'today' })
+    expect(dueBadge(addDays(DAY, 1), DAY)).toEqual({ label: 'JUTRO', level: 'soon' })
+    expect(dueBadge('2026-10-30', DAY)).toEqual({ label: 'DO 30 PAŹ', level: 'far' })
+    expect(dueBadge('2026-10-08', DAY)).toEqual({ label: 'PO TERMINIE', level: 'late' })
+  })
+
+  test('plakietka terminu „na tydzień” (termin = niedziela 11 paź)', () => {
+    const sun = '2026-10-11'
+    // piątek – zwykły termin, sobota – poziom jutra, niedziela – KONIEC TYG., poniedziałek – po terminie
+    expect(dueBadge(sun, DAY, true)).toEqual({ label: 'W TYM TYG.', level: 'far' })
+    expect(dueBadge(sun, '2026-10-10', true)).toEqual({ label: 'W TYM TYG.', level: 'soon' })
+    expect(dueBadge(sun, sun, true)).toEqual({ label: 'KONIEC TYG.', level: 'today' })
+    expect(dueBadge(sun, '2026-10-12', true)).toEqual({ label: 'PO TERMINIE', level: 'late' })
+    // przyszły tydzień; w poniedziałek staje się „W TYM TYG.”
+    expect(dueBadge('2026-10-18', DAY, true)).toEqual({ label: 'PRZYSZŁY TYDZ.', level: 'far' })
+    expect(dueBadge('2026-10-18', '2026-10-12', true).label).toBe('W TYM TYG.')
+  })
+
+  test('tydzień zaczyna się w poniedziałek, kończy w niedzielę', () => {
+    expect(weekEnd(DAY)).toBe('2026-10-11')
+    expect(weekEnd('2026-10-11')).toBe('2026-10-11')
     expect(weekStart(DAY)).toBe('2026-10-05')
     expect(weekStart('2026-10-11')).toBe('2026-10-05')
     expect(weekDays(DAY)).toHaveLength(7)

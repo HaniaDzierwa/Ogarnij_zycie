@@ -294,16 +294,38 @@ test('panel filtrów zamyka dotknięcie poza nim (tło nad całym ekranem, takż
   expect(document.getElementById('panel-filtrow')).toBeNull()
 })
 
-test('arkusz: w niedzielę „W tym tygodniu” da się wybrać, choć to ten sam dzień co „Dziś”', () => {
+test('arkusz: w niedzielę „W tym tygodniu” to nie „Dziś” – plakietka KONIEC TYG., po zapisie też', () => {
   renderAt('/zadania', '2026-10-18')
   const sheet = editTask('Baterie AA do pilota')
   const chip = (name: string) => within(sheet).getByRole('button', { name })
   fireEvent.click(chip('W tym tygodniu'))
   expect(chip('W tym tygodniu').getAttribute('aria-pressed')).toBe('true')
   expect(chip('Dziś').getAttribute('aria-pressed')).toBe('false')
+  expect(within(sheet).getByText('Na liście:').textContent).toContain('KONIEC TYG.')
   fireEvent.click(chip('Dziś'))
   expect(chip('Dziś').getAttribute('aria-pressed')).toBe('true')
   expect(chip('W tym tygodniu').getAttribute('aria-pressed')).toBe('false')
+  expect(within(sheet).getByText('Na liście:').textContent).toContain('DZIŚ')
+  fireEvent.click(chip('W tym tygodniu'))
+  fireEvent.click(within(sheet).getByRole('button', { name: 'Zapisz' }))
+  // po zapisie arkusz pamięta wybór „W tym tygodniu”
+  fireEvent.click(within(sheet).getByRole('button', { name: 'Edytuj' }))
+  expect(chip('W tym tygodniu').getAttribute('aria-pressed')).toBe('true')
+})
+
+test('nowe zadanie „W przyszłym tygodniu”: na liście PRZYSZŁY TYDZ. z zegarem', () => {
+  renderAt('/zadania?nowe=zadanie')
+  const sheet = screen.getByRole('dialog', { name: 'Nowe zadanie' })
+  fireEvent.change(within(sheet).getByLabelText('CO TRZEBA ZROBIĆ?'), {
+    target: { value: 'Umyć okna' },
+  })
+  fireEvent.click(within(sheet).getByRole('button', { name: 'W przyszłym tygodniu' }))
+  expect(within(sheet).getByText('Na liście:').textContent).toContain('PRZYSZŁY TYDZ.')
+  fireEvent.click(within(sheet).getByRole('button', { name: 'Dodaj zadanie' }))
+  const row = screen.getByRole('button', { name: 'Otwórz zadanie Umyć okna' })
+  const badge = within(row).getByText('PRZYSZŁY TYDZ.')
+  expect(badge.getAttribute('data-level')).toBe('far')
+  expect(badge.querySelector('svg')).not.toBeNull()
 })
 
 test('notatka: przy nowym zadaniu i w arkuszu zadania („Zapisz”)', () => {
