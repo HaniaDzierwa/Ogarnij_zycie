@@ -165,16 +165,16 @@ Projekt: kanwa „Zadania cykliczne” w Claude Design (ekrany 1c/1e – zadanie
 - Baza: opcjonalne pole `repeat` (zadania i wydarzenia) i `skip` (pominięte dni wydarzenia) – stare dokumenty bez zmian; reguły i testy reguł (emulator u Hani).
 
 **Odbiór:**
-- [ ] Zadanie co tydzień: ogarnięcie pokazuje następne z terminem za tydzień; COFNIJ cofa oba
-- [ ] Wydarzenie co rok / co tydzień widać w kalendarzu w kolejnych miesiącach i latach; „Tylko to” usuwa jedną powtórkę
-- [ ] Arkusze nowego zadania i wydarzenia mieszczą się na ekranie telefonu; edycja w tym samym stylu
-- [ ] Stare zadania i wydarzenia działają jak wcześniej; testy reguł przechodzą u Hani
+- [x] Zadanie co tydzień: ogarnięcie pokazuje następne z terminem za tydzień; COFNIJ cofa oba
+- [x] Wydarzenie co rok / co tydzień widać w kalendarzu w kolejnych miesiącach i latach; „Tylko to” usuwa jedną powtórkę
+- [x] Arkusze nowego zadania i wydarzenia mieszczą się na ekranie telefonu; edycja w tym samym stylu
+- [x] Stare zadania i wydarzenia działają jak wcześniej; testy reguł przechodzą u Hani
 
 ---
 
 ## Etap 9 – Zdjęcia w zadaniach (plan z 2026-11-16, do dopracowania z Hanią)
 
-**Status:** projekt w Claude Design (kanwa „Zdjęcia w zadaniach”: 1 Nowe zadanie – zdjęcia, 2 Arkusz do odczytu, 3 Lista, 4 Podgląd). Start po odbiorze etapu 8 („akceptuję”) i dopracowaniu projektu.
+**Status:** projekt w Claude Design (kanwa „Zdjęcia w zadaniach”: 1 Nowe zadanie – zdjęcia, 2 Arkusz do odczytu, 3 Lista, 4 Podgląd z „Zapisz na telefonie”, 5 Zadanie cykliczne – przy każdym / tylko tym razem, 6 Ustawienia – miejsce na zdjęcia; zdjęcia zastępcze – Hania nie ma swoich). Start po odbiorze etapu 8 („akceptuję”) i dopracowaniu projektu.
 
 **Dlaczego tak (decyzja techniczna):** zostajemy na darmowym planie Spark – **bez Firebase Storage** (wymaga planu Blaze z kartą, a Hania nie ma teraz dostępu do konsoli) i bez Cloudflare R2 (Worker musiałby dostać publiczny adres i własną kontrolę dostępu). Zdjęcia trafiają do Firestore jako zmniejszone pliki.
 
@@ -183,7 +183,7 @@ Projekt: kanwa „Zadania cykliczne” w Claude Design (ekrany 1c/1e – zadanie
   - **kafelek** – ok. 300 px, kilkanaście KB; w arkuszu zadania,
   - **miniatura na listę** – ok. 120 px, 3–5 KB, tylko pierwszego zdjęcia, zapisana razem z zadaniem (lista bez dodatkowych odczytów, także offline).
 - **Baza (do ustalenia przy wdrożeniu):** zdjęcia jako osobne dokumenty, np. `houses/{dom}/photos/{id}` (kafelek) i osobno pełna wersja, np. `houses/{dom}/photoFull/{id}` – żeby otwarcie arkusza nie ściągało pełnych zdjęć; jeden dokument < 1 MB; z odnośnikiem do zadania; zdjęcia wczytywane tylko dla otwartego zadania (nigdy cała kolekcja w tle); pola ze zdjęciami bez indeksów (wpis w `firestore.indexes.json`, `fieldOverrides`); „Tylko ja” – w części prywatnej, jak zadania. Przy zadaniu: liczba zdjęć i miniatura pierwszego (pola opcjonalne – stare zadania bez zmian). Reguły: tylko domownicy, limit rozmiaru, limit zdjęć na zadanie; testy reguł w emulatorze u Hani.
-- **Wygląd (projekt):** w arkuszu „+ Zdjęcie” obok „+ Kroki” / „+ Notatka”; po pierwszym zdjęciu sekcja ZDJĘCIA pod notatką – kafelki 3 w rzędzie, licznik „N z 5”, kafelek „Dodaj”, × na kafelku (z COFNIJ), „Zmniejszam…” na świeżo dodanym. Arkusz do odczytu – rząd miniatur, dotknięcie otwiera podgląd. Lista – ikona aparatu z liczbą i miniatura pierwszego zdjęcia (44 px). Podgląd na cały ekran – ciemne tło, „1 / 3”, przesuwanie, powiększanie palcami, „Usuń zdjęcie” z potwierdzeniem.
+- **Wygląd (projekt):** w arkuszu „+ Zdjęcie” obok „+ Kroki” / „+ Notatka”; po pierwszym zdjęciu sekcja ZDJĘCIA pod notatką – kafelki 3 w rzędzie, licznik „N z 5”, kafelek „Dodaj”, × na kafelku (z COFNIJ), „Zmniejszam…” na świeżo dodanym. Arkusz do odczytu – rząd miniatur, dotknięcie otwiera podgląd. Lista – ikona aparatu z liczbą i miniatura pierwszego zdjęcia (44 px). Podgląd na cały ekran – ciemne tło, „1 / 3”, przesuwanie, powiększanie palcami, „Usuń zdjęcie” z potwierdzeniem, „Zapisz na telefonie” (decyzja Hani 2026-11-17 – na iPhonie przez systemowe „Udostępnij → Zachowaj obraz”, na Androidzie zwykłe pobranie). Do projektu wstawiamy 2–3 prawdziwe zdjęcia od Hani (decyzja 2026-11-17).
 - **Zasady:** zadanie do Kosza – zdjęcia razem z nim, po 30 dniach znikają na zawsze (sprzątanie także w Workerze); bez internetu – zdjęcie widać od razu, wyśle się po powrocie sieci.
 - **Zadania cykliczne – „Przy każdym powtórzeniu” albo „Tylko tym razem” (prośba Hani z 2026-11-17):** przy dodawaniu zdjęcia do zadania cyklicznego wybór, gdzie ma być. Jedno zadanie może mieć jednocześnie oba rodzaje, każdego jedno lub więcej.
   - **Tylko tym razem** – zdjęcie tego wystąpienia; zostaje przy nim po ogarnięciu, następne startuje bez niego (jak w pierwszej wersji planu).
@@ -191,14 +191,14 @@ Projekt: kanwa „Zadania cykliczne” w Claude Design (ekrany 1c/1e – zadanie
   - Zadanie bez powtarzania – bez wyboru, zdjęcia jak „Tylko tym razem”.
   - **Wygląd:** w sekcji ZDJĘCIA dwie grupy: „PRZY KAŻDYM POWTÓRZENIU” (kafelki z małą ikoną powtarzania) i „TYLKO TYM RAZEM”. Po „+ Zdjęcie” w zadaniu cyklicznym – mały wybór, domyślnie „Tylko tym razem”. W podglądzie: „Przenieś do: przy każdym / tylko tym razem”. Na liście – miniatura pierwszego zdjęcia tego wystąpienia, a gdy go nie ma – serii; liczba = oba rodzaje razem.
   - **Baza:** przy zadaniu nowe, opcjonalne pole `seriesId` (id serii) – przechodzi na następne wystąpienie samo, bo `nextOccurrence` kopiuje zadanie. Stare zadania cykliczne bez tego pola: przy pierwszym zdjęciu „przy każdym” dostają `seriesId` = własne id. Zdjęcie ma rodzaj: wystąpienia (odnośnik do zadania) albo serii (odnośnik do `seriesId`).
-  - **Limit:** reguły Firestore nie liczą dokumentów, więc stałe miejsca na zdjęcia – id `{zadanie}_0`…`{zadanie}_4` dla „tylko tym razem” i `{seria}_s0`…`{seria}_s4` dla „przy każdym”; szóste nie ma gdzie trafić.
+  - **Limit – razem 5 (decyzja Hani 2026-11-17):** „przy każdym” + „tylko tym razem” w jednym wystąpieniu najwyżej 5. Reguły Firestore nie liczą dokumentów, więc: stałe miejsca na zdjęcia (id `{zadanie}_0`…`{zadanie}_4` i `{seria}_s0`…`{seria}_s4` – twarda granica dla każdego rodzaju) oraz liczniki – przy zadaniu (zdjęcia wystąpienia) i w dokumencie serii, np. `houses/{dom}/series/{seriesId}` (zdjęcia serii). Dodanie zdjęcia zmienia licznik w tej samej paczce, a reguły sprawdzają, że suma dla otwartego wystąpienia ≤ 5. Wcześniejsze, ogarnięte wystąpienia nie blokują dodawania (mogą wtedy pokazać więcej niż 5).
   - **Kosz:** „Usuń → Tylko to” – wystąpienie do Kosza ze swoimi zdjęciami, zdjęcia serii zostają dla następnego. Usunięcie całej serii – zdjęcia serii też do Kosza. Na zawsze znikają, gdy w serii nie zostało już żadne zadanie (sprzątanie w Workerze).
-  - **„Tylko ja”:** przeniesienie zadania cyklicznego – zdjęcia serii idą razem z nim (do decyzji Hani, pytanie 6).
+  - **„Tylko ja”:** przeniesienie zadania cyklicznego – zdjęcia serii idą razem z nim (decyzja Hani 2026-11-17); wcześniejsze, ogarnięte wystąpienia we wspólnych je tracą.
 - **Testy reguł (propozycja, w stylu obecnych w `tests/rules/firestore.rules.test.ts`):**
   - dostęp: domownik dodaje i czyta zdjęcia; obcy nie czyta (nawet znając id), nie dodaje, nie zmienia, nie usuwa; niezalogowany – nic; „dodane przez” = zalogowany i nie zmienia się,
   - „Tylko ja”: autor zapisuje i czyta, inny domownik i obcy – nic; przeniesienie do „Tylko ja” razem ze zdjęciami jedną paczką,
   - poprawność: pełna wersja i kafelek to dane binarne z limitem rozmiaru (np. pełna ≤ ok. 700 KB, kafelek ≤ ok. 50 KB); zdjęcie wskazuje zadanie (albo serię) z tego samego domu; nowe pola przy zadaniu (liczba, miniatura, `seriesId`) opcjonalne, stare zadania przechodzą; nieznane pola odrzucone,
-  - limit: id spoza miejsc `_0`…`_4` / `_s0`…`_s4` odrzucone,
+  - limit: id spoza miejsc `_0`…`_4` / `_s0`…`_s4` odrzucone; 6. zdjęcie w wystąpieniu (np. 3 serii + 3 własne) odrzucone; licznik musi się zgadzać ze zmianą,
   - miejsce: oba liczniki (domu i wspólny) muszą wzrosnąć dokładnie o rozmiar dodanego zdjęcia (i zmaleć przy usunięciu); zdjęcie bez zmiany liczników, zaniżony licznik, dom ponad 150 MB albo aplikacja ponad 600 MB – odrzucone; obcy nie zmienia licznika domu; licznika wspólnego nie da się zmienić bez zdjęcia,
   - zdjęcia serii: rodzaj „seria” tylko z `seriesId`, „wystąpienie” tylko z id zadania; domownik czyta zdjęcia serii z każdego wystąpienia,
   - usuwanie: domownik tak, obcy nie; „Opróżnij kosz” i usunięcie domu kasują też zdjęcia; po „Opuść dom” / „Usuń z domu” – brak dostępu.
@@ -208,18 +208,18 @@ Projekt: kanwa „Zadania cykliczne” w Claude Design (ekrany 1c/1e – zadanie
   Dodanie / usunięcie zdjęcia zmienia oba liczniki w tej samej paczce; reguły sprawdzają, że zmiana = rozmiar zdjęcia i że żaden limit nie jest przekroczony. Po przekroczeniu: „Miejsce na zdjęcia w Waszym domu się skończyło – usuń stare” (albo – przy wspólnym – „Miejsce na zdjęcia w aplikacji się skończyło”); zadania zapisują się dalej. W Ustawieniach: „Zdjęcia: N MB z 150 MB” (Hania nie ma teraz wglądu w konsolę). Liczby to stałe w regułach – łatwo je zmienić później (na razie 2 domy po 2 osoby; wspólne 600 MB wystarczy na 4 pełne domy). Szacunek: ok. 10 zdjęć tygodniowo na dom ≈ 70 MB rocznie. Gdyby domów było kilkadziesiąt – wrócić do tematu Firebase Storage (plan Blaze). Inne darmowe limity (50 tys. odczytów i 20 tys. zapisów dziennie, ok. 10 GB pobierania miesięcznie) – ze sporym zapasem.
 - **Szacunek:** ok. jeden wieczór pracy Claude'a + testy Hani na iPhonie i Androidzie (możliwa jedna runda poprawek pod Safari).
 
-**Do decyzji Hani (przed startem):**
-1. Limit zdjęć na zadanie – 5 wystarczy?
-2. Zdjęcia także przy wydarzeniach?
-3. Pobieranie zdjęcia na telefon z podglądu – potrzebne?
-4. Czy wstawić do projektu 2–3 prawdziwe zdjęcia, żeby ocenić miniatury i podgląd?
-5. Zadanie cykliczne: limit osobno (5 „tylko tym razem” + 5 „przy każdym”), czy razem 5?
-6. Przeniesienie zadania cyklicznego do „Tylko ja” – zdjęcia serii idą z nim (wcześniejsze, ogarnięte wystąpienia we wspólnych je stracą)?
+**Decyzje Hani (2026-11-17):**
+1. Limit 5 zdjęć na zadanie – tak.
+2. Zdjęcia przy wydarzeniach – nie (tylko zadania).
+3. Zapisywanie zdjęcia na telefonie z podglądu – tak.
+4. 2–3 prawdziwe zdjęcia w projekcie – tak (Hania je przekaże).
+5. Zadanie cykliczne – limit 5 razem (przy każdym + tylko tym razem).
+6. Przeniesienie zadania cyklicznego do „Tylko ja” – zdjęcia serii idą z nim.
 
 **Odbiór (wstępnie):**
 - [ ] Zdjęcie z aparatu i z galerii dodaje się na iPhonie i Androidzie, widać je od razu (także bez internetu)
 - [ ] Lista zadań dalej szybka; miniatura i liczba zdjęć przy zadaniu
-- [ ] Podgląd: przesuwanie, powiększanie, usuwanie z COFNIJ
+- [ ] Podgląd: przesuwanie, powiększanie, usuwanie z COFNIJ, zapisanie zdjęcia na telefonie (iPhone i Android)
 - [ ] Zadanie w Koszu i przywrócone – zdjęcia razem z nim; „Tylko ja” – zdjęć nie widzą domownicy
 - [ ] Zadanie cykliczne: zdjęcie „przy każdym” widać w następnym wystąpieniu, „tylko tym razem” – nie; oba rodzaje naraz w jednym zadaniu
 - [ ] Ustawienia pokazują zajęte miejsce na zdjęcia; po limicie komunikat, a zadania dalej się zapisują

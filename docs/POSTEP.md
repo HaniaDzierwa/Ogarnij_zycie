@@ -1,6 +1,6 @@
 # Postęp prac
 
-Aktualny etap: **8 – Powtarzanie i zwarte arkusze** (w toku, gałąź `etap-8-powtarzanie`)
+Aktualny etap: **9 – Zdjęcia w zadaniach** (zaplanowany, projekt gotowy – start wdrożenia)
 
 | Etap | Status | Akceptacja |
 | --- | --- | --- |
@@ -12,8 +12,8 @@ Aktualny etap: **8 – Powtarzanie i zwarte arkusze** (w toku, gałąź `etap-8-
 | 5 Kategorie, Kalendarz, Start i wspólne testowanie (dawniej 4–6 + odbiór 3) | zakończony | 2026-10-25 |
 | 6 Ustawienia i push (dawniej 7) | zakończony | 2026-10-25 |
 | 7 Testy i publikacja (dawniej 9) | zakończony; usuwanie konta – dorobione 2026-10-25 | 2026-10-25 |
-| 8 Powtarzanie i zwarte arkusze | opublikowany (oficjalna strona 2026-11-16), czeka na odbiór | – |
-| 9 Zdjęcia w zadaniach | zaplanowany (PLAN.md) – projekt w Claude Design, dopracowanie i start po odbiorze etapu 8 | – |
+| 8 Powtarzanie i zwarte arkusze | zakończony (oficjalna strona 2026-11-16) | 2026-11-17 |
+| 9 Zdjęcia w zadaniach | zaplanowany (PLAN.md), projekt w Claude Design gotowy | – |
 
 Kolejność etapów zmieniona 2026-10-20 (decyzja Hani: testować dopiero we dwoje) – szczegóły w PLAN.md. Wpisy w dzienniku sprzed tej daty używają dawnej numeracji.
 
@@ -299,3 +299,6 @@ Wersja testowa: https://ogarnij-zycie--test-56tdtc0y.web.app (kanał `test`, odn
 - 2026-11-17 · Etap 9 · Decyzje Hani (miejsce w bazie): twardy limit 500 MB na zdjęcia pilnowany regułami (licznik w domu) + zużycie w Ustawieniach; pełna wersja 1280 px; kafelek i pełna wersja w osobnych dokumentach; zdjęcia tylko dla otwartego zadania; pola ze zdjęciami bez indeksów – w PLAN.md.
 - 2026-11-17 · Etap 9 · Poprawka limitów miejsca (darmowe 1 GB jest jedno na całą aplikację, nie na dom): wspólny limit 600 MB + 50 MB na dom, pełna wersja 1080 px – decyzja Hani, w PLAN.md. Na razie 2 domy po 2 osoby (pozostałe domy z pomyłki usunięte).
 - 2026-11-17 · Etap 9 · Limit zdjęć na dom podniesiony do 150 MB (decyzja Hani); wspólny limit 600 MB bez zmian – w PLAN.md.
+- 2026-11-17 · Etap 9 · Odpowiedzi Hani na pytania 1–6: limit 5 – tak; wydarzenia – nie; zapis na telefonie – tak; prawdziwe zdjęcia w projekcie – tak; cykliczne – razem 5; do „Tylko ja” – zdjęcia serii idą z zadaniem. W PLAN.md.
+- 2026-11-17 · Etap 9 · Projekt w Claude Design uzupełniony: nowe ekrany 5 (zadanie cykliczne – „przy każdym powtórzeniu” / „tylko tym razem”, razem 5) i 6 (Ustawienia – miejsce na zdjęcia, 150 MB na dom), „Zapisz na telefonie” w podglądzie, 1080 px, notatki z decyzjami Hani. Zdjęcia zastępcze (Hania nie ma swoich). · Sprawdzenie: kanwa „Zdjęcia w zadaniach”.
+- 2026-11-17 · Etap 8 · Odbiór: Hania – „etap 8 odebrany, działa dobrze”. Etap 8 zakończony; checklista w PLAN.md odhaczona. · Sprawdzenie: oficjalna strona.
