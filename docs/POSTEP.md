@@ -1,6 +1,6 @@
 # Postęp prac
 
-Aktualny etap: **9 – Zdjęcia w zadaniach** (zaplanowany, projekt gotowy – start wdrożenia)
+Aktualny etap: **9 – Zdjęcia w zadaniach** (w toku, gałąź `etap-9-zdjecia`)
 
 | Etap | Status | Akceptacja |
 | --- | --- | --- |
@@ -13,7 +13,7 @@ Aktualny etap: **9 – Zdjęcia w zadaniach** (zaplanowany, projekt gotowy – s
 | 6 Ustawienia i push (dawniej 7) | zakończony | 2026-10-25 |
 | 7 Testy i publikacja (dawniej 9) | zakończony; usuwanie konta – dorobione 2026-10-25 | 2026-10-25 |
 | 8 Powtarzanie i zwarte arkusze | zakończony (oficjalna strona 2026-11-16) | 2026-11-17 |
-| 9 Zdjęcia w zadaniach | zaplanowany (PLAN.md), projekt w Claude Design gotowy | – |
+| 9 Zdjęcia w zadaniach | w toku | – |
 
 Kolejność etapów zmieniona 2026-10-20 (decyzja Hani: testować dopiero we dwoje) – szczegóły w PLAN.md. Wpisy w dzienniku sprzed tej daty używają dawnej numeracji.
 
@@ -302,3 +302,4 @@ Wersja testowa: https://ogarnij-zycie--test-56tdtc0y.web.app (kanał `test`, odn
 - 2026-11-17 · Etap 9 · Odpowiedzi Hani na pytania 1–6: limit 5 – tak; wydarzenia – nie; zapis na telefonie – tak; prawdziwe zdjęcia w projekcie – tak; cykliczne – razem 5; do „Tylko ja” – zdjęcia serii idą z zadaniem. W PLAN.md.
 - 2026-11-17 · Etap 9 · Projekt w Claude Design uzupełniony: nowe ekrany 5 (zadanie cykliczne – „przy każdym powtórzeniu” / „tylko tym razem”, razem 5) i 6 (Ustawienia – miejsce na zdjęcia, 150 MB na dom), „Zapisz na telefonie” w podglądzie, 1080 px, notatki z decyzjami Hani. Zdjęcia zastępcze (Hania nie ma swoich). · Sprawdzenie: kanwa „Zdjęcia w zadaniach”.
 - 2026-11-17 · Etap 8 · Odbiór: Hania – „etap 8 odebrany, działa dobrze”. Etap 8 zakończony; checklista w PLAN.md odhaczona. · Sprawdzenie: oficjalna strona.
+- 2026-11-17 · Etap 9 · Krok 1: model i reguły zdjęć – kafelek i pełna wersja osobno (wspólne i „Tylko ja”), liczniki miejsca domu (150 MB) i aplikacji (`meta/photos`, 600 MB) zmieniane w tej samej paczce co zdjęcie, stałe miejsca `_0`…`_4` / `_s0`…`_s4`, przenoszenie do „Tylko ja” bez zmiany liczników, zerowanie liczników przy usuwaniu domu; przy zadaniu opcjonalne `seriesId`, `photos`, `thumb`. 13 nowych testów reguł (`tests/rules`) + testy modelu. · Sprawdzenie: `npm run test:reguly` u Hani (Java 21).

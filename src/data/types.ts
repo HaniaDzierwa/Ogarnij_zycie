@@ -35,6 +35,15 @@ export type Task = {
   dueWeek?: boolean
   /** Zadanie cykliczne (etap 8) – tylko przy terminie; ogarnięcie tworzy następne. */
   repeat?: Repeat
+  /**
+   * Seria zadania cyklicznego (etap 9): wspólne id wszystkich powtórzeń – do zdjęć „przy każdym
+   * powtórzeniu”. Brak = id samego zadania (starsze zadania).
+   */
+  seriesId?: string
+  /** Zdjęcia (etap 9): ile ich widać przy zadaniu (własne + serii). Brak = 0. */
+  photos?: number
+  /** Miniatura pierwszego zdjęcia na listę (etap 9): WebP / JPEG w base64, kilka KB. */
+  thumb?: string
   done: boolean
   subtasks: Subtask[]
   /** „Luźna” notatka (do 500 znaków). */

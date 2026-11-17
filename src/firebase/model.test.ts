@@ -42,6 +42,20 @@ describe('zadania', () => {
     }
   })
 
+  test('zdjęcia: seria, liczba i miniatura w bazie tylko gdy są; uszkodzone = bez zdjęć', () => {
+    const task = { ...mockTasks(DAY)[0], seriesId: 's1', photos: 3, thumb: 'AQID' }
+    const doc = taskToDoc(task, 'hania')
+    expect(doc.seriesId).toBe('s1')
+    expect(doc.photos).toBe(3)
+    expect(doc.thumb?.toBase64()).toBe('AQID')
+    expect(taskFromDoc(task.id, { ...doc })).toEqual(task)
+    const plain = taskToDoc(mockTasks(DAY)[0], 'hania')
+    expect(['seriesId', 'photos', 'thumb'].some((k) => k in plain)).toBe(false)
+    // miniatura bez zdjęć nie trafia do bazy
+    expect('thumb' in taskToDoc({ ...task, photos: 0 }, 'hania')).toBe(false)
+    expect(taskFromDoc(task.id, { ...doc, photos: -1 as number }).photos).toBeUndefined()
+  })
+
   test('termin „na tydzień”: dueWeek w bazie tylko gdy ustawione (i jest termin)', () => {
     const task = { ...mockTasks(DAY)[0], due: '2026-10-11', dueWeek: true }
     const doc = taskToDoc(task, 'hania')

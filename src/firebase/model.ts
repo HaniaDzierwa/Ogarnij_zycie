@@ -1,7 +1,7 @@
 // Model danych w Firestore (docs/DESIGN.md → „Model danych”): ścieżki, kształt dokumentów
 // i zamiana dokument ↔ typ aplikacji (src/data/types.ts). Bez połączenia z bazą – czyste funkcje.
 
-import { Timestamp, serverTimestamp, type FieldValue } from 'firebase/firestore'
+import { Bytes, Timestamp, serverTimestamp, type FieldValue } from 'firebase/firestore'
 import type { Activity } from '../data/activity.ts'
 import { toKey, type Stamp } from '../data/dates.ts'
 import { normalizeRepeat, repeatDoc, type Repeat } from '../data/repeat.ts'
@@ -42,6 +42,16 @@ export const paths = {
   push: (uid: string, id: string) => `users/${uid}/push/${id}`,
   /** Zaproszenie do domu: kod 6 cyfr. */
   invite: (code: string) => `invites/${code}`,
+  /**
+   * Zdjęcia (etap 9): kafelek z opisem (`photos`) i osobno pełna wersja (`photoFull`, wczytywana
+   * dopiero w podglądzie). `uid` – „Tylko ja” (część prywatna autora); brak – wspólne.
+   */
+  photos: (houseId: string, uid?: string) =>
+    uid ? `houses/${houseId}/private/${uid}/photos` : `houses/${houseId}/photos`,
+  photoFull: (houseId: string, uid?: string) =>
+    uid ? `houses/${houseId}/private/${uid}/photoFull` : `houses/${houseId}/photoFull`,
+  /** Wspólny licznik miejsca na zdjęcia całej aplikacji (limit darmowego planu). */
+  photoUsage: () => 'meta/photos',
 } as const
 
 // ── Limity (te same sprawdzą reguły Firestore) ─────────────────────────────
@@ -141,7 +151,9 @@ export type CategoryDoc = Omit<Category, 'id'> & Changed
 export type PriorityDoc = Omit<CustomPriority, 'id'> & Changed
 
 // „private” nie jest polem dokumentu – wynika z miejsca w bazie (paths.privateTasks / privateEvents)
-export type TaskDoc = Omit<Task, 'id' | 'private' | 'doneAt' | 'deletedAt'> & {
+export type TaskDoc = Omit<Task, 'id' | 'private' | 'doneAt' | 'deletedAt' | 'thumb'> & {
+  /** Miniatura na listę – w bazie jako dane binarne (Bytes). */
+  thumb?: Bytes
   doneAt: Timestamp | null
   deletedAt: Timestamp | null
 } & Changed
@@ -163,6 +175,12 @@ function withRepeat(x: unknown): { repeat?: Repeat } {
   return repeat ? { repeat } : {}
 }
 
+/** Liczba zdjęć i miniatura z bazy – tylko poprawne; brak / śmieci = bez zdjęć. */
+function withPhotos(n: unknown, thumb: unknown): { photos?: number; thumb?: string } {
+  if (typeof n !== 'number' || !Number.isInteger(n) || n <= 0) return {}
+  return thumb instanceof Bytes ? { photos: n, thumb: thumb.toBase64() } : { photos: n }
+}
+
 // ── Zadania ────────────────────────────────────────────────────────────────
 
 export function taskToDoc(t: Task, uid: string): TaskDoc {
@@ -175,6 +193,10 @@ export function taskToDoc(t: Task, uid: string): TaskDoc {
     ...(t.dueWeek && t.due ? { dueWeek: true } : {}),
     // powtarzanie (etap 8) – jak dueWeek: tylko gdy jest, i tylko przy terminie
     ...(t.repeat && t.due ? { repeat: repeatDoc(t.repeat) } : {}),
+    // zdjęcia (etap 9) – też tylko gdy są
+    ...(t.seriesId ? { seriesId: t.seriesId } : {}),
+    ...(t.photos ? { photos: t.photos } : {}),
+    ...(t.photos && t.thumb ? { thumb: Bytes.fromBase64String(t.thumb) } : {}),
     done: t.done,
     subtasks: t.subtasks.map(({ id, title, done }) => ({ id, title, done })),
     note: t.note,
@@ -199,6 +221,8 @@ export function taskFromDoc(id: string, d: Partial<TaskDoc>, isPrivate = false):
     due: d.due ?? null,
     ...(d.dueWeek === true && d.due ? { dueWeek: true } : {}),
     ...withRepeat(d.due ? d.repeat : null),
+    ...(typeof d.seriesId === 'string' && d.seriesId ? { seriesId: d.seriesId } : {}),
+    ...withPhotos(d.photos, d.thumb),
     done: !!d.done,
     subtasks: (d.subtasks ?? []).map((s: Subtask) => ({
       id: s.id,
