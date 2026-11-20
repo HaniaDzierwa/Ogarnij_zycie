@@ -29,7 +29,7 @@ Każda publikacja na https://ogarnij-zycie.web.app podnosi wersję o 0,1 (numer 
 | 1.4 | 2026-11-16 | etap 8 – powtarzanie i zwarte arkusze |
 | 1.5 | 2026-11-20 | etap 9 – zdjęcia w zadaniach (napis w aplikacji: jeszcze „1.0”) |
 | 1.6 | 2026-11-20 | numer wersji w Ustawieniach, opis miejsca na zdjęcia, pytanie „Ogarnąć zadanie?” po ostatnim kroku |
-| 1.7 | – | Ustawienia: wiersz „Wspólny dom ›” zamiast pól; ekran „Wspólny dom” z nazwą domu i „Zmień nick” (czeka na zgodę) |
+| 1.7 | 2026-11-20 | Ustawienia: wiersz „Wspólny dom ›” (z liczbą osób) zamiast pól; ekran „Wspólny dom” z nazwą domu i „Zmień nick” |
 
 Kolejność etapów zmieniona 2026-10-20 (decyzja Hani: testować dopiero we dwoje) – szczegóły w PLAN.md. Wpisy w dzienniku sprzed tej daty używają dawnej numeracji.
 
@@ -343,3 +343,4 @@ Wersja testowa: https://ogarnij-zycie--test-56tdtc0y.web.app (kanał `test`, odn
 - 2026-11-20 · Publikacja 1.6: za zgodą Hani („taak”) opublikowane pod https://ogarnij-zycie.web.app (`npx firebase deploy --only hosting`) – numer wersji w Ustawieniach, opis miejsca na zdjęcia, pytanie „Ogarnąć zadanie?”. Przy okazji uzupełniony commit c9e66e4 (brakujące pliki – d40af86). · Sprawdzenie: Ustawienia → „wersja 1.6 · 20 lis 2026”.
 - 2026-11-20 · Po etapie 9 · Decyzja Hani (wariant A z kanwy „Ustawienia – Ty i dom”): w Ustawieniach zamiast pól „Imię lub pseudonim” i „Nazwa domu” jeden wiersz „Wspólny dom › DOM NA LEŚNEJ · HANIA, KRZYŚ”; ekran „Domownicy” → „Wspólny dom” (nagłówek = nazwa domu): karta „NAZWA DOMU” z „Zmień”, Ty na liście domowników z „Zmień nick”, arkusze z „Zapisz”/„Anuluj”, dotknięcie obok zwija (przy zmianie – „Odrzucić zmiany?”), pustego nie da się zapisać; „Domownicy zobaczą ten nick” (nie imię jednego domownika). Wersja testowa zaktualizowana; oficjalna strona (1.7) – po zgodzie Hani.
 - 2026-11-20 · Po etapie 9 · Uwaga Hani: wiersz „Wspólny dom” pokazuje liczbę osób („DOM NA LEŚNEJ · 2 OSOBY”) zamiast imion – domowników może być więcej; imiona na ekranie „Wspólny dom”. Wersja testowa zaktualizowana.
+- 2026-11-20 · Publikacja 1.7: za zgodą Hani („opublikuj jako 1.7”) opublikowane pod https://ogarnij-zycie.web.app – Ustawienia z wierszem „Wspólny dom”, ekran „Wspólny dom” z nazwą domu i nickiem. · Sprawdzenie: Ustawienia → „wersja 1.7 · 20 lis 2026”.
