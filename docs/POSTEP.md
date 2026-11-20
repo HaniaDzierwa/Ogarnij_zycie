@@ -16,6 +16,20 @@ Aktualny etap: **10 – Zdjęcia przy wydarzeniach** (do zaplanowania)
 | 9 Zdjęcia w zadaniach | zakończony (oficjalna strona 2026-11-20) | 2026-11-20 |
 | 10 Zdjęcia przy wydarzeniach | do zaplanowania (PLAN.md) | – |
 
+## Wersje na oficjalnej stronie
+
+Każda publikacja na https://ogarnij-zycie.web.app podnosi wersję o 0,1 (numer w `package.json`, widać go w Ustawieniach – decyzja Hani 2026-11-20).
+
+| Wersja | Data | Co |
+| --- | --- | --- |
+| 1.0 | 2026-10-25 | pierwsza publikacja (etapy 0–7) |
+| 1.1 | 2026-10-25 | usuwanie konta |
+| 1.2 | 2026-11-09 | podsumowania o wybranych godzinach, ekran Powiadomienia |
+| 1.3 | 2026-11-14 | poprawka zakładania domu i dołączania |
+| 1.4 | 2026-11-16 | etap 8 – powtarzanie i zwarte arkusze |
+| 1.5 | 2026-11-20 | etap 9 – zdjęcia w zadaniach (napis w aplikacji: jeszcze „1.0”) |
+| 1.6 | – | numer wersji w Ustawieniach, opis miejsca na zdjęcia, pytanie „Ogarnąć zadanie?” po ostatnim kroku (czeka na zgodę) |
+
 Kolejność etapów zmieniona 2026-10-20 (decyzja Hani: testować dopiero we dwoje) – szczegóły w PLAN.md. Wpisy w dzienniku sprzed tej daty używają dawnej numeracji.
 
 ## Etap 8 – kroki (Powtarzanie i zwarte arkusze)
@@ -323,3 +337,5 @@ Wersja testowa: https://ogarnij-zycie--test-56tdtc0y.web.app (kanał `test`, odn
 - 2026-11-20 · Etap 9 · Odbiór: Hania – „wszystko fajnie działa”, zgoda na publikację. Gałąź `etap-9-zdjecia` scalona z `main` (fast-forward), za zgodą Hani Claude opublikował etap 9 na oficjalnej stronie (`npx firebase deploy --only hosting` → https://ogarnij-zycie.web.app), z commita db2aad1; reguły, indeksy i Worker wgrane wcześniej. Etap 9 zakończony. · Sprawdzenie: oficjalna strona po odświeżeniu.
 - 2026-11-20 · Po etapie 9 · Decyzja Hani: prawdziwy numer wersji w Ustawieniach zamiast stałego „wersja 1.0” – `1.<etap>` z `package.json` (teraz 1.9.0) i data budowania („ogarnij życie · wersja 1.9 · 20 lis 2026”), podstawiane przez Vite (`src/version.ts`); zasada podnoszenia numeru w PLAN.md. Wersja testowa zaktualizowana; oficjalna strona – po zgodzie Hani.
 - 2026-11-20 · Po etapie 9 · Decyzja Hani (wariant A): opis „Miejsce na zdjęcia” – „Zdjęcia całego domu – wszystkich domowników. Zmieści się ok. 1000 zdjęć. Zadania i wydarzenia się tu nie liczą.”; po limicie domu – „… usuń stare zdjęcia albo opróżnij Kosz, żeby dodać nowe. Zadania zapisują się normalnie.” Wersja testowa zaktualizowana.
+- 2026-11-20 · Po etapie 9 · Decyzja Hani: po odhaczeniu ostatniego kroku zadanie nie ogarnia się samo – pytanie „Wszystkie kroki zrobione. Ogarnąć zadanie?” (Jeszcze nie / Ogarnij; „Ogarnij” – z paskiem COFNIJ); na liście, w arkuszu zadania, na Starcie i w Kalendarzu. Odznaczenie kroku w ogarniętym zadaniu dalej je przywraca. Zasada zmieniona też w CLAUDE.md. 435 testów, build; wersja testowa zaktualizowana.
+- 2026-11-20 · Po etapie 9 · Decyzja Hani: numer wersji liczony od publikacji (każda +0,1), nie od etapu – historia w tabeli „Wersje na oficjalnej stronie”; na stronie 1.5, następna 1.6 (`package.json` 1.6.0). Wersja testowa zaktualizowana.

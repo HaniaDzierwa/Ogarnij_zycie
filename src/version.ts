@@ -1,5 +1,6 @@
-// Numer wersji w Ustawieniach (decyzja Hani 2026-11-20): 1.<etap> z package.json („1.9.0” → „1.9”,
-// poprawki po publikacji – „1.9.1”) i data budowania – podstawia Vite (vite.config.ts → define).
+// Numer wersji w Ustawieniach (decyzja Hani 2026-11-20): z package.json – każda publikacja na
+// oficjalnej stronie +0,1 (1.0 = pierwsza, 25.10.2026; „1.6.0” → „1.6”) i data budowania –
+// podstawia Vite (vite.config.ts → define). Historia wersji: docs/POSTEP.md.
 
 import { MONTHS_SHORT, parseKey } from './data/dates.ts'
 
