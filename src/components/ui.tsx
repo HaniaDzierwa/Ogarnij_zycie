@@ -591,10 +591,13 @@ export function ConfirmDialog({
   onCancel,
   danger = false,
   alt,
+  cancelLabel = 'Anuluj',
 }: {
   title: string
   message?: ReactNode
   confirmLabel: string
+  /** Napis przycisku rezygnacji (np. „Jeszcze nie”). */
+  cancelLabel?: string
   onConfirm: () => void
   onCancel: () => void
   danger?: boolean
@@ -691,7 +694,7 @@ export function ConfirmDialog({
                 fontWeight: 700,
               }}
             >
-              Anuluj
+              {cancelLabel}
             </button>
           </div>
         ) : (
@@ -717,7 +720,7 @@ export function ConfirmDialog({
                 fontWeight: 700,
               }}
             >
-              Anuluj
+              {cancelLabel}
             </button>
             <button type="button" onClick={onConfirm} style={confirmStyle}>
               {confirmLabel}

@@ -1,3 +1,5 @@
+import { useState } from 'react'
+import { ConfirmDialog } from '../../components/ui.tsx'
 import { dueLabel } from '../../data/dates.ts'
 import { newId } from '../../data/ids.ts'
 import { useStore } from '../../data/store.ts'
@@ -9,6 +11,7 @@ import {
   moveToTrash,
   nextDue,
   removeSubtask,
+  stepsAllDone,
   toggleSubtask,
   trashOnlyThis,
   type TaskEdit,
@@ -50,16 +53,42 @@ export function useTaskActions() {
       const [trashed, next] = trashOnlyThis(cur, store.who(), store.today, newId('t'))
       return [...list.map((x) => (x.id === t.id ? trashed : x)), next]
     })
-  /** Zmiana kroków – gdy ogarnia albo przywraca zadanie, też z paskiem „Cofnij”. */
+  // „Wszystkie kroki zrobione. Ogarnąć zadanie?” – id zadania, o które pytamy
+  const [askDone, setAskDone] = useState<string | null>(null)
+
+  /**
+   * Zmiana kroków – gdy przywraca ogarnięte zadanie, z paskiem „Cofnij”; gdy właśnie odhaczono
+   * ostatni krok – pytanie, czy ogarnąć zadanie (decyzja Hani 2026-11-20).
+   */
   const changeSteps = (t: Task, fn: (t: Task) => Task) => {
     const next = fn(t)
     if (next.done && !t.done) store.changeTasks(doneText(t), update(t.id, fn))
     else if (!next.done && t.done)
       store.changeTasks(`Wróciło do „Do zrobienia”: ${t.title}`, update(t.id, fn))
-    else store.setTasks(update(t.id, fn))
+    else {
+      store.setTasks(update(t.id, fn))
+      if (!t.done && stepsAllDone(next) && !stepsAllDone(t)) setAskDone(t.id)
+    }
   }
 
+  const asked = askDone ? store.tasks.find((x) => x.id === askDone && !x.done) : undefined
+  const doneQuestion = asked ? (
+    <ConfirmDialog
+      title="Wszystkie kroki zrobione. Ogarnąć zadanie?"
+      message={asked.title}
+      confirmLabel="Ogarnij"
+      cancelLabel="Jeszcze nie"
+      onConfirm={() => {
+        setAskDone(null)
+        complete(asked)
+      }}
+      onCancel={() => setAskDone(null)}
+    />
+  ) : null
+
   return {
+    /** Pytanie „Ogarnąć zadanie?” – do wstawienia na ekranie, który używa akcji. */
+    doneQuestion,
     toggleDone,
     trash,
     trashOnlyOnce,

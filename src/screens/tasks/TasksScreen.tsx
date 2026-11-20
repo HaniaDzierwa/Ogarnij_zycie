@@ -31,7 +31,7 @@ import {
   type Show,
   type Tab,
 } from './tasksView.ts'
-import { useTaskActions } from './useTaskActions.ts'
+import { useTaskActions } from './useTaskActions.tsx'
 
 /**
  * 3 Zadania (Zadania.dc.html). Adres: `?pokaz=pilne|wazne|przy-okazji`, `?zakladka=ogarniete`,
@@ -572,6 +572,9 @@ export function TasksScreen() {
           onClose={() => setDetailId(null)}
         />
       )}
+
+      {/* „Wszystkie kroki zrobione. Ogarnąć zadanie?” */}
+      {actions.doneQuestion}
 
       {clearOpen && (
         <ClearSheet

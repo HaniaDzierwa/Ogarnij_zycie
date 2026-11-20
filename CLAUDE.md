@@ -55,7 +55,7 @@ Nie zmieniaj stosu bez pytania Hani.
 - Każde usunięcie zadania lub wydarzenia (gest, „Usuń” w arkuszu) najpierw pyta „Usunąć zadanie?” / „Usunąć wydarzenie?” (Anuluj / Usuń). Usunięte trafiają do Kosza.
 - Każda taka akcja pokazuje pasek „… · COFNIJ” (ok. 4,5 s).
 - Strzałka „˅” rozwija podzadania (tylko gdy zadanie je ma).
-- Odhaczenie wszystkich podzadań ogarnia zadanie; odznaczenie kroku przywraca je.
+- Odhaczenie ostatniego podzadania pyta „Wszystkie kroki zrobione. Ogarnąć zadanie?” (Jeszcze nie / Ogarnij) – zadanie nie ogarnia się samo (decyzja Hani 2026-11-20); odznaczenie kroku w ogarniętym zadaniu przywraca je.
 
 ## Komendy
 

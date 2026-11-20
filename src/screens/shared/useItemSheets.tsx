@@ -15,7 +15,7 @@ import { useStore } from '../../data/store.ts'
 import type { CalendarEvent, Task } from '../../data/types.ts'
 import { EventDetailSheet } from '../calendar/EventDetailSheet.tsx'
 import { TaskDetailSheet } from '../tasks/TaskDetailSheet.tsx'
-import { useTaskActions } from '../tasks/useTaskActions.ts'
+import { useTaskActions } from '../tasks/useTaskActions.tsx'
 
 /** „Piątek, 16 października” */
 function dayLabel(k: DateKey): string {
@@ -98,6 +98,7 @@ export function useItemSheets(
 
   const sheets = (
     <>
+      {taskActions.doneQuestion}
       {eventDetail && eventDay && (
         <EventDetailSheet
           key={eventDetail.id}

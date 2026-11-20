@@ -19,13 +19,19 @@ export function toggleDone(task: Task, who: Who): Task {
   return task.done ? markOpen(task) : markDone(task, who)
 }
 
-/** Zadanie z podzadaniami jest ogarnięte dokładnie wtedy, gdy wszystkie podzadania są zrobione. */
-function withSubtasks(task: Task, subtasks: Subtask[], who: Who): Task {
+/** Wszystkie kroki zrobione (i jest co najmniej jeden). */
+export const stepsAllDone = (t: Pick<Task, 'subtasks'>) =>
+  t.subtasks.length > 0 && t.subtasks.every((s) => s.done)
+
+/**
+ * Kroki po zmianie. Niezrobiony krok w ogarniętym zadaniu przywraca je do „Do zrobienia”.
+ * Odhaczenie ostatniego kroku NIE ogarnia zadania samo – aplikacja pyta „Ogarnąć zadanie?”
+ * (decyzja Hani 2026-11-20, wcześniej ogarniało się samo).
+ */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- „kto” zostaje w podpisie (wywołania), ogarnianie robi pytanie
+function withSubtasks(task: Task, subtasks: Subtask[], _who: Who): Task {
   const next = { ...task, subtasks }
-  if (subtasks.length === 0) return next
-  const allDone = subtasks.every((s) => s.done)
-  if (allDone && !task.done) return markDone(next, who)
-  if (!allDone && task.done) return markOpen(next)
+  if (subtasks.length > 0 && !stepsAllDone(next) && task.done) return markOpen(next)
   return next
 }
 

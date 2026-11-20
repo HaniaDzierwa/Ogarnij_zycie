@@ -176,7 +176,7 @@ test('arkusz: termin spoza chipów = chip z datą + kalendarz', () => {
   )
 })
 
-test('podzadania: „˅” tylko przy krokach; odhaczenie ostatnich kroków ogarnia zadanie', () => {
+test('podzadania: „˅” tylko przy krokach; po ostatnim kroku pytanie „Ogarnąć zadanie?”', () => {
   renderAt('/zadania')
   // po otwarciu wszystkie podzadania zwinięte
   const toggles = screen.getAllByRole('button', { name: /Pokaż podzadania|Zwiń podzadania/ })
@@ -187,6 +187,19 @@ test('podzadania: „˅” tylko przy krokach; odhaczenie ostatnich kroków ogar
   expect(toggles[0].getAttribute('aria-expanded')).toBe('true')
   click('Zapakować')
   click('Odebrać kwiaty w piątek rano')
+  // ostatni krok – zadanie samo się nie ogarnia, aplikacja pyta (decyzja Hani 2026-11-20)
+  let ask = screen.getByRole('alertdialog', { name: 'Wszystkie kroki zrobione. Ogarnąć zadanie?' })
+  expect(within(ask).getByText('Prezent dla mamy na imieniny')).toBeDefined()
+  expect(screen.getByText('12 otwartych')).toBeDefined()
+  // „Jeszcze nie” – zostaje w „Do zrobienia” z odhaczonymi krokami
+  fireEvent.click(within(ask).getByRole('button', { name: 'Jeszcze nie' }))
+  expect(screen.queryByRole('alertdialog')).toBeNull()
+  expect(screen.getByText('12 otwartych')).toBeDefined()
+  // odznaczenie i ponowne odhaczenie – znów pytanie; „Ogarnij” ogarnia z paskiem COFNIJ
+  click('Zapakować')
+  click('Zapakować')
+  ask = screen.getByRole('alertdialog', { name: 'Wszystkie kroki zrobione. Ogarnąć zadanie?' })
+  fireEvent.click(within(ask).getByRole('button', { name: 'Ogarnij' }))
   expect(screen.getByRole('status').textContent).toContain(
     'Ogarnięte: Prezent dla mamy na imieniny',
   )

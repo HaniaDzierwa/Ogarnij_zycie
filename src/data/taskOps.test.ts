@@ -3,6 +3,7 @@ import {
   addSubtask,
   editTask,
   markDone,
+  stepsAllDone,
   nextDue,
   spawnRepeats,
   trashOnlyThis,
@@ -40,22 +41,27 @@ const task: Task = {
   deletedBy: null,
 }
 
-test('odhaczenie ostatniego podzadania ogarnia zadanie: kto i kiedy', () => {
-  const done = toggleSubtask(task, 'b', who)
-  expect([done.done, done.doneBy, done.doneAt]).toEqual([true, 'hania', '2026-10-09T10:00'])
+test('odhaczenie ostatniego podzadania NIE ogarnia zadania samo (aplikacja pyta)', () => {
+  const all = toggleSubtask(task, 'b', who)
+  expect(all.done).toBe(false)
+  expect(stepsAllDone(all)).toBe(true)
+  expect(stepsAllDone(task)).toBe(false)
+  expect(stepsAllDone({ subtasks: [] })).toBe(false)
 })
 
 test('odznaczenie podzadania w ogarniętym zadaniu przywraca je i czyści „kto/kiedy”', () => {
-  const back = toggleSubtask(toggleSubtask(task, 'b', who), 'a', who)
+  const done = markDone(toggleSubtask(task, 'b', who), who)
+  const back = toggleSubtask(done, 'a', who)
   expect([back.done, back.doneBy, back.doneAt]).toEqual([false, null, null])
 })
 
-test('usunięcie jedynego nieodhaczonego podzadania ogarnia zadanie', () => {
-  expect(removeSubtask(task, 'b', who).done).toBe(true)
+test('usunięcie jedynego nieodhaczonego podzadania – wszystkie zrobione, zadanie dalej otwarte', () => {
+  const left = removeSubtask(task, 'b', who)
+  expect([left.done, stepsAllDone(left)]).toEqual([false, true])
 })
 
 test('nowy krok w ogarniętym zadaniu otwiera je ponownie', () => {
-  const done = toggleSubtask(task, 'b', who)
+  const done = markDone(toggleSubtask(task, 'b', who), who)
   expect(addSubtask(done, { id: 'c', title: 'Kartka', done: false }, who).done).toBe(false)
 })
 
