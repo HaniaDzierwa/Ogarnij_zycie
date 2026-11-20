@@ -256,7 +256,11 @@ test('Ustawienia → Porządki: „Miejsce na zdjęcia” – zajęte z 150 MB, 
       .getByRole('progressbar', { name: 'Zajęte miejsce na zdjęcia' })
       .getAttribute('aria-valuenow'),
   ).toBe('0')
-  expect(screen.getByText(/mieści się ok\. 1000 zdjęć/)).toBeDefined()
+  expect(
+    screen.getByText(
+      'Zdjęcia całego domu – wszystkich domowników. Zmieści się ok. 1000 zdjęć. Zadania i wydarzenia się tu nie liczą.',
+    ),
+  ).toBeDefined()
 })
 
 // ── Poprawki Hani 2026-11-20 ───────────────────────────────────────────────

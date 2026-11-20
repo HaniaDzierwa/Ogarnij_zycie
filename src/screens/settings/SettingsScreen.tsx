@@ -543,10 +543,10 @@ function PhotoUsage({ house, app }: { house: number; app: number }) {
       </div>
       <span style={{ fontSize: 13, lineHeight: 1.45, color: colors.muted }}>
         {houseFull
-          ? 'Miejsce na zdjęcia w Waszym domu się skończyło – usuń stare zdjęcia, żeby dodać nowe. Zadania zapisują się normalnie.'
+          ? 'Miejsce na zdjęcia w Waszym domu się skończyło – usuń stare zdjęcia albo opróżnij Kosz, żeby dodać nowe. Zadania zapisują się normalnie.'
           : appFull
             ? 'Miejsce na zdjęcia w aplikacji się skończyło – na razie nie da się dodać nowych. Zadania zapisują się normalnie.'
-            : 'Wspólne dla wszystkich domowników – mieści się ok. 1000 zdjęć. Zdjęcia zadań w Koszu zajmują miejsce, dopóki zadanie nie zniknie na zawsze.'}
+            : 'Zdjęcia całego domu – wszystkich domowników. Zmieści się ok. 1000 zdjęć. Zadania i wydarzenia się tu nie liczą.'}
       </span>
     </div>
   )
