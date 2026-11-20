@@ -28,7 +28,7 @@ Każda publikacja na https://ogarnij-zycie.web.app podnosi wersję o 0,1 (numer 
 | 1.3 | 2026-11-14 | poprawka zakładania domu i dołączania |
 | 1.4 | 2026-11-16 | etap 8 – powtarzanie i zwarte arkusze |
 | 1.5 | 2026-11-20 | etap 9 – zdjęcia w zadaniach (napis w aplikacji: jeszcze „1.0”) |
-| 1.6 | – | numer wersji w Ustawieniach, opis miejsca na zdjęcia, pytanie „Ogarnąć zadanie?” po ostatnim kroku (czeka na zgodę) |
+| 1.6 | 2026-11-20 | numer wersji w Ustawieniach, opis miejsca na zdjęcia, pytanie „Ogarnąć zadanie?” po ostatnim kroku |
 
 Kolejność etapów zmieniona 2026-10-20 (decyzja Hani: testować dopiero we dwoje) – szczegóły w PLAN.md. Wpisy w dzienniku sprzed tej daty używają dawnej numeracji.
 
@@ -339,3 +339,4 @@ Wersja testowa: https://ogarnij-zycie--test-56tdtc0y.web.app (kanał `test`, odn
 - 2026-11-20 · Po etapie 9 · Decyzja Hani (wariant A): opis „Miejsce na zdjęcia” – „Zdjęcia całego domu – wszystkich domowników. Zmieści się ok. 1000 zdjęć. Zadania i wydarzenia się tu nie liczą.”; po limicie domu – „… usuń stare zdjęcia albo opróżnij Kosz, żeby dodać nowe. Zadania zapisują się normalnie.” Wersja testowa zaktualizowana.
 - 2026-11-20 · Po etapie 9 · Decyzja Hani: po odhaczeniu ostatniego kroku zadanie nie ogarnia się samo – pytanie „Wszystkie kroki zrobione. Ogarnąć zadanie?” (Jeszcze nie / Ogarnij; „Ogarnij” – z paskiem COFNIJ); na liście, w arkuszu zadania, na Starcie i w Kalendarzu. Odznaczenie kroku w ogarniętym zadaniu dalej je przywraca. Zasada zmieniona też w CLAUDE.md. 435 testów, build; wersja testowa zaktualizowana.
 - 2026-11-20 · Po etapie 9 · Decyzja Hani: numer wersji liczony od publikacji (każda +0,1), nie od etapu – historia w tabeli „Wersje na oficjalnej stronie”; na stronie 1.5, następna 1.6 (`package.json` 1.6.0). Wersja testowa zaktualizowana.
+- 2026-11-20 · Publikacja 1.6: za zgodą Hani („taak”) opublikowane pod https://ogarnij-zycie.web.app (`npx firebase deploy --only hosting`) – numer wersji w Ustawieniach, opis miejsca na zdjęcia, pytanie „Ogarnąć zadanie?”. Przy okazji uzupełniony commit c9e66e4 (brakujące pliki – d40af86). · Sprawdzenie: Ustawienia → „wersja 1.6 · 20 lis 2026”.
