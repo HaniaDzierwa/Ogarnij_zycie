@@ -30,6 +30,7 @@ Każda publikacja na https://ogarnij-zycie.web.app podnosi wersję o 0,1 (numer 
 | 1.5 | 2026-11-20 | etap 9 – zdjęcia w zadaniach (napis w aplikacji: jeszcze „1.0”) |
 | 1.6 | 2026-11-20 | numer wersji w Ustawieniach, opis miejsca na zdjęcia, pytanie „Ogarnąć zadanie?” po ostatnim kroku |
 | 1.7 | 2026-11-20 | Ustawienia: wiersz „Wspólny dom ›” (z liczbą osób) zamiast pól; ekran „Wspólny dom” z nazwą domu i „Zmień nick” |
+| 1.8 | 2026-11-21 | Motyw jasny / ciemny / systemowy (Ustawienia › Wygląd), zapis na koncie |
 
 Kolejność etapów zmieniona 2026-10-20 (decyzja Hani: testować dopiero we dwoje) – szczegóły w PLAN.md. Wpisy w dzienniku sprzed tej daty używają dawnej numeracji.
 
@@ -345,3 +346,4 @@ Wersja testowa: https://ogarnij-zycie--test-56tdtc0y.web.app (kanał `test`, odn
 - 2026-11-20 · Po etapie 9 · Uwaga Hani: wiersz „Wspólny dom” pokazuje liczbę osób („DOM NA LEŚNEJ · 2 OSOBY”) zamiast imion – domowników może być więcej; imiona na ekranie „Wspólny dom”. Wersja testowa zaktualizowana.
 - 2026-11-20 · Publikacja 1.7: za zgodą Hani („opublikuj jako 1.7”) opublikowane pod https://ogarnij-zycie.web.app – Ustawienia z wierszem „Wspólny dom”, ekran „Wspólny dom” z nazwą domu i nickiem. · Sprawdzenie: Ustawienia → „wersja 1.7 · 20 lis 2026”.
 - 2026-11-21 · Motyw jasny i ciemny (decyzje Hani 2026-11-20, kanwa „Motyw jasny i ciemny”): Ustawienia › Wygląd – Systemowy (domyślnie) / Jasny / Ciemny, zmiana od razu, zapis w profilu (pole `theme`, każdy domownik swój) i w pamięci telefonu (bez mignięcia przy starcie). Kolory aplikacji jako zmienne CSS obu motywów (`src/theme`), nagłówek zostaje butelkowo-zielony, w ciemnym Start zawsze z nocnym nagłówkiem; kolory kategorii / rodzajów / własnych priorytetów przyciemniane przy wyświetlaniu. Reguły: `theme` tylko system / light / dark (+ test reguł – do uruchomienia u Hani). · Sprawdzenie: 442 testy, build. Wersja testowa zaktualizowana; reguły przetestowane u Hani (emulator) i wgrane za jej zgodą 2026-11-21 – zapis motywu na koncie działa.
+- 2026-11-21 · Publikacja 1.8: za zgodą Hani („działa, wgrywaj nową wersję”) opublikowane pod https://ogarnij-zycie.web.app – motyw jasny / ciemny / systemowy. · Sprawdzenie: Ustawienia → „wersja 1.8 · 21 lis 2026”.
