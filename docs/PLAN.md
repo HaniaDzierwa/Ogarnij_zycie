@@ -237,6 +237,15 @@ Projekt: kanwa „Motyw jasny i ciemny” (https://claude.ai/artifact/X7UxjJ9gwJ
 - [ ] W ciemnym czytelne: Start, Zadania (z kategoriami, priorytetami, terminami), arkusze, Kalendarz (rodzaje wydarzeń), Ustawienia, Kosz, podgląd zdjęć
 - [ ] Testy reguł (emulator, u Hani): pole `theme` – tylko system / light / dark
 
+## Do zrobienia (zapisane 2026-11-21)
+
+1. **Krótsze opisy w całej aplikacji** (prośba Hani 2026-11-20: „są nadmiarowe”, odłożone). Propozycje do akceptacji Hani przed zmianą – zostawiamy ostrzeżenia przy usuwaniu konta / domu / domownika i komunikaty o błędach:
+   - Ustawienia: Sprzątanie – „Po tygodniu idą do Kosza.” / „Po miesiącu idą do Kosza.” / „Zostają, aż wyczyścisz.”; Miejsce na zdjęcia – „Wspólne dla domu – ok. 1000 zdjęć.”, pełne: „Brak miejsca – usuń stare zdjęcia albo opróżnij Kosz.” / „Brak miejsca w aplikacji – zdjęć na razie nie dodasz.”; Powiadomienia – „O wybranych godzinach”; Podsumowania – „Zaznacz choć jedną rzecz.”
+   - Wspólny dom: sam w domu – „Zaproś domownika, by dzielić zadania i kalendarz.”; nazwa domu – „Widzą ją wszyscy domownicy.”; nick – „Widzą go domownicy.”; karta domownika – „Nie widzi Twoich „Tylko ja”.”; zaproszenie – „Domownik zakłada konto i wybiera „Dołącz do domu”.”; po dołączeniu – „Nowy domownik jest już w domu.”
+   - Zadania i zdjęcia: pole zdjęć – „Aparat albo galeria – kilka naraz.”; opis „przy każdym powtórzeniu” – usunąć; limit – „To już 5 zdjęć – usuń jedno, by dodać.”; galeria – „Zmieści się jeszcze {N}.”, „Limit – odznacz jedno.”; podgląd – bez podpowiedzi o gestach; usuń zdjęcie – samo pytanie; lista – „Przeciągnij: w prawo – ogarnięte, w lewo – kosz.”; Wyczyść / Usuń – „… trafi(ą) do kosza na 30 dni.”; Kosz – „Usunięte czekają tu 30 dni.”; Kto widzi – „Widzisz tylko Ty.”
+   - Konto: rejestracja – „Jedno konto na wszystkich telefonach.”; nazwa domu – „Puste pole – „Nasz dom”.”; kod – „Kod ma osoba, która Cię zaprasza. Ważny 10 minut.”; imię – „Wpisz imię.”
+2. **Etap 10 – zdjęcia przy wydarzeniach** (niżej, do zaplanowania).
+
 ## Etap 10 – Zdjęcia przy wydarzeniach (prośba Hani 2026-11-20, do zaplanowania)
 
 **Status:** do zaplanowania po zamknięciu etapu 9 (wcześniej, pytanie 2 w etapie 9: „wydarzenia – nie”; Hania zmieniła zdanie po demo).
