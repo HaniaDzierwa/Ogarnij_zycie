@@ -86,6 +86,20 @@ describe('zdjęcia w arkuszu – kopia robocza', () => {
     expect(plan.first?.key).toBe('s_s1')
   })
 
+  test('zadanie cykliczne: osobne miejsca dla serii; zdjęcia serii pierwsze; liczba serii', () => {
+    const list = [saved('z1_0', 0), saved('s_s0', 0, 'series')]
+    const plan = planPhotos(list, draft({ added: [{ ...added('a'), kind: 'series' }, added('b')] }))
+    expect(plan.adds.map((a) => [a.kind, a.slot])).toEqual([
+      ['series', 1],
+      ['task', 1],
+    ])
+    expect(plan.count).toBe(4)
+    expect(plan.seriesCount).toBe(2)
+    expect(
+      visibleTiles(list, draft({ added: [{ ...added('a'), kind: 'series' }] })).map((t) => t.key),
+    ).toEqual(['s_s0', 'a', 'z1_0'])
+  })
+
   test('seria: pole seriesId albo id zadania', () => {
     expect(seriesOf({ id: 'z1' })).toBe('z1')
     expect(seriesOf({ id: 'z2', seriesId: 'z1' })).toBe('z1')

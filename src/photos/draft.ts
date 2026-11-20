@@ -35,7 +35,16 @@ export const emptyPhotoDraft: PhotoDraft = { added: [], removed: [] }
 export const draftChanged = (d: PhotoDraft) => d.added.length > 0 || d.removed.length > 0
 
 /** Kafelek w arkuszu: zapisane (bez usuniętych) i nowe. */
-export type PhotoTile = { key: string; tileUrl: string; saved?: TaskPhoto; added?: PreparedPhoto }
+export type PhotoTile = {
+  key: string
+  tileUrl: string
+  kind: PhotoKind
+  saved?: TaskPhoto
+  added?: PreparedPhoto
+}
+
+/** Rodzaj nowego zdjęcia – bez wyboru „tylko tym razem”. */
+export const kindOf = (a: PreparedPhoto): PhotoKind => a.kind ?? 'task'
 
 /** Kolejność: najpierw „przy każdym powtórzeniu”, potem zdjęcia zadania – wg miejsca. */
 export function sortPhotos(list: TaskPhoto[]): TaskPhoto[] {
@@ -44,13 +53,17 @@ export function sortPhotos(list: TaskPhoto[]): TaskPhoto[] {
   )
 }
 
+/** Widoczne kafelki: najpierw zdjęcia serii (zapisane, potem nowe), potem zdjęcia zadania. */
 export function visibleTiles(saved: TaskPhoto[], draft: PhotoDraft): PhotoTile[] {
-  return [
+  const tiles = (kind: PhotoKind): PhotoTile[] => [
     ...sortPhotos(saved)
-      .filter((p) => !draft.removed.includes(p.id))
-      .map((p) => ({ key: p.id, tileUrl: p.tileUrl, saved: p })),
-    ...draft.added.map((a) => ({ key: a.key, tileUrl: a.tileUrl, added: a })),
+      .filter((p) => p.kind === kind && !draft.removed.includes(p.id))
+      .map((p) => ({ key: p.id, tileUrl: p.tileUrl, kind, saved: p })),
+    ...draft.added
+      .filter((a) => kindOf(a) === kind)
+      .map((a) => ({ key: a.key, tileUrl: a.tileUrl, kind, added: a })),
   ]
+  return [...tiles('series'), ...tiles('task')]
 }
 
 /** Czy można dodać kolejne (razem najwyżej 5; `pending` – jeszcze się zmniejszają). */
@@ -72,31 +85,38 @@ export const thumbSrc = (b64: string) =>
 export const seriesOf = (t: Pick<Task, 'id' | 'seriesId'>) => t.seriesId ?? t.id
 
 /**
- * Plan zapisu: które zdjęcia usunąć, które dodać i na które miejsca (0–4), ile zdjęć zostanie
- * przy zadaniu i czy miniatura na listę się zmienia (pierwsze widoczne zdjęcie).
+ * Plan zapisu: które zdjęcia usunąć, które dodać i na które miejsca (0–4 osobno dla każdego
+ * rodzaju), ile zdjęć zostanie przy zadaniu (w tym serii) i pierwsze widoczne (miniatura).
  */
 export function planPhotos(
   saved: TaskPhoto[],
   draft: PhotoDraft,
-  kind: PhotoKind = 'task',
 ): {
   removes: TaskPhoto[]
-  adds: { photo: PreparedPhoto; slot: number }[]
+  adds: { photo: PreparedPhoto; kind: PhotoKind; slot: number }[]
   count: number
+  seriesCount: number
   /** Pierwsze widoczne zdjęcie po zapisie – nowe (miniatura gotowa) albo zapisane. */
   first: PhotoTile | null
 } {
   const removes = saved.filter((p) => draft.removed.includes(p.id))
-  const taken = saved
-    .filter((p) => p.kind === kind && !draft.removed.includes(p.id))
-    .map((p) => p.slot)
-  const adds: { photo: PreparedPhoto; slot: number }[] = []
+  const taken = (kind: PhotoKind) =>
+    saved.filter((p) => p.kind === kind && !draft.removed.includes(p.id)).map((p) => p.slot)
+  const slots = { task: taken('task'), series: taken('series') }
+  const adds: { photo: PreparedPhoto; kind: PhotoKind; slot: number }[] = []
   for (const photo of draft.added) {
-    const slot = freeSlot(taken)
-    if (slot === null) break
-    taken.push(slot)
-    adds.push({ photo, slot })
+    const kind = kindOf(photo)
+    const slot = freeSlot(slots[kind])
+    if (slot === null) continue
+    slots[kind].push(slot)
+    adds.push({ photo, kind, slot })
   }
   const tiles = visibleTiles(saved, { ...draft, added: adds.map((a) => a.photo) })
-  return { removes, adds, count: tiles.length, first: tiles[0] ?? null }
+  return {
+    removes,
+    adds,
+    count: tiles.length,
+    seriesCount: tiles.filter((t) => t.kind === 'series').length,
+    first: tiles[0] ?? null,
+  }
 }

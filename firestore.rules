@@ -117,7 +117,7 @@ service cloud.firestore {
     function validTask(d) {
       return d.keys().hasOnly(['title', 'categoryId', 'priority', 'due', 'dueWeek', 'repeat', 'done',
           'subtasks', 'note', 'createdBy', 'doneAt', 'doneBy', 'deleted', 'deletedAt', 'deletedBy',
-          'seriesId', 'photos', 'thumb',
+          'seriesId', 'photos', 'seriesPhotos', 'thumb',
           'updatedAt', 'updatedBy'])
         && text(d.title, 200)
         && strOrNull(d.categoryId, 100)
@@ -131,6 +131,8 @@ service cloud.firestore {
         // zdjęcia (etap 9): seria, liczba i miniatura na listę – starsze zadania ich nie mają
         && (!('seriesId' in d) || text(d.seriesId, 100))
         && (!('photos' in d) || (d.photos is int && d.photos >= 0 && d.photos <= 10))
+        && (!('seriesPhotos' in d) || (d.seriesPhotos is int && d.seriesPhotos >= 0
+          && d.seriesPhotos <= 5))
         && (!('thumb' in d) || (d.thumb is bytes && d.thumb.size() <= 8000))
         && d.done is bool
         && validSubtasks(d.subtasks)

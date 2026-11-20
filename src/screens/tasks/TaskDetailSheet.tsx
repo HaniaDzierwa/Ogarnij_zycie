@@ -326,6 +326,19 @@ export function TaskDetailSheet({
           title={task.title}
           author={authorOf}
           onDelete={deletePhoto}
+          onChangeKind={
+            task.repeat
+              ? (p) =>
+                  void photoStore
+                    .changeKind(
+                      task,
+                      latestPhotos.current,
+                      p,
+                      p.kind === 'series' ? 'task' : 'series',
+                    )
+                    .catch((e) => console.error('Nie udało się przenieść zdjęcia', e))
+              : undefined
+          }
           onClose={() => setViewer(null)}
         />
       )}

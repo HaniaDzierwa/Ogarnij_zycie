@@ -125,8 +125,18 @@ export function nextOccurrence(task: Task, today: DateKey, id: string, uid: stri
     deleted: false,
     deletedAt: null,
     deletedBy: null,
+    // ta sama seria – zdjęcia „przy każdym powtórzeniu” widać też w następnym (etap 9)
+    seriesId: task.seriesId ?? task.id,
   }
   delete next.dueWeek
+  // zdjęcia „tylko tym razem” zostają przy ogarniętym; następne zaczyna ze zdjęciami serii
+  // (ich miniatura jest pierwsza – zdjęcia serii stoją na początku)
+  if (task.seriesPhotos) next.photos = task.seriesPhotos
+  else {
+    delete next.photos
+    delete next.thumb
+    delete next.seriesPhotos
+  }
   return next
 }
 

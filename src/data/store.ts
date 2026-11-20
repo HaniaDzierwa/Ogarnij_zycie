@@ -2,6 +2,7 @@
 // W aplikacji: FirestoreStoreProvider (etap 2); w testach: MockStoreProvider (przykładowe dane).
 
 import { createContext, useCallback, useContext, useRef, useState } from 'react'
+import type { PhotoKind } from '../firebase/photos.ts'
 import type { PhotoDraft, TaskPhoto } from '../photos/draft.ts'
 import type { PreparedPhoto } from '../photos/resize.ts'
 import type { DateKey } from './dates.ts'
@@ -27,6 +28,8 @@ export type PhotosApi = {
   watch: (task: Task, onChange: (list: TaskPhoto[]) => void) => () => void
   /** Zapis zmian z arkusza („Dodaj zadanie” / „Zapisz”); zadanie jest już na liście. */
   save: (task: Task, saved: TaskPhoto[], draft: PhotoDraft) => void
+  /** „Przenieś do: przy każdym powtórzeniu / tylko tym razem” (usunięcie i dodanie). */
+  changeKind: (task: Task, saved: TaskPhoto[], photo: TaskPhoto, kind: PhotoKind) => Promise<void>
   /** Pełna wersja zdjęcia (podgląd) – dopiero na żądanie. */
   loadFull: (photo: TaskPhoto) => Promise<Blob>
   /** Zajęte miejsce na zdjęcia w bajtach: dom i cała aplikacja. */

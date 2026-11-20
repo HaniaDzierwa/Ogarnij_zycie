@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useRef, useState, type ReactNode } from 'react'
 import { photoId } from '../firebase/photos.ts'
 import { planPhotos, seriesOf, sortPhotos, type TaskPhoto } from '../photos/draft.ts'
-import { photoFieldsAfter, withPhotoFields } from '../photos/taskFields.ts'
+import { kindChangeDraft, photoFieldsAfter, withPhotoFields } from '../photos/taskFields.ts'
 import { nowStamp, today as getToday, type DateKey } from './dates.ts'
 import {
   mockCategories,
@@ -76,9 +76,15 @@ export function MockStoreProvider({
   const photoList = useRef<(TaskPhoto & { owner: string })[]>([])
   const photoListeners = useRef(new Set<() => void>())
   const [photoBytes, setPhotoBytes] = useState(0)
-  const photos = useMemo<PhotosApi>(
-    () => ({
+  const photos = useMemo<PhotosApi>(() => {
+    const api: PhotosApi = {
       usage: { house: photoBytes, app: photoBytes },
+      changeKind: async (task, saved, photo, kind) =>
+        api.save(
+          task,
+          saved,
+          await kindChangeDraft(photo, kind, new Blob(['PELNE']), async () => 'MINI-ZMIANA'),
+        ),
       loadFull: async (photo) => new Blob([`PELNE-${photo.id}`], { type: photo.type }),
       prepare: async (file) => {
         const n = ++fakePhotoCounter
@@ -110,16 +116,16 @@ export function MockStoreProvider({
       save: (task, saved, draft) => {
         const plan = planPhotos(saved, draft)
         const removed = new Set(plan.removes.map((p) => p.id))
-        const added = plan.adds.map(({ photo, slot }) => ({
-          id: photoId('task', task.id, slot),
-          kind: 'task' as const,
+        const added = plan.adds.map(({ photo, kind, slot }) => ({
+          id: photoId(kind, kind === 'series' ? seriesOf(task) : task.id, slot),
+          kind,
           slot,
           size: photo.tile.length + photo.full.length,
           type: photo.type,
           tileUrl: photo.tileUrl,
           createdBy: currentUid,
           place: { houseId: 'dom', privateUid: task.private ? currentUid : undefined },
-          owner: task.id,
+          owner: kind === 'series' ? seriesOf(task) : task.id,
         }))
         photoList.current = [...photoList.current.filter((p) => !removed.has(p.id)), ...added]
         setPhotoBytes(photoList.current.reduce((n, p) => n + p.size, 0))
@@ -128,9 +134,9 @@ export function MockStoreProvider({
           setTasksState((list) => list.map((t) => (t.id === task.id ? withPhotoFields(t, f) : t))),
         )
       },
-    }),
-    [photoBytes, currentUid],
-  )
+    }
+    return api
+  }, [photoBytes, currentUid])
 
   const changeTasks = useCallback(
     (text: string, update: (t: Task[]) => Task[]) => {

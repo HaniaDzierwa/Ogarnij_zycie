@@ -972,7 +972,8 @@ describe('zdjęcia', () => {
         doc(db('hania'), taskPath('dom1', 'z5')),
         taskToDoc(sampleTask({ id: 'z5', ...over }), 'hania'),
       )
-    await assertSucceeds(save({ seriesId: 'z1', photos: 3, thumb: b64(4000) }))
+    await assertSucceeds(save({ seriesId: 'z1', photos: 3, seriesPhotos: 2, thumb: b64(4000) }))
+    await assertFails(save({ photos: 6, seriesPhotos: 6 }))
     await assertFails(save({ photos: 11 }))
     await assertFails(save({ photos: 2, thumb: b64(8001) }))
     await assertFails(

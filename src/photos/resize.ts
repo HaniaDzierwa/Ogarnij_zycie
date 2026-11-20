@@ -2,7 +2,7 @@
 // pełna (1080 px po dłuższym boku), kafelek (kwadrat 300 px) i miniatura na listę (kwadrat 120 px).
 // WebP, a gdy przeglądarka go nie zapisze (starsze Safari) – JPEG.
 
-import { PHOTO_LIMITS, type PhotoType } from '../firebase/photos.ts'
+import { PHOTO_LIMITS, type PhotoKind, type PhotoType } from '../firebase/photos.ts'
 
 export const PHOTO_SIZES = { full: 1080, tile: 300, thumb: 120 } as const
 
@@ -17,6 +17,8 @@ export type PreparedPhoto = {
   thumb: string
   /** Kafelek jako adres data: – do pokazania od razu. */
   tileUrl: string
+  /** Zadanie cykliczne: „przy każdym powtórzeniu” (series) albo „tylko tym razem” (brak / task). */
+  kind?: PhotoKind
 }
 
 /** Wymiary po zmniejszeniu tak, by dłuższy bok ≤ max (bez powiększania). */

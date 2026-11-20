@@ -162,3 +162,66 @@ test('podgląd: „Usuń zdjęcie” pyta; COFNIJ przywraca; bez cofnięcia zdj�
   await waitFor(() => expect(screen.queryByLabelText('1 zdjęcie')).toBeNull())
   expect(within(detail).queryByText('ZDJĘCIA')).toBeNull()
 })
+
+// ── Krok 4: zadania cykliczne ──────────────────────────────────────────────
+
+test('zadanie cykliczne: wybór „przy każdym powtórzeniu” / „tylko tym razem”; następne ma zdjęcia serii', async () => {
+  renderApp('/zadania', { today: '2026-10-09' })
+  fireEvent.click(screen.getByRole('button', { name: 'Otwórz zadanie Zebranie w szkole' }))
+  const detail = screen.getByRole('dialog', { name: 'Zadanie' })
+  fireEvent.click(within(detail).getByRole('button', { name: 'Edytuj' }))
+
+  // „+ Zdjęcie” → najpierw pytanie, domyślnie „Tylko tym razem”
+  fireEvent.click(within(detail).getByRole('button', { name: 'Zdjęcie' }))
+  const choice = within(detail).getByRole('group', { name: 'Gdzie dodać zdjęcie?' })
+  expect(
+    within(choice)
+      .getByRole('button', { name: /^Tylko tym razem/ })
+      .getAttribute('aria-pressed'),
+  ).toBe('true')
+  fireEvent.click(within(choice).getByRole('button', { name: /^Przy każdym powtórzeniu/ }))
+  fireEvent.click(within(choice).getByRole('button', { name: 'Wybierz zdjęcie' }))
+  await pickPhoto(detail, 1)
+  expect(within(detail).getByText('PRZY KAŻDYM POWTÓRZENIU')).toBeDefined()
+  expect(within(detail).getByText('1 z 5 razem')).toBeDefined()
+
+  // drugie – „tylko tym razem”
+  fireEvent.click(within(detail).getByRole('button', { name: 'Dodaj zdjęcie' }))
+  fireEvent.click(within(detail).getByRole('button', { name: 'Wybierz zdjęcie' }))
+  await pickPhoto(detail, 2)
+  expect(within(detail).getByText('TYLKO TYM RAZEM')).toBeDefined()
+  expect(within(detail).getByText('2 z 5 razem')).toBeDefined()
+  fireEvent.click(within(detail).getByRole('button', { name: 'Zapisz' }))
+  expect(await screen.findByLabelText('2 zdjęcia')).toBeDefined()
+
+  // ogarnięte → następne powtórzenie ma tylko zdjęcie serii
+  fireEvent.click(within(detail).getByRole('button', { name: 'Ogarnij' }))
+  expect(await screen.findByLabelText('1 zdjęcie')).toBeDefined()
+  fireEvent.click(screen.getByRole('button', { name: 'Otwórz zadanie Zebranie w szkole' }))
+  const next = screen.getByRole('dialog', { name: 'Zadanie' })
+  expect(within(next).getByText(/1\s+zdjęcie/)).toBeDefined()
+  expect(within(next).getByRole('button', { name: 'Otwórz zdjęcie 1 z 1' })).toBeDefined()
+})
+
+test('podgląd zadania cyklicznego: „Przenieś do…” i pytanie o usunięcie ze wszystkich powtórzeń', async () => {
+  renderApp('/zadania', { today: '2026-10-09' })
+  fireEvent.click(screen.getByRole('button', { name: 'Otwórz zadanie Zebranie w szkole' }))
+  const detail = screen.getByRole('dialog', { name: 'Zadanie' })
+  fireEvent.click(within(detail).getByRole('button', { name: 'Edytuj' }))
+  fireEvent.click(within(detail).getByRole('button', { name: 'Zdjęcie' }))
+  fireEvent.click(within(detail).getByRole('button', { name: 'Wybierz zdjęcie' }))
+  await pickPhoto(detail, 1)
+  fireEvent.click(within(detail).getByRole('button', { name: 'Zapisz' }))
+
+  fireEvent.click(await within(detail).findByRole('button', { name: 'Otwórz zdjęcie 1 z 1' }))
+  const viewer = screen.getByRole('dialog', { name: 'Podgląd zdjęcia' })
+  fireEvent.click(
+    within(viewer).getByRole('button', { name: 'Przenieś do: przy każdym powtórzeniu' }),
+  )
+  expect(
+    await within(viewer).findByRole('button', { name: 'Przenieś do: tylko tym razem' }),
+  ).toBeDefined()
+  expect(within(viewer).getByText(/przy każdym powtórzeniu$/)).toBeDefined()
+  fireEvent.click(within(viewer).getByRole('button', { name: 'Usuń zdjęcie' }))
+  expect(within(viewer).getByText('Usunąć ze wszystkich powtórzeń?')).toBeDefined()
+})

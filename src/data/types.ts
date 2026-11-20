@@ -42,6 +42,8 @@ export type Task = {
   seriesId?: string
   /** Zdjęcia (etap 9): ile ich widać przy zadaniu (własne + serii). Brak = 0. */
   photos?: number
+  /** Z tego zdjęcia „przy każdym powtórzeniu” – następne powtórzenie startuje z nimi. */
+  seriesPhotos?: number
   /** Miniatura pierwszego zdjęcia na listę (etap 9): WebP / JPEG w base64, kilka KB. */
   thumb?: string
   done: boolean

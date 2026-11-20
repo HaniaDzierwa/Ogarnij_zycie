@@ -73,7 +73,7 @@ export function TaskForm({
 }) {
   const ids = IDS[mode]
   const { priorities } = useStore()
-  const photoField = usePhotoField(photos)
+  const photoField = usePhotoField(photos && { ...photos, repeating: !!value.repeat })
   const rows = useOpenRow<Row>()
   const [addingCategory, setAddingCategory] = useState(false)
   const [stepsOpen, setStepsOpen] = useState(false)

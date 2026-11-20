@@ -161,6 +161,19 @@ describe('zadanie cykliczne', () => {
     expect(next).toMatchObject({ id: 'n9', due: '2026-11-27', repeat: { every: 'week' } })
   })
 
+  test('zdjęcia: następne w tej samej serii, ze zdjęciami „przy każdym powtórzeniu”', () => {
+    const [, next] = spawnRepeats([markDone(weekly, krzys)], TODAY, 'krzys', makeId)
+    expect(next.seriesId).toBe('w')
+    expect('photos' in next).toBe(false)
+    const withPhotos = { ...weekly, seriesId: 's0', photos: 3, seriesPhotos: 1, thumb: 'MINI' }
+    const [, next2] = spawnRepeats([markDone(withPhotos, krzys)], TODAY, 'krzys', makeId)
+    expect(next2).toMatchObject({ seriesId: 's0', photos: 1, seriesPhotos: 1, thumb: 'MINI' })
+    // same zdjęcia „tylko tym razem” – następne bez zdjęć
+    const own = { ...weekly, photos: 2, thumb: 'MINI' }
+    const [, next3] = trashOnlyThis(own, krzys, TODAY, 'n8')
+    expect('photos' in next3 || 'thumb' in next3).toBe(false)
+  })
+
   test('edycja: wyłączenie powtarzania albo usunięcie terminu kasuje pole', () => {
     expect(editTask(weekly, { ...taskEditOf(weekly), repeat: undefined }, who).repeat).toBe(
       undefined,

@@ -47,7 +47,7 @@ import {
 } from '../firebase/photos.ts'
 import { planPhotos, seriesOf, sortPhotos, type TaskPhoto } from '../photos/draft.ts'
 import { preparePhoto, thumbFromTile } from '../photos/resize.ts'
-import { photoFieldsAfter, withPhotoFields } from '../photos/taskFields.ts'
+import { kindChangeDraft, photoFieldsAfter, withPhotoFields } from '../photos/taskFields.ts'
 import { syncCollection } from '../firebase/sync.ts'
 import { useHouse } from '../house/house.ts'
 import { builtInEventTypes } from '../theme'
@@ -430,9 +430,13 @@ function HouseData({ children }: { children: ReactNode }) {
     [setEvents, show],
   )
 
-  const photos = useMemo<PhotosApi>(
-    () => ({
+  const photos = useMemo<PhotosApi>(() => {
+    const api: PhotosApi = {
       prepare: preparePhoto,
+      changeKind: async (task, saved, photo, kind) => {
+        const full = await api.loadFull(photo)
+        api.save(task, saved, await kindChangeDraft(photo, kind, full, thumbFromTile))
+      },
       loadFull: async (photo) => {
         const snap = await getDoc(
           doc(db, `${paths.photoFull(photo.place.houseId, photo.place.privateUid)}/${photo.id}`),
@@ -476,29 +480,41 @@ function HouseData({ children }: { children: ReactNode }) {
         const plan = planPhotos(saved, draft)
         // każda zmiana – osobna paczka z kolejnym numerem zmiany liczników domu
         let seq = photoSeq.current
-        for (const p of plan.removes) commitPhotoOps(deletePhotoOps(p.place, p.id, p.size, ++seq))
-        for (const { photo, slot } of plan.adds)
-          commitPhotoOps(
-            addPhotoOps({
-              place,
-              uid,
-              kind: 'task',
-              owner: task.id,
-              slot,
-              type: photo.type,
-              tile: photo.tile,
-              full: photo.full,
-              seq: ++seq,
-            }).ops,
-          )
+        const add = ({ photo, kind, slot }: (typeof plan.adds)[number]) => {
+          const { id, ops } = addPhotoOps({
+            place,
+            uid,
+            kind,
+            owner: kind === 'series' ? seriesOf(task) : task.id,
+            slot,
+            type: photo.type,
+            tile: photo.tile,
+            full: photo.full,
+            seq: seq + 1,
+          })
+          return { id, ops }
+        }
+        const removedIds = new Set(plan.removes.map((p) => p.id))
+        const adds = plan.adds.map(add)
+        // najpierw nowe (zdjęcie nie znika na chwilę przy „Przenieś do…”), chyba że zajmują
+        // miejsce usuwanego – wtedy po usunięciu
+        const order = [
+          ...plan.adds.filter((_, i) => !removedIds.has(adds[i].id)).map((a) => () => add(a).ops),
+          ...plan.removes.map((p) => () => deletePhotoOps(p.place, p.id, p.size, seq + 1)),
+          ...plan.adds.filter((_, i) => removedIds.has(adds[i].id)).map((a) => () => add(a).ops),
+        ]
+        for (const ops of order) {
+          commitPhotoOps(ops())
+          seq++
+        }
         photoSeq.current = seq
         void photoFieldsAfter(task, saved, draft, thumbFromTile).then((f) =>
           setTasks((list) => list.map((t) => (t.id === task.id ? withPhotoFields(t, f) : t))),
         )
       },
-    }),
-    [houseId, uid, photoUsage, setTasks],
-  )
+    }
+    return api
+  }, [houseId, uid, photoUsage, setTasks])
 
   /** Pola profilu – od razu na ekranie, zapis w tle. */
   const updateUser = useCallback(

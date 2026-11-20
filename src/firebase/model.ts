@@ -176,9 +176,20 @@ function withRepeat(x: unknown): { repeat?: Repeat } {
 }
 
 /** Liczba zdjęć i miniatura z bazy – tylko poprawne; brak / śmieci = bez zdjęć. */
-function withPhotos(n: unknown, thumb: unknown): { photos?: number; thumb?: string } {
-  if (typeof n !== 'number' || !Number.isInteger(n) || n <= 0) return {}
-  return thumb instanceof Bytes ? { photos: n, thumb: thumb.toBase64() } : { photos: n }
+function withPhotos(
+  n: unknown,
+  thumb: unknown,
+  series: unknown,
+): { photos?: number; thumb?: string; seriesPhotos?: number } {
+  const count = (x: unknown) => (typeof x === 'number' && Number.isInteger(x) && x > 0 ? x : 0)
+  const photos = count(n)
+  if (!photos) return {}
+  const seriesPhotos = Math.min(count(series), photos)
+  return {
+    photos,
+    ...(seriesPhotos ? { seriesPhotos } : {}),
+    ...(thumb instanceof Bytes ? { thumb: thumb.toBase64() } : {}),
+  }
 }
 
 // ── Zadania ────────────────────────────────────────────────────────────────
@@ -196,6 +207,7 @@ export function taskToDoc(t: Task, uid: string): TaskDoc {
     // zdjęcia (etap 9) – też tylko gdy są
     ...(t.seriesId ? { seriesId: t.seriesId } : {}),
     ...(t.photos ? { photos: t.photos } : {}),
+    ...(t.photos && t.seriesPhotos ? { seriesPhotos: t.seriesPhotos } : {}),
     ...(t.photos && t.thumb ? { thumb: Bytes.fromBase64String(t.thumb) } : {}),
     done: t.done,
     subtasks: t.subtasks.map(({ id, title, done }) => ({ id, title, done })),
@@ -222,7 +234,7 @@ export function taskFromDoc(id: string, d: Partial<TaskDoc>, isPrivate = false):
     ...(d.dueWeek === true && d.due ? { dueWeek: true } : {}),
     ...withRepeat(d.due ? d.repeat : null),
     ...(typeof d.seriesId === 'string' && d.seriesId ? { seriesId: d.seriesId } : {}),
-    ...withPhotos(d.photos, d.thumb),
+    ...withPhotos(d.photos, d.thumb, d.seriesPhotos),
     done: !!d.done,
     subtasks: (d.subtasks ?? []).map((s: Subtask) => ({
       id: s.id,

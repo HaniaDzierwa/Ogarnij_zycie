@@ -18,6 +18,8 @@ type Props = {
   author: (p: TaskPhoto) => string
   /** Usunięcie (z opóźnieniem) – zwraca „cofnij”. */
   onDelete: (p: TaskPhoto) => () => void
+  /** Zadanie cykliczne: „Przenieś do: przy każdym powtórzeniu / tylko tym razem”. */
+  onChangeKind?: (p: TaskPhoto) => void
   onClose: () => void
 }
 
@@ -26,7 +28,15 @@ type Props = {
  * przesuwanie w bok, powiększanie palcami (i podwójnym dotknięciem), „Zapisz na telefonie”,
  * „Usuń zdjęcie” z pytaniem i COFNIJ. Pełna wersja wczytuje się dopiero tutaj.
  */
-export function PhotoViewer({ photos, start, title, author, onDelete, onClose }: Props) {
+export function PhotoViewer({
+  photos,
+  start,
+  title,
+  author,
+  onDelete,
+  onChangeKind,
+  onClose,
+}: Props) {
   const store = useStore()
   const [index, setIndex] = useState(Math.min(start, photos.length - 1))
   const [asking, setAsking] = useState(false)
@@ -276,6 +286,27 @@ export function PhotoViewer({ photos, start, title, author, onDelete, onClose }:
           {title} · {author(photo)}
           {photo.kind === 'series' ? ' · przy każdym powtórzeniu' : ''}
         </span>
+        {onChangeKind && (
+          <button
+            type="button"
+            onClick={() => onChangeKind(photo)}
+            style={{
+              alignSelf: 'center',
+              height: 40,
+              padding: '0 16px',
+              border: '1px solid rgba(246,241,231,0.35)',
+              borderRadius: 20,
+              background: 'transparent',
+              color: colors.cream,
+              fontSize: 13,
+              fontWeight: 800,
+            }}
+          >
+            {photo.kind === 'series'
+              ? 'Przenieś do: tylko tym razem'
+              : 'Przenieś do: przy każdym powtórzeniu'}
+          </button>
+        )}
         <span style={{ fontSize: 12, color: colors.onDarkMuted2, textAlign: 'center' }}>
           Przesuń w bok – kolejne zdjęcie · rozsuń palce – powiększenie
         </span>
