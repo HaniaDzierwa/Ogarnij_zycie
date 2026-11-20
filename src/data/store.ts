@@ -4,6 +4,7 @@
 import { createContext, useCallback, useContext, useRef, useState } from 'react'
 import type { PhotoKind } from '../firebase/photos.ts'
 import type { PhotoDraft, TaskPhoto } from '../photos/draft.ts'
+import type { CropRect } from '../photos/crop.ts'
 import type { PreparedPhoto } from '../photos/resize.ts'
 import type { DateKey } from './dates.ts'
 import type { Who } from './taskOps.ts'
@@ -32,6 +33,8 @@ export type PhotosApi = {
   move: (saved: TaskPhoto[], privateUid: string | undefined) => Promise<void>
   /** „Przenieś do: przy każdym powtórzeniu / tylko tym razem” (usunięcie i dodanie). */
   changeKind: (task: Task, saved: TaskPhoto[], photo: TaskPhoto, kind: PhotoKind) => Promise<void>
+  /** Przycięcie zdjęcia do ramki (ułamki obrazka) – wynik idzie potem przez `prepare`. */
+  crop: (source: Blob, rect: CropRect) => Promise<Blob>
   /** Pełna wersja zdjęcia (podgląd) – dopiero na żądanie. */
   loadFull: (photo: TaskPhoto) => Promise<Blob>
   /** Zajęte miejsce na zdjęcia w bajtach: dom i cała aplikacja. */

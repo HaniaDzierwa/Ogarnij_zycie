@@ -20,6 +20,7 @@ import {
 } from './resize.ts'
 import { photoFieldsAfter, withPhotoFields } from './taskFields.ts'
 import { formatMB } from './usage.ts'
+import { cropPixels, dragRect, FULL_RECT, isFullRect, MIN_CROP } from './crop.ts'
 
 const saved = (id: string, slot: number, kind: TaskPhoto['kind'] = 'task'): TaskPhoto => ({
   id,
@@ -165,5 +166,39 @@ describe('zdjęcia zadań usuniętych na zawsze', () => {
     const next = task('a2', { seriesId: 's' })
     expect(photosOfGoneTasks([done, next], [next])[0].series).toBeNull()
     expect(photosOfGoneTasks([done], [])[0].series).toBe('s')
+  })
+})
+
+describe('przycinanie – ramka', () => {
+  test('przesuwanie w obrębie zdjęcia', () => {
+    const r = { x: 0.2, y: 0.2, w: 0.5, h: 0.5 }
+    expect(dragRect(r, 'move', 0.1, -0.05)).toEqual({
+      x: 0.30000000000000004,
+      y: 0.15000000000000002,
+      w: 0.5,
+      h: 0.5,
+    })
+    expect(dragRect(r, 'move', 0.9, 0.9)).toEqual({ x: 0.5, y: 0.5, w: 0.5, h: 0.5 })
+  })
+
+  test('róg zmienia rozmiar, przeciwny stoi; co najmniej 10%', () => {
+    const r = dragRect(FULL_RECT, 'se', -0.4, -0.3)
+    expect(r.x).toBe(0)
+    expect(r.w).toBeCloseTo(0.6)
+    expect(r.h).toBeCloseTo(0.7)
+    const tiny = dragRect(FULL_RECT, 'nw', 0.99, 0.99)
+    expect(tiny.w).toBeCloseTo(MIN_CROP)
+    expect(tiny.x + tiny.w).toBeCloseTo(1)
+    expect(isFullRect(FULL_RECT)).toBe(true)
+    expect(isFullRect(r)).toBe(false)
+  })
+
+  test('piksele obrazka', () => {
+    expect(cropPixels({ x: 0.25, y: 0, w: 0.5, h: 1 }, 4000, 3000)).toEqual({
+      sx: 1000,
+      sy: 0,
+      sw: 2000,
+      sh: 3000,
+    })
   })
 })

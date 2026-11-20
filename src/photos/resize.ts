@@ -3,6 +3,7 @@
 // WebP, a gdy przeglądarka go nie zapisze (starsze Safari) – JPEG.
 
 import { PHOTO_LIMITS, type PhotoKind, type PhotoType } from '../firebase/photos.ts'
+import { cropPixels, type CropRect } from './crop.ts'
 
 export const PHOTO_SIZES = { full: 1080, tile: 300, thumb: 120 } as const
 
@@ -159,4 +160,26 @@ export async function thumbFromTile(tileUrl: string): Promise<string> {
   )
   const blob = await encodeWithin((q) => toBlob(canvas, type, q), PHOTO_LIMITS.thumbBytes)
   return toBase64(await bytesOf(blob))
+}
+
+/**
+ * Przycięcie zdjęcia do ramki (ułamki obrazka) – wynik w wysokiej jakości; potem i tak
+ * przechodzi przez preparePhoto (zmniejszanie do 1080 px, kafelek, miniatura).
+ */
+export async function cropImage(source: Blob, rect: CropRect): Promise<Blob> {
+  const url = URL.createObjectURL(source)
+  try {
+    const img = await loadImage(url)
+    const { sx, sy, sw, sh } = cropPixels(rect, img.naturalWidth, img.naturalHeight)
+    const canvas = document.createElement('canvas')
+    canvas.width = sw
+    canvas.height = sh
+    const ctx = canvas.getContext('2d')
+    if (!ctx) throw new PhotoError('read')
+    ctx.imageSmoothingQuality = 'high'
+    ctx.drawImage(img, sx, sy, sw, sh, 0, 0, sw, sh)
+    return await toBlob(canvas, 'image/jpeg', 0.95)
+  } finally {
+    URL.revokeObjectURL(url)
+  }
 }

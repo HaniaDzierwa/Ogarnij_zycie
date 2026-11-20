@@ -227,6 +227,16 @@ Projekt: kanwa „Zadania cykliczne” w Claude Design (ekrany 1c/1e – zadanie
 
 ---
 
+## Etap 10 – Zdjęcia przy wydarzeniach (prośba Hani 2026-11-20, do zaplanowania)
+
+**Status:** do zaplanowania po zamknięciu etapu 9 (wcześniej, pytanie 2 w etapie 9: „wydarzenia – nie”; Hania zmieniła zdanie po demo).
+
+- Te same zasady co przy zadaniach: aparat / galeria, przycinanie, do 5 zdjęć, podgląd, „Tylko ja”, Kosz, liczniki miejsca (150 MB na dom, 600 MB na aplikację – wspólne z zadaniami).
+- Do ustalenia: wydarzenia cykliczne (zdjęcia „przy każdym powtórzeniu” / „tylko tym razem” jak w zadaniach?), miejsce w arkuszach wydarzeń (projekt w Claude Design).
+- Zmiana reguł (zdjęcia wskazują wydarzenie) → testy reguł u Hani; Worker – sprzątanie zdjęć wydarzeń z Kosza.
+
+---
+
 ## Jak sprawdzamy każdy etap
 
 1. Demo: link do wersji testowej (kanał podglądu Firebase Hosting albo `npm run dev` w sieci domowej) + 2–5 rzeczy do kliknięcia z opisem oczekiwanego efektu.

@@ -92,6 +92,7 @@ export function MockStoreProvider({
           saved,
           await kindChangeDraft(photo, kind, new Blob(['PELNE']), async () => 'MINI-ZMIANA'),
         ),
+      crop: async () => new Blob(['PRZYCIETE'], { type: 'image/jpeg' }),
       loadFull: async (photo) => new Blob([`PELNE-${photo.id}`], { type: photo.type }),
       prepare: async (file) => {
         const n = ++fakePhotoCounter

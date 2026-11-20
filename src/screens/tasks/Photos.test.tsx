@@ -29,9 +29,10 @@ test('nowe zadanie: „+ Zdjęcie” → sekcja ZDJĘCIA z licznikiem; × usuwa,
   await pickPhoto(sheet, 1)
   expect(within(sheet).getByText('ZDJĘCIA')).toBeDefined()
   expect(within(sheet).getByText('1 z 5')).toBeDefined()
-  // „+ Zdjęcie” znika – dalej kafelek „Dodaj”
+  // „+ Zdjęcie” znika – dalej kafelki „Aparat” i „Galeria”
   expect(within(sheet).queryByRole('button', { name: 'Zdjęcie' })).toBeNull()
-  expect(within(sheet).getByRole('button', { name: 'Dodaj zdjęcie' })).toBeDefined()
+  expect(within(sheet).getByRole('button', { name: 'Zrób zdjęcie' })).toBeDefined()
+  expect(within(sheet).getByRole('button', { name: 'Dodaj z galerii' })).toBeDefined()
   expect(within(sheet).getByText(/do 1080 px/)).toBeDefined()
 
   fireEvent.click(within(sheet).getByRole('button', { name: 'Usuń zdjęcie 1' }))
@@ -45,7 +46,8 @@ test('najwyżej 5 zdjęć: potem bez „Dodaj” i z podpowiedzią', async () =>
   const sheet = newTaskSheet()
   for (let n = 1; n <= 5; n++) await pickPhoto(sheet, n)
   expect(within(sheet).getByText('5 z 5')).toBeDefined()
-  expect(within(sheet).queryByRole('button', { name: 'Dodaj zdjęcie' })).toBeNull()
+  expect(within(sheet).queryByRole('button', { name: 'Zrób zdjęcie' })).toBeNull()
+  expect(within(sheet).queryByRole('button', { name: 'Dodaj z galerii' })).toBeNull()
   expect(within(sheet).getByText('To już 5 zdjęć – usuń jedno, żeby dodać kolejne.')).toBeDefined()
 })
 
@@ -180,14 +182,14 @@ test('zadanie cykliczne: wybór „przy każdym powtórzeniu” / „tylko tym r
       .getAttribute('aria-pressed'),
   ).toBe('true')
   fireEvent.click(within(choice).getByRole('button', { name: /^Przy każdym powtórzeniu/ }))
-  fireEvent.click(within(choice).getByRole('button', { name: 'Wybierz zdjęcie' }))
+  fireEvent.click(within(choice).getByRole('button', { name: 'Z galerii' }))
   await pickPhoto(detail, 1)
   expect(within(detail).getByText('PRZY KAŻDYM POWTÓRZENIU')).toBeDefined()
   expect(within(detail).getByText('1 z 5 razem')).toBeDefined()
 
   // drugie – „tylko tym razem”
   fireEvent.click(within(detail).getByRole('button', { name: 'Dodaj zdjęcie' }))
-  fireEvent.click(within(detail).getByRole('button', { name: 'Wybierz zdjęcie' }))
+  fireEvent.click(within(detail).getByRole('button', { name: 'Z galerii' }))
   await pickPhoto(detail, 2)
   expect(within(detail).getByText('TYLKO TYM RAZEM')).toBeDefined()
   expect(within(detail).getByText('2 z 5 razem')).toBeDefined()
@@ -209,7 +211,7 @@ test('podgląd zadania cyklicznego: „Przenieś do…” i pytanie o usunięcie
   const detail = screen.getByRole('dialog', { name: 'Zadanie' })
   fireEvent.click(within(detail).getByRole('button', { name: 'Edytuj' }))
   fireEvent.click(within(detail).getByRole('button', { name: 'Zdjęcie' }))
-  fireEvent.click(within(detail).getByRole('button', { name: 'Wybierz zdjęcie' }))
+  fireEvent.click(within(detail).getByRole('button', { name: 'Z galerii' }))
   await pickPhoto(detail, 1)
   fireEvent.click(within(detail).getByRole('button', { name: 'Zapisz' }))
 
@@ -286,4 +288,32 @@ test('Kosz: „Wybierz” → zaznaczone elementy usunięte na zawsze, reszta zo
   expect(screen.getByText('3 elementy')).toBeDefined()
   // po usunięciu – znów zwykły widok z „Przywróć”
   expect(screen.getAllByRole('button', { name: /^Przywróć: / })).toHaveLength(3)
+})
+
+test('„+ Zdjęcie”: od razu „Aparat” (zdjęcie z aparatu) i „Galeria” (kilka naraz)', async () => {
+  const sheet = newTaskSheet()
+  fireEvent.click(within(sheet).getByRole('button', { name: 'Zdjęcie' }))
+  expect(within(sheet).getByText('ZDJĘCIA')).toBeDefined()
+  expect(within(sheet).getByRole('button', { name: 'Zrób zdjęcie' })).toBeDefined()
+  expect(within(sheet).getByRole('button', { name: 'Dodaj z galerii' })).toBeDefined()
+  const camera = sheet.querySelector<HTMLInputElement>('input[data-zrodlo="aparat"]')!
+  expect(camera.getAttribute('capture')).toBe('environment')
+  expect(camera.multiple).toBe(false)
+  fireEvent.change(camera, { target: { files: [photoFile()] } })
+  expect(await within(sheet).findByAltText('Zdjęcie 1')).toBeDefined()
+})
+
+test('przycinanie: „Przytnij zdjęcie” otwiera ramkę; „Anuluj” – bez zmian', async () => {
+  vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:zdjecie')
+  vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {})
+  const sheet = newTaskSheet()
+  await pickPhoto(sheet, 1)
+  fireEvent.click(within(sheet).getByRole('button', { name: 'Przytnij zdjęcie 1' }))
+  const cropper = await screen.findByRole('dialog', { name: 'Przytnij zdjęcie' })
+  expect(within(cropper).getByRole('group', { name: 'Ramka przycięcia' })).toBeDefined()
+  expect(within(cropper).getByRole('button', { name: 'Prawy dolny róg ramki' })).toBeDefined()
+  fireEvent.click(within(cropper).getByRole('button', { name: 'Anuluj' }))
+  expect(screen.queryByRole('dialog', { name: 'Przytnij zdjęcie' })).toBeNull()
+  expect(within(sheet).getByText('1 z 5')).toBeDefined()
+  vi.restoreAllMocks()
 })

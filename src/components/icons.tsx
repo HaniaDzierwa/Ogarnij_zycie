@@ -86,6 +86,34 @@ export function CameraIcon({ size = 22, strokeWidth = 2 }: IconProps & { strokeW
   )
 }
 
+/** Galeria – „Dodaj z galerii” (etap 9). */
+export function GalleryIcon({ size = 22 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" {...stroke} aria-hidden="true">
+      <rect x="3" y="4" width="18" height="16" rx="3" />
+      <circle cx="9" cy="10" r="2" />
+      <path d="M21 16l-5-5-8 9" />
+    </svg>
+  )
+}
+
+/** Przycinanie zdjęcia (etap 9). */
+export function CropIcon({ size = 16 }: IconProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      {...stroke}
+      strokeWidth={2.4}
+      aria-hidden="true"
+    >
+      <path d="M6 2v14a2 2 0 0 0 2 2h14" />
+      <path d="M18 22V8a2 2 0 0 0-2-2H2" />
+    </svg>
+  )
+}
+
 export function ChevronLeftIcon({ size = 18 }: IconProps) {
   return (
     <svg

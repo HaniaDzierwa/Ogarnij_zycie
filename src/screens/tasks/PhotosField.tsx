@@ -1,5 +1,11 @@
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
-import { CameraIcon, CloseIcon, RepeatIcon } from '../../components/icons.tsx'
+import {
+  CameraIcon,
+  CloseIcon,
+  CropIcon,
+  GalleryIcon,
+  RepeatIcon,
+} from '../../components/icons.tsx'
 import { useStore } from '../../data/store.ts'
 import type { Task } from '../../data/types.ts'
 import { PHOTO_LIMITS, type PhotoKind } from '../../firebase/photos.ts'
@@ -12,6 +18,8 @@ import {
   type TaskPhoto,
 } from '../../photos/draft.ts'
 import { colors, fonts } from '../../theme'
+import { PhotoCropper } from './PhotoCropper.tsx'
+import type { CropRect } from '../../photos/crop.ts'
 
 /** Zdjęcia w formularzu zadania: zapisane w bazie + kopia robocza zmian. */
 export type PhotoFieldProps = {
@@ -63,27 +71,72 @@ export function usePhotoField(p: PhotoFieldProps | undefined): {
   addItem: { label: string; onClick: () => void } | null
 } {
   const store = useStore()
-  const inputRef = useRef<HTMLInputElement>(null)
+  // galeria (kilka naraz) i aparat (od razu zdjęcie) – poprawki Hani 2026-11-20
+  const galleryRef = useRef<HTMLInputElement>(null)
+  const cameraRef = useRef<HTMLInputElement>(null)
   // rodzaj zdjęcia, które właśnie się wybiera (pole pliku odpowiada później)
   const kindRef = useRef<PhotoKind>('task')
   const [pending, setPending] = useState<PhotoKind[]>([])
   const [error, setError] = useState<string | null>(null)
   const [choice, setChoice] = useState<PhotoKind | null>(null)
+  // „+ Zdjęcie” w zwykłym zadaniu – sekcja z „Aparat” / „Galeria”, zanim jest pierwsze zdjęcie
+  const [opened, setOpened] = useState(false)
+  // przycinane zdjęcie: kafelek, adres obrazka i czy właśnie się przycina
+  const [cropping, setCropping] = useState<{ tile: PhotoTile; url: string; busy: boolean } | null>(
+    null,
+  )
   if (!p) return { input: null, section: null, addItem: null }
 
   const repeating = !!p.repeating
   const tiles = visibleTiles(p.saved, p.draft)
   const full = !canAddPhoto(p.saved, p.draft, pending.length)
-  const pick = (kind: PhotoKind) => {
+  const pick = (kind: PhotoKind, from: 'camera' | 'gallery') => {
     kindRef.current = kind
     setChoice(null)
-    inputRef.current?.click()
+    setError(null)
+    ;(from === 'camera' ? cameraRef : galleryRef).current?.click()
   }
   const open = () => {
     setError(null)
     // zadanie cykliczne – najpierw „Gdzie dodać zdjęcie?” (domyślnie „Tylko tym razem”)
     if (repeating) setChoice('task')
-    else pick('task')
+    else setOpened(true)
+  }
+
+  /** Przycinanie: obrazek z nowego zdjęcia albo pełna wersja zapisanego. */
+  const startCrop = async (tile: PhotoTile) => {
+    setError(null)
+    try {
+      const blob = tile.added
+        ? new Blob([new Uint8Array(tile.added.full)], { type: tile.added.type })
+        : await store.photos.loadFull(tile.saved!)
+      setCropping({ tile, url: URL.createObjectURL(blob), busy: false })
+    } catch {
+      setError('Nie udało się otworzyć zdjęcia do przycięcia.')
+    }
+  }
+  const endCrop = () => {
+    if (cropping) URL.revokeObjectURL(cropping.url)
+    setCropping(null)
+  }
+  const finishCrop = async (rect: CropRect) => {
+    if (!cropping) return
+    const { tile, url } = cropping
+    setCropping({ ...cropping, busy: true })
+    try {
+      const source = await (await fetch(url)).blob()
+      const cut = await store.photos.crop(source, rect)
+      const photo = { ...(await store.photos.prepare(cut)), kind: tile.kind }
+      // nowe – podmiana w miejscu; zapisane – stare usunięte, przycięte dodane (zapis przy „Zapisz”)
+      p.onDraft((d) =>
+        tile.added
+          ? { ...d, added: d.added.map((a) => (a.key === tile.key ? photo : a)) }
+          : { ...d, removed: [...d.removed, tile.saved!.id], added: [...d.added, photo] },
+      )
+    } catch {
+      setError('Nie udało się przyciąć zdjęcia.')
+    }
+    endCrop()
   }
 
   /** Jedno albo kilka zdjęć naraz (poprawka Hani 2026-11-20) – razem najwyżej 5 przy zadaniu. */
@@ -144,19 +197,40 @@ export function usePhotoField(p: PhotoFieldProps | undefined): {
     )
   }
 
+  const onChange = (e: { target: HTMLInputElement }) => {
+    const files = [...(e.target.files ?? [])]
+    e.target.value = ''
+    if (files.length) void onFiles(files)
+  }
   const input = (
-    <input
-      ref={inputRef}
-      type="file"
-      accept="image/*"
-      multiple
-      hidden
-      onChange={(e) => {
-        const files = [...(e.target.files ?? [])]
-        e.target.value = ''
-        if (files.length) void onFiles(files)
-      }}
-    />
+    <>
+      <input
+        ref={galleryRef}
+        type="file"
+        accept="image/*"
+        multiple
+        hidden
+        data-zrodlo="galeria"
+        onChange={onChange}
+      />
+      <input
+        ref={cameraRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        hidden
+        data-zrodlo="aparat"
+        onChange={onChange}
+      />
+      {cropping && (
+        <PhotoCropper
+          src={cropping.url}
+          busy={cropping.busy}
+          onCancel={endCrop}
+          onDone={(rect) => void finishCrop(rect)}
+        />
+      )}
+    </>
   )
 
   // numeracja kafelków wspólna dla obu grup („Zdjęcie 3”)
@@ -188,6 +262,39 @@ export function usePhotoField(p: PhotoFieldProps | undefined): {
           <RepeatIcon size={11} strokeWidth={2.8} />
         </span>
       )}
+      <button
+        type="button"
+        onClick={() => void startCrop(t)}
+        aria-label={`Przytnij zdjęcie ${n}`}
+        style={{
+          position: 'absolute',
+          right: 2,
+          bottom: 2,
+          width: 36,
+          height: 36,
+          border: 0,
+          padding: 0,
+          background: 'transparent',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <span
+          style={{
+            width: 24,
+            height: 24,
+            borderRadius: 12,
+            background: 'rgba(31,61,46,0.78)',
+            color: colors.white,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <CropIcon size={13} />
+        </span>
+      </button>
       <button
         type="button"
         onClick={() => remove(t)}
@@ -254,31 +361,57 @@ export function usePhotoField(p: PhotoFieldProps | undefined): {
       <span style={{ fontSize: 11, fontWeight: 800 }}>Zmniejszam…</span>
     </div>
   )
-  const addTile = !full && (
-    <button
-      key="dodaj"
-      type="button"
-      onClick={open}
-      aria-label="Dodaj zdjęcie"
-      style={{
-        aspectRatio: '1',
-        borderRadius: 14,
-        border: `1.5px dashed ${colors.brass500}`,
-        background: 'transparent',
-        color: colors.brass700,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: 6,
-        fontSize: 13,
-        fontWeight: 800,
-      }}
-    >
-      <CameraIcon size={26} />
-      Dodaj
-    </button>
-  )
+  const addStyle = {
+    aspectRatio: '1',
+    borderRadius: 14,
+    border: `1.5px dashed ${colors.brass500}`,
+    background: 'transparent',
+    color: colors.brass700,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    fontSize: 13,
+    fontWeight: 800,
+  } as const
+  const addTile = full
+    ? []
+    : repeating
+      ? [
+          <button
+            key="dodaj"
+            type="button"
+            onClick={open}
+            aria-label="Dodaj zdjęcie"
+            style={addStyle}
+          >
+            <CameraIcon size={26} />
+            Dodaj
+          </button>,
+        ]
+      : [
+          <button
+            key="aparat"
+            type="button"
+            onClick={() => pick('task', 'camera')}
+            aria-label="Zrób zdjęcie"
+            style={addStyle}
+          >
+            <CameraIcon size={26} />
+            Aparat
+          </button>,
+          <button
+            key="galeria"
+            type="button"
+            onClick={() => pick('task', 'gallery')}
+            aria-label="Dodaj z galerii"
+            style={addStyle}
+          >
+            <GalleryIcon size={26} />
+            Galeria
+          </button>,
+        ]
   const grid = (children: ReactNode) => (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 8 }}>
       {children}
@@ -316,10 +449,10 @@ export function usePhotoField(p: PhotoFieldProps | undefined): {
           {grid([...once.map(tileView), ...waiting('task')])}
         </div>
       )}
-      {addTile && grid(addTile)}
+      {addTile.length > 0 && grid(addTile)}
     </>
   ) : (
-    grid([...numbered.map(tileView), ...waiting('task'), addTile])
+    grid([...numbered.map(tileView), ...waiting('task'), ...addTile])
   )
 
   const chooser = choice && (
@@ -392,42 +525,54 @@ export function usePhotoField(p: PhotoFieldProps | undefined): {
           </button>
         )
       })}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: 8 }}>
-        <button
-          type="button"
-          onClick={() => setChoice(null)}
-          style={{
-            height: 44,
-            border: `1px solid ${colors.border}`,
-            borderRadius: 22,
-            background: colors.white,
-            color: colors.green900,
-            fontSize: 15,
-            fontWeight: 700,
-          }}
-        >
-          Anuluj
-        </button>
-        <button
-          type="button"
-          onClick={() => pick(choice)}
-          style={{
-            height: 44,
-            border: 0,
-            borderRadius: 22,
-            background: colors.green900,
-            color: colors.cream,
-            fontSize: 15,
-            fontWeight: 800,
-          }}
-        >
-          Wybierz zdjęcie
-        </button>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8 }}>
+        {(
+          [
+            ['camera', 'Zrób zdjęcie', <CameraIcon key="i" size={18} />],
+            ['gallery', 'Z galerii', <GalleryIcon key="i" size={18} />],
+          ] as const
+        ).map(([from, text, icon]) => (
+          <button
+            key={from}
+            type="button"
+            onClick={() => pick(choice, from)}
+            style={{
+              height: 44,
+              border: 0,
+              borderRadius: 22,
+              background: colors.green900,
+              color: colors.cream,
+              fontSize: 15,
+              fontWeight: 800,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+            }}
+          >
+            {icon}
+            {text}
+          </button>
+        ))}
       </div>
+      <button
+        type="button"
+        onClick={() => setChoice(null)}
+        style={{
+          height: 40,
+          border: 0,
+          background: 'transparent',
+          color: colors.green900,
+          fontSize: 15,
+          fontWeight: 700,
+        }}
+      >
+        Anuluj
+      </button>
     </div>
   )
 
-  const show = tiles.length > 0 || pending.length > 0
+  const show = tiles.length > 0 || pending.length > 0 || (opened && !repeating)
   const hint =
     error ?? (full ? (grouped ? FULL_HINT_REPEAT : FULL_HINT) : repeating ? HINT_REPEAT : HINT)
   const section = (show || chooser || error) && (

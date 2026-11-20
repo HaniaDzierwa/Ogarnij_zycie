@@ -54,7 +54,7 @@ import {
   sortPhotos,
   type TaskPhoto,
 } from '../photos/draft.ts'
-import { preparePhoto, thumbFromTile } from '../photos/resize.ts'
+import { cropImage, preparePhoto, thumbFromTile } from '../photos/resize.ts'
 import { kindChangeDraft, photoFieldsAfter, withPhotoFields } from '../photos/taskFields.ts'
 import { syncCollection } from '../firebase/sync.ts'
 import { useHouse } from '../house/house.ts'
@@ -474,6 +474,7 @@ function HouseData({ children }: { children: ReactNode }) {
   const photos = useMemo<PhotosApi>(() => {
     const api: PhotosApi = {
       prepare: preparePhoto,
+      crop: cropImage,
       move: async (saved, privateUid) => {
         if (!houseId) return
         const to: PhotoPlace = { houseId, privateUid }
