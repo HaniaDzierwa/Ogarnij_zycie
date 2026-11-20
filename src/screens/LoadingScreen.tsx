@@ -4,7 +4,7 @@ import { paths } from '../app/screens.ts'
 import { RIDGE_FAR, RIDGE_NEAR } from '../components/Header.tsx'
 import { Logo } from '../components/Logo.tsx'
 import { isDaytime } from '../data/dates.ts'
-import { colors, dayHeader, fonts } from '../theme'
+import { colors, dayHeader, fonts, useResolvedTheme } from '../theme'
 
 /**
  * 1 Ładowanie. Słońce 6:00–18:00, księżyc 18:00–6:00 (podgląd: `?pora=dzien` / `?pora=noc`).
@@ -42,11 +42,13 @@ export function LoadingScreen({ waiting = false }: { waiting?: boolean }) {
   const [params] = useSearchParams()
   const navigate = useNavigate()
   const pora = params.get('pora')
-  const day = pora === 'dzien' ? true : pora === 'noc' ? false : isDaytime()
+  // w ciemnym motywie zawsze nocny
+  const dark = useResolvedTheme() === 'dark'
+  const day = dark ? false : pora === 'dzien' ? true : pora === 'noc' ? false : isDaytime()
 
-  const bg = day ? dayHeader.bg : colors.green900
-  const fg = day ? colors.green900 : colors.cream
-  const accent = day ? colors.brass700 : colors.brass300
+  const bg = day ? dayHeader.bg : colors.header
+  const fg = day ? colors.green900 : colors.onHeader
+  const accent = day ? colors.brass700 : colors.headerAccent
 
   return (
     <button
@@ -83,14 +85,14 @@ export function LoadingScreen({ waiting = false }: { waiting?: boolean }) {
           position: 'absolute',
           inset: 0,
           zIndex: 2,
-          background: colors.green900,
+          background: colors.header,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           pointerEvents: 'none',
         }}
       >
-        <Logo size={96} color={colors.cream} check={colors.brass300} />
+        <Logo size={96} color={colors.onHeader} check={colors.headerAccent} />
       </span>
 
       <span
@@ -108,8 +110,8 @@ export function LoadingScreen({ waiting = false }: { waiting?: boolean }) {
         <span className="loading-pop" style={{ display: 'flex' }}>
           <Logo
             size={96}
-            color={day ? colors.green900 : colors.cream}
-            check={day ? colors.brass500 : colors.brass300}
+            color={day ? colors.green900 : colors.onHeader}
+            check={day ? colors.brass500 : colors.headerAccent}
           />
         </span>
         <span
@@ -155,8 +157,8 @@ export function LoadingScreen({ waiting = false }: { waiting?: boolean }) {
         preserveAspectRatio="xMidYMax slice"
         style={{ position: 'absolute', left: 0, bottom: 0 }}
       >
-        <path d={RIDGE_FAR} fill={day ? dayHeader.roofsFar : colors.green800} />
-        <path d={RIDGE_NEAR} fill={day ? dayHeader.roofsNear : colors.green700} />
+        <path d={RIDGE_FAR} fill={day ? dayHeader.roofsFar : colors.headerRoofFar} />
+        <path d={RIDGE_NEAR} fill={day ? dayHeader.roofsNear : colors.headerRoofNear} />
         {!day && (
           <>
             <rect
@@ -166,7 +168,7 @@ export function LoadingScreen({ waiting = false }: { waiting?: boolean }) {
               width="7"
               height="8"
               rx="1.2"
-              fill={colors.brass300}
+              fill={colors.headerAccent}
             />
             <rect
               className="loading-window"
@@ -175,7 +177,7 @@ export function LoadingScreen({ waiting = false }: { waiting?: boolean }) {
               width="7"
               height="8"
               rx="1.2"
-              fill={colors.brass300}
+              fill={colors.headerAccent}
               style={{ animationDelay: delay(600) }}
             />
           </>
@@ -214,8 +216,8 @@ function Sky({ day }: { day: boolean }) {
       ) : (
         <g>
           <g className="loading-moon">
-            <circle cx="300" cy="104" r="26" fill={colors.brass300} />
-            <circle cx="312" cy="96" r="23" fill={colors.green900} />
+            <circle cx="300" cy="104" r="26" fill={colors.headerAccent} />
+            <circle cx="312" cy="96" r="23" fill={colors.header} />
           </g>
           {[
             [60, 70, 1.8, 0],
@@ -231,7 +233,7 @@ function Sky({ day }: { day: boolean }) {
               cx={cx}
               cy={cy}
               r={r}
-              fill={colors.brass300}
+              fill={colors.headerAccent}
               style={{ animationDelay: delay(ms) }}
             />
           ))}

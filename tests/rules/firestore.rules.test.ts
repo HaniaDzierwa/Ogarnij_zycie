@@ -166,6 +166,14 @@ describe('profil', () => {
   })
   test('nie da się przypisać sobie cudzego domu', () =>
     assertFails(updateDoc(doc(db('obcy'), paths.user('obcy')), { houseId: 'dom1' })))
+  test('motyw: system / jasny / ciemny zapisuje się, inny – odrzucony', async () => {
+    const me = doc(db('hania'), paths.user('hania'))
+    await assertSucceeds(updateDoc(me, { theme: 'dark' }))
+    await assertSucceeds(updateDoc(me, { theme: 'light' }))
+    await assertSucceeds(updateDoc(me, { theme: 'system' }))
+    await assertFails(updateDoc(me, { theme: 'niebieski' }))
+    await assertFails(updateDoc(me, { theme: true }))
+  })
   test('złe ustawienia (sprzątanie, godzina) są odrzucane', async () => {
     await assertFails(updateDoc(doc(db('hania'), paths.user('hania')), { cleanupDays: 3 }))
     await assertFails(updateDoc(doc(db('hania'), paths.user('hania')), { taskReminderTime: '18' }))

@@ -16,7 +16,7 @@ Budujemy aplikację w 8 etapach (0–7; kolejność zmieniona 2026-10-20 – pat
 | Bezpieczeństwo | Reguły Firestore: dane domu widzą tylko jego domownicy |
 | Zaproszenia | Jednorazowy link lub 6 cyfr, ważne 10 min; ważność i jednorazowość sprawdzają reguły Firestore (bez kodu QR – decyzja Hani 2026-10-20) |
 | Powiadomienia | Web Push (VAPID); wysyła darmowy Cloudflare Worker uruchamiany co minutę |
-| Wygląd | Tylko motyw jasny; tokeny z `docs/DESIGN.md` |
+| Wygląd | Motyw jasny / ciemny / systemowy (domyślnie systemowy, każdy domownik swój – decyzja Hani 2026-11-20); tokeny z `docs/DESIGN.md` i `src/theme` |
 
 ---
 
@@ -130,7 +130,7 @@ Funkcje są w aplikacji od etapów 1–2; w tym etapie poprawki z testów we dwo
 - Poranne podsumowanie o 8:00 tylko wtedy, gdy jest coś pilnego, termin na dziś albo wydarzenie dziś – inaczej nie wysyłamy (decyzja Hani 2026-10-18).
 - **Zmiany od domowników** (z dawnego etapu 8): push, gdy domownik doda lub ogarnie zadanie (bez osobnego ekranu – zmiany widać od razu na listach).
 - Cloudflare Worker (darmowy plan, cron co minutę): sprawdza, co jest do wysłania (terminy, wydarzenia, poranne podsumowanie o 8:00, zmiany domowników), wysyła push. Instrukcja dla Hani: konto Cloudflare, klucze VAPID, konto serwisowe Firebase jako sekret Workera.
-- Motyw: tylko jasny, wybór ukryty.
+- Motyw: wtedy tylko jasny, wybór ukryty (od 2026-11-20 – jasny / ciemny / systemowy, patrz „Motyw jasny i ciemny”).
 
 **Odbiór:** (zaakceptowany przez Hanię 2026-10-25 – „zamknij wszystkie etapy, działa tak jak ma być”)
 - [x] Przypomnienie przychodzi przy zamkniętej stronie z opóźnieniem najwyżej 1 min
@@ -226,6 +226,16 @@ Projekt: kanwa „Zadania cykliczne” w Claude Design (ekrany 1c/1e – zadanie
 - [x] Testy reguł przechodzą u Hani
 
 ---
+
+## Motyw jasny i ciemny (prośba Hani 2026-11-20)
+
+Projekt: kanwa „Motyw jasny i ciemny” (https://claude.ai/artifact/X7UxjJ9gwJAZ4Z9GoaW2io). Decyzje Hani 2026-11-20: domyślnie systemowy; ustawienie w stylu innych parametrów (wiersz „Wygląd ›” → ekran z przełącznikiem Systemowy / Jasny / Ciemny); osobno dla każdego konta (pole `theme` w profilu – reguły `validUser`); w ciemnym tło zielone (#101A15), nagłówek zostaje butelkowo-zielony.
+
+**Odbiór:**
+- [ ] Ustawienia › Wygląd: przełączenie od razu zmienia cały ekran; wybór zostaje po ponownym otwarciu i na drugim telefonie tego samego konta
+- [ ] „Systemowy” idzie za trybem telefonu (także w trakcie działania)
+- [ ] W ciemnym czytelne: Start, Zadania (z kategoriami, priorytetami, terminami), arkusze, Kalendarz (rodzaje wydarzeń), Ustawienia, Kosz, podgląd zdjęć
+- [ ] Testy reguł (emulator, u Hani): pole `theme` – tylko system / light / dark
 
 ## Etap 10 – Zdjęcia przy wydarzeniach (prośba Hani 2026-11-20, do zaplanowania)
 

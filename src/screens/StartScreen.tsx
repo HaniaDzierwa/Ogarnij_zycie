@@ -32,7 +32,16 @@ import {
 } from '../data/selectors.ts'
 import { PushCard } from '../push/PushCard.tsx'
 import { RepeatBadge } from '../components/RepeatBadge.tsx'
-import { colors, fonts, priorities, shadows } from '../theme'
+import {
+  colors,
+  eventTint,
+  fonts,
+  palette,
+  priorities,
+  shadows,
+  themed,
+  useResolvedTheme,
+} from '../theme'
 import { DueBadge } from '../components/DueBadge.tsx'
 import { useItemSheets } from './shared/useItemSheets.tsx'
 
@@ -49,7 +58,9 @@ export function StartScreen() {
   } = useStore()
   const [params] = useSearchParams()
   const pora = params.get('pora')
-  const day = pora === 'dzien' ? true : pora === 'noc' ? false : isDaytime()
+  // w ciemnym motywie nagłówek zawsze nocny
+  const dark = useResolvedTheme() === 'dark'
+  const day = dark ? false : pora === 'dzien' ? true : pora === 'noc' ? false : isDaytime()
 
   const categoryName = (id: string | null) =>
     categories.find((c) => c.id === id)?.name ?? 'Bez kategorii'
@@ -87,8 +98,8 @@ export function StartScreen() {
         label={
           <>
             <Logo
-              color={day ? colors.green900 : colors.cream}
-              check={day ? colors.brass500 : colors.brass300}
+              color={day ? colors.green900 : colors.onHeader}
+              check={day ? colors.brass500 : colors.headerAccent}
             />
             {longDayLabel(today)}
           </>
@@ -118,7 +129,8 @@ export function StartScreen() {
             new Set(open.map((t) => t.categoryId)).size,
             ['kategorii', 'kategoriach', 'kategoriach'],
           )}`}
-          subColor={colors.onDarkMuted}
+          // kafel green900 – w ciemnym jasny, więc ciemny podpis
+          subColor={themed(colors.onDarkMuted, palette.muted[0])}
         />
         <Tile
           to={paths.zadaniaPilne}
@@ -128,11 +140,11 @@ export function StartScreen() {
           label="PILNE"
           labelColor={priorities.high.fg}
           sub={urgentToday.length > 0 ? `w tym ${urgentToday.length} na dziś` : 'nic na dziś'}
-          subColor="#6E3220"
+          subColor={priorities.high.fg}
         />
         <Tile
           to={paths.kalendarz}
-          bg="#EFE3CC"
+          bg={priorities.mid.bg}
           number={weekLeft.length}
           numberColor={priorities.mid.fg}
           label="W TYM TYGODNIU"
@@ -266,7 +278,10 @@ export function StartScreen() {
                           width: 5,
                           height: 5,
                           borderRadius: 3,
-                          background: isToday ? typeOf(t).dot : typeOf(t).fg,
+                          // dziś: na zielonym pastelowa kropka, w ciemnym (kremowe tło) – ciemna
+                          background: isToday
+                            ? themed(typeOf(t).dot, typeOf(t).fg)
+                            : eventTint(typeOf(t)).fg,
                         }}
                       />
                     ))}
@@ -302,7 +317,7 @@ export function StartScreen() {
                       label: 'Usuń',
                       icon: <TrashIcon />,
                       bg: priorities.high.line,
-                      fg: colors.white,
+                      fg: colors.onDanger,
                       srLabel: `Przenieś do kosza: ${t.title}`,
                       run: () => sheets$.trashTask(t),
                     }}
@@ -384,6 +399,7 @@ export function StartScreen() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {nextEvents.map((e) => {
             const type = typeOf(e.typeId)
+            const tint = eventTint(type)
             const d = parseKey(e.date)
             const when = e.allDay
               ? 'CAŁY DZIEŃ'
@@ -398,7 +414,7 @@ export function StartScreen() {
                     label: 'Usuń',
                     icon: <TrashIcon />,
                     bg: priorities.high.line,
-                    fg: colors.white,
+                    fg: colors.onDanger,
                     srLabel: `Przenieś do kosza: ${e.title}`,
                     run: () => sheets$.removeEvent(e),
                   }}
@@ -423,7 +439,7 @@ export function StartScreen() {
                         width: 46,
                         height: 52,
                         borderRadius: '23px 23px 10px 10px',
-                        background: type.bg,
+                        background: tint.bg,
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'center',
@@ -438,7 +454,7 @@ export function StartScreen() {
                           fontSize: 21,
                           fontWeight: 600,
                           lineHeight: 1,
-                          color: type.fg,
+                          color: tint.fg,
                         }}
                       >
                         {d.getDate()}
@@ -448,7 +464,7 @@ export function StartScreen() {
                           fontSize: 10,
                           fontWeight: 800,
                           letterSpacing: '1px',
-                          color: type.fg,
+                          color: tint.fg,
                         }}
                       >
                         {MONTHS_SHORT[d.getMonth()]}
@@ -486,7 +502,7 @@ export function StartScreen() {
                         fontSize: 12,
                         fontWeight: 800,
                         color: priorities.mid.fg,
-                        background: '#EFE3CC',
+                        background: priorities.mid.bg,
                         padding: '4px 10px',
                         borderRadius: 12,
                         whiteSpace: 'nowrap',

@@ -3,7 +3,7 @@
 import { addDays, diffDays, weekStart, type DateKey } from './dates.ts'
 import { remindNote } from './eventOps.ts'
 import { occurrencesBetween, type Repeat } from './repeat.ts'
-import { builtInEventTypes, DEFAULT_PRIORITY, priorities, shade } from '../theme'
+import { builtInEventTypes, DEFAULT_PRIORITY, priorities, tintBg, tintDot, tintFg } from '../theme'
 import type { CalendarEvent, CustomPriority, EventType, PriorityDef, Task } from './types.ts'
 
 /** Wszystkie priorytety domu w kolejności: wbudowane i własne (wg `order`). */
@@ -12,9 +12,10 @@ export function allPriorities(custom: CustomPriority[]): PriorityDef[] {
   const own = custom.map((c) => ({
     id: c.id,
     label: c.name,
-    line: c.color,
-    bg: shade(c.color, 0.82),
-    fg: shade(c.color, -0.35),
+    // kolory do wyświetlenia – w obu motywach (themed.ts)
+    line: tintDot(c.color),
+    bg: tintBg(c.color),
+    fg: tintFg(c.color),
     order: c.order,
     builtIn: false,
   }))

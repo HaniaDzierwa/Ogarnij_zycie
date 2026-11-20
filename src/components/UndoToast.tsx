@@ -1,5 +1,5 @@
 import { useStore } from '../data/store.ts'
-import { colors } from '../theme'
+import { colors, themed } from '../theme'
 
 /** Pasek „… · COFNIJ” nad dolnym menu (znika po ~4,5 s). */
 export function UndoToast() {
@@ -24,9 +24,9 @@ export function UndoToast() {
         minHeight: 52,
         padding: '0 8px 0 18px',
         borderRadius: 18,
-        background: colors.green900,
-        color: colors.cream,
-        boxShadow: '0 10px 26px rgba(31,61,46,0.3)',
+        background: colors.header,
+        color: colors.onHeader,
+        boxShadow: `0 10px 26px ${themed('rgba(31,61,46,0.3)', 'rgba(0,0,0,0.5)')}`,
       }}
     >
       <span style={{ flex: 1, minWidth: 0, fontSize: 14, fontWeight: 700, lineHeight: 1.3 }}>
@@ -40,7 +40,7 @@ export function UndoToast() {
           padding: '0 12px',
           border: 0,
           background: 'transparent',
-          color: colors.brass300,
+          color: colors.headerAccent,
           fontSize: 13,
           fontWeight: 800,
           letterSpacing: '1px',

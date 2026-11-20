@@ -27,7 +27,7 @@ import {
 } from '../../data/dates.ts'
 import { useStore } from '../../data/store.ts'
 import { calendarItems, eventTypeOf, priorityOf, weekDays } from '../../data/selectors.ts'
-import { colors, fonts, priorities, shadows } from '../../theme'
+import { colors, eventTint, fonts, priorities, shadows, themed } from '../../theme'
 import {
   agendaFor,
   customType,
@@ -137,7 +137,12 @@ export function CalendarScreen() {
 
   const dots = (k: DateKey, on: boolean, size: number) =>
     typesOn(items, k).map((t) => (
-      <Dot key={t} color={on ? typeOf(t).dot : typeOf(t).fg} size={size} />
+      // zaznaczony dzień (green900 – w ciemnym jasny): pastelowa kropka / w ciemnym ciemna
+      <Dot
+        key={t}
+        color={on ? themed(typeOf(t).dot, typeOf(t).fg) : eventTint(typeOf(t)).fg}
+        size={size}
+      />
     ))
 
   return (
@@ -154,7 +159,7 @@ export function CalendarScreen() {
               border: '1px solid rgba(232,201,142,0.5)',
               borderRadius: 15,
               background: 'transparent',
-              color: colors.brass300,
+              color: colors.headerAccent,
               fontSize: 11,
               fontWeight: 800,
               letterSpacing: '0.8px',
@@ -347,7 +352,7 @@ export function CalendarScreen() {
                   color: colors.muted2,
                 }}
               >
-                <Dot color={t.fg} />
+                <Dot color={eventTint(t).fg} />
                 {t.name}
               </span>
             ))}
@@ -413,6 +418,7 @@ export function CalendarScreen() {
           >
             {later.map((e, i) => {
               const t = typeOf(e.typeId)
+              const tint = eventTint(t)
               const d = parseKey(e.date)
               const { onOpen, onDone, onDelete } = rowActions(e)
               return (
@@ -446,8 +452,8 @@ export function CalendarScreen() {
                           width: 44,
                           height: 50,
                           borderRadius: '22px 22px 10px 10px',
-                          background: t.bg,
-                          color: t.fg,
+                          background: tint.bg,
+                          color: tint.fg,
                           display: 'flex',
                           flexDirection: 'column',
                           alignItems: 'center',
@@ -559,7 +565,7 @@ const deleteAction = (item: CalendarItem, run: () => void): SwipeAction => ({
   label: 'Usuń',
   icon: <TrashIcon />,
   bg: priorities.high.line,
-  fg: colors.white,
+  fg: colors.onDanger,
   srLabel: `Przenieś do kosza: ${item.title}`,
   run,
 })
@@ -604,8 +610,8 @@ function AgendaRow({
               width: 42,
               height: 42,
               borderRadius: 14,
-              background: type.bg,
-              color: type.fg,
+              background: eventTint(type).bg,
+              color: eventTint(type).fg,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',

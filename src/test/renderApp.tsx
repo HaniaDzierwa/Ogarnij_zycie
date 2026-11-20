@@ -5,6 +5,7 @@ import { createMemoryRouter, RouterProvider } from 'react-router'
 import { routes } from '../app/router.tsx'
 import { MemoryAuthProvider } from '../auth/MemoryAuthProvider.tsx'
 import { MockStoreProvider } from '../data/MockStore.tsx'
+import { ThemeSync } from '../data/ThemeSync.tsx'
 import { MemoryHouseProvider } from '../house/MemoryHouseProvider.tsx'
 
 export type RenderOptions = {
@@ -49,6 +50,7 @@ export function renderApp(url: string, opts: RenderOptions = {}) {
           noEventTypes={opts.noEventTypes}
           notReady={opts.notReady}
         >
+          <ThemeSync />
           <RouterProvider router={router} />
         </MockStoreProvider>
       </MemoryHouseProvider>

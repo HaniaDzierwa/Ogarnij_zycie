@@ -28,7 +28,7 @@ const MAX = 150
  * Wiersz z gestami (DESIGN.md → Lista zadań – interakcje): ruch poziomy po 8 px, przewijanie
  * pionowe ma pierwszeństwo, akcja po przekroczeniu ~90 px, po przeciągnięciu klik nie działa.
  */
-export function SwipeRow({ children, right, left, background = '#FFFFFF' }: Props) {
+export function SwipeRow({ children, right, left, background = 'var(--c-white)' }: Props) {
   const [dx, setDx] = useState(0)
   const [dragging, setDragging] = useState(false)
   const start = useRef<{ x: number; y: number; id: number } | null>(null)

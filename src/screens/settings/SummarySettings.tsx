@@ -154,7 +154,7 @@ export function SummarySettings() {
         ))}
       </div>
       {none && (
-        <span role="note" style={{ fontSize: 13, color: '#A4492F', fontWeight: 700 }}>
+        <span role="note" style={{ fontSize: 13, color: colors.danger, fontWeight: 700 }}>
           Zaznacz przynajmniej jedną rzecz – inaczej podsumowania będą puste.
         </span>
       )}

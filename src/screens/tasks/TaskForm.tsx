@@ -13,7 +13,7 @@ import { priorityOf } from '../../data/selectors.ts'
 import { useStore } from '../../data/store.ts'
 import type { TaskEdit } from '../../data/taskOps.ts'
 import type { Category } from '../../data/types.ts'
-import { colors, noCategory } from '../../theme'
+import { colors, noCategory, priorities as builtIn } from '../../theme'
 import { DueField } from './DueField.tsx'
 import { NewCategoryButton, NewCategoryForm } from './NewCategoryForm.tsx'
 import { usePhotoField, type PhotoFieldProps } from './PhotosField.tsx'
@@ -290,7 +290,7 @@ export function TaskForm({
                   height: 44,
                   border: 0,
                   background: 'transparent',
-                  color: '#9AA59D',
+                  color: builtIn.low.line,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',

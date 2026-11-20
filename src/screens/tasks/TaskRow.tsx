@@ -91,7 +91,7 @@ export function TaskRow({
           label: 'Usuń',
           icon: <TrashIcon />,
           bg: priorities.high.line,
-          fg: colors.white,
+          fg: colors.onDanger,
           srLabel: `Przenieś do kosza: ${task.title}`,
           run: onTrash,
         }}
@@ -386,7 +386,7 @@ export function SubtaskToggle({
         style={{
           fontSize: 15,
           lineHeight: 1.3,
-          ...(done ? { color: '#8A968E', textDecoration: 'line-through' } : {}),
+          ...(done ? { color: colors.muted3, textDecoration: 'line-through' } : {}),
         }}
       >
         {title}

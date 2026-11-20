@@ -31,6 +31,9 @@ import { colors, fonts, priorities, shadows } from '../../theme'
 import type { PushState } from '../../push/push.ts'
 import { usePush } from '../../push/usePush.ts'
 import { trashItems, trashWhat } from '../tasks/tasksView.ts'
+import { MoonIcon } from './AppearanceScreen.tsx'
+import { themeMeta } from './appearance.ts'
+import { ChoiceSegments } from './ChoiceSegments.tsx'
 
 const CLEANUP: { id: CleanupDays; name: string; hint: string }[] = [
   { id: 7, name: 'Po 7 dniach', hint: 'Ogarnięte starsze niż 7 dni same trafiają do Kosza.' },
@@ -39,8 +42,8 @@ const CLEANUP: { id: CleanupDays; name: string; hint: string }[] = [
 ]
 
 /**
- * 5 Ustawienia (Ustawienia.dc.html): Ty, Wspólny dom, Porządki, Powiadomienia.
- * Wygląd (motyw) ukryty – na start tylko jasny (CLAUDE.md). Teksty wg docs/TEKSTY.md (#3, #17).
+ * 5 Ustawienia (Ustawienia.dc.html): Wspólny dom, Wygląd, Zadania, Porządki, Powiadomienia.
+ * Wygląd – motyw systemowy / jasny / ciemny (decyzja Hani 2026-11-20). Teksty wg docs/TEKSTY.md (#3, #17).
  */
 export function SettingsScreen() {
   const store = useStore()
@@ -81,6 +84,19 @@ export function SettingsScreen() {
         />
       </Card>
 
+      <Section label="WYGLĄD">
+        <Card radius={22}>
+          <LinkRow
+            to={paths.wyglad}
+            icon={<MoonIcon />}
+            iconBg={colors.sand}
+            iconFg={colors.brass700}
+            title="Wygląd"
+            meta={themeMeta(store.theme)}
+          />
+        </Card>
+      </Section>
+
       <Section label="ZADANIA">
         <Card radius={22}>
           <div style={{ borderBottom: `1px solid ${colors.line}` }}>
@@ -112,59 +128,14 @@ export function SettingsScreen() {
 
       <Section label="PORZĄDKI">
         <Card radius={22}>
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 10,
-              padding: '14px 18px',
-              borderBottom: `1px solid ${colors.line}`,
-            }}
-          >
-            <span style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-              <span style={{ fontSize: 16, fontWeight: 700 }}>Sprzątanie ogarniętych</span>
-              <span style={{ fontSize: 13, color: colors.muted }}>
-                {CLEANUP.find((c) => c.id === cleanupDays)!.hint}
-              </span>
-            </span>
-            <div
-              role="radiogroup"
-              aria-label="Sprzątanie ogarniętych"
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
-                gap: 4,
-                padding: 3,
-                borderRadius: 16,
-                background: colors.sand,
-              }}
-            >
-              {CLEANUP.map((o) => {
-                const on = o.id === cleanupDays
-                return (
-                  <button
-                    key={o.name}
-                    type="button"
-                    role="radio"
-                    aria-checked={on}
-                    onClick={() => store.setCleanupDays(o.id)}
-                    style={{
-                      height: 36,
-                      border: 0,
-                      borderRadius: 13,
-                      fontSize: 13,
-                      fontWeight: 800,
-                      background: on ? colors.white : 'transparent',
-                      color: on ? colors.green900 : colors.muted,
-                      boxShadow: on ? '0 1px 3px rgba(31,61,46,0.15)' : 'none',
-                    }}
-                  >
-                    {o.name}
-                  </button>
-                )
-              })}
-            </div>
-          </div>
+          <ChoiceSegments
+            title="Sprzątanie ogarniętych"
+            hint={CLEANUP.find((c) => c.id === cleanupDays)!.hint}
+            options={CLEANUP}
+            value={cleanupDays}
+            onChange={store.setCleanupDays}
+            divider
+          />
           <LinkRow
             to={paths.kosz}
             icon={<TrashIcon size={20} />}
@@ -366,7 +337,7 @@ function PhotoUsage({ house, app }: { house: number; app: number }) {
   const houseFull = house >= houseMax - PHOTO_LIMITS.fullBytes
   const appFull = app >= PHOTO_LIMITS.appBytes - PHOTO_LIMITS.fullBytes
   const pct = Math.min(100, Math.round((house / houseMax) * 100))
-  const danger = '#A4492F'
+  const danger = colors.danger
   return (
     <div
       style={{

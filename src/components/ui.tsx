@@ -2,7 +2,16 @@ import { useCallback, useRef, type CSSProperties, type ReactNode } from 'react'
 import { useOnline } from '../data/useOnline.ts'
 import { prefersReducedMotion, SHEET_EXIT_MS, SheetCloseContext } from './sheetClose.ts'
 import { useDragToClose } from './useDragToClose.ts'
-import { colors, priorities, radii, shadows, sizes } from '../theme'
+import {
+  colors,
+  priorities,
+  radii,
+  shadows,
+  sizes,
+  themed,
+  tintDot,
+  useResolvedTheme,
+} from '../theme'
 
 /** Układ ekranu: kremowe tło, odstępy 16 px, miejsce na dolny pasek. */
 export function Screen({
@@ -45,7 +54,9 @@ export function OfflineBadge({
   /** Domyślnie – stan sieci z przeglądarki. */
   online?: boolean
 }) {
-  const day = tone === 'day'
+  // w ciemnym motywie nagłówek dzienny wyświetla się jak nocny (Header.tsx)
+  const theme = useResolvedTheme()
+  const day = tone === 'day' && theme === 'light'
   const network = useOnline()
   if (onlineProp ?? network) return null
   return (
@@ -60,7 +71,7 @@ export function OfflineBadge({
         padding: '0 10px',
         borderRadius: 14,
         border: `1px solid ${day ? 'rgba(31,61,46,0.3)' : 'rgba(232,201,142,0.5)'}`,
-        color: day ? colors.green900 : colors.brass300,
+        color: day ? colors.header : colors.headerAccent,
         fontSize: 11,
         fontWeight: 800,
         letterSpacing: '0.6px',
@@ -171,7 +182,7 @@ export function Dot({ color, size = 8 }: { color: string; size?: number }) {
         width: size,
         height: size,
         borderRadius: size / 2,
-        background: color,
+        background: tintDot(color),
         flex: 'none',
         display: 'inline-block',
       }}
@@ -219,7 +230,7 @@ export function Toggle({ on }: { on: boolean }) {
           height: 22,
           borderRadius: 11,
           background: on ? colors.brass300 : colors.white,
-          boxShadow: '0 1px 3px rgba(31,61,46,0.25)',
+          boxShadow: `0 1px 3px ${themed('rgba(31,61,46,0.25)', 'rgba(0,0,0,0.4)')}`,
           transition: 'left 150ms ease',
         }}
       />
@@ -319,7 +330,9 @@ export function Segmented<T extends string>({
               fontWeight: 800,
               background: on ? colors.white : 'transparent',
               color: on ? colors.green900 : colors.muted,
-              boxShadow: on ? '0 1px 3px rgba(31,61,46,0.15)' : 'none',
+              boxShadow: on
+                ? `0 1px 3px ${themed('rgba(31,61,46,0.15)', 'rgba(0,0,0,0.35)')}`
+                : 'none',
             }}
           >
             {o.name}
@@ -470,7 +483,7 @@ function SheetPanel({
             width: '100%',
             height: '100%',
             border: 0,
-            background: 'rgba(31,61,46,0.5)',
+            background: colors.overlay,
           }}
         />
         <div
@@ -582,6 +595,9 @@ export function Field({
   )
 }
 
+/** Jasnoczerwona obwódka przycisku przy „Usuń” (czerwień wymieszana z tłem karty). */
+export const dangerBorder = `color-mix(in srgb, ${colors.danger} 45%, ${colors.white})`
+
 /** Okienko z pytaniem (np. „Usunąć zadanie?”) – na środku ekranu, z przyciemnieniem. */
 export function ConfirmDialog({
   title,
@@ -608,8 +624,8 @@ export function ConfirmDialog({
     height: 48,
     border: 0,
     borderRadius: 24,
-    background: danger ? priorities.high.line : colors.green900,
-    color: danger ? colors.white : colors.cream,
+    background: danger ? colors.danger : colors.green900,
+    color: danger ? colors.onDanger : colors.cream,
     fontSize: 15,
     fontWeight: 800,
   } as const
@@ -640,7 +656,7 @@ export function ConfirmDialog({
           width: '100%',
           height: '100%',
           border: 0,
-          background: 'rgba(31,61,46,0.5)',
+          background: colors.overlay,
         }}
       />
       <div
@@ -671,9 +687,9 @@ export function ConfirmDialog({
               onClick={alt.onClick}
               style={{
                 ...confirmStyle,
-                border: `1px solid ${danger ? '#E7B8A8' : colors.border}`,
+                border: `1px solid ${danger ? dangerBorder : colors.border}`,
                 background: colors.white,
-                color: danger ? priorities.high.line : colors.green900,
+                color: danger ? colors.danger : colors.green900,
               }}
             >
               {alt.label}

@@ -18,7 +18,7 @@ Ten plik czytasz na początku każdej sesji w tym repozytorium.
 - Plan Firebase **Spark** (darmowy): **bez Cloud Functions**, bez Firebase Storage. Wszystko, co wymaga serwera, rozwiązujemy regułami Firestore albo (tylko powiadomienia push, etap 6) darmowym Cloudflare Workerem z harmonogramem co minutę.
 - Powiadomienia: Web Push (Push API + VAPID). Na iPhonie działa tylko po dodaniu strony do ekranu głównego.
 - Testy: Vitest (logika), Firebase Emulator Suite (reguły Firestore), ręczne demo na telefonie.
-- Na start **tylko motyw jasny**. Wybór motywu w Ustawieniach ukryty.
+- Motyw **jasny / ciemny / systemowy** (domyślnie systemowy; decyzja Hani 2026-11-20) – Ustawienia › Wygląd, zapis na koncie (każdy domownik swój). Kolory tylko z `src/theme`: `colors.*` to zmienne CSS obu motywów (ciemny odwraca role: green900 = tekst, cream = tło, white = karta); ciemnozielone powierzchnie, które zostają zielone (nagłówek, pasek COFNIJ) – `colors.header` / `onHeader` / `headerAccent`; kolory z danych (kategorie, rodzaje, własne priorytety) przy wyświetlaniu przez `tintDot` / `tintBg` / `tintFg` / `eventTint`. Bez nowych literalnych '#…' w ekranach.
 
 Nie zmieniaj stosu bez pytania Hani.
 

@@ -9,7 +9,7 @@ import { AuthError, authErrorMessage, useAuth } from '../auth/auth.ts'
 import { Accent, Header, RIDGE_FAR, RIDGE_NEAR } from '../components/Header.tsx'
 import { Logo } from '../components/Logo.tsx'
 import { Card, Field, PrimaryButton } from '../components/ui.tsx'
-import { colors, fonts } from '../theme'
+import { colors, fonts, priorities } from '../theme'
 
 const MIN_PASSWORD = 8
 
@@ -42,7 +42,7 @@ function FormError({ message }: { message?: string }) {
   return (
     <span
       role="alert"
-      style={{ padding: '0 4px', fontSize: 14, fontWeight: 700, color: '#8C3D27' }}
+      style={{ padding: '0 4px', fontSize: 14, fontWeight: 700, color: priorities.high.fg }}
     >
       {message}
     </span>
@@ -527,7 +527,7 @@ function ArrowIcon() {
       height="20"
       viewBox="0 0 24 24"
       fill="none"
-      stroke={colors.brass300}
+      style={{ stroke: colors.brass300 }}
       strokeWidth="2.4"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -579,8 +579,8 @@ function Hero() {
         position: 'relative',
         height: 200,
         borderRadius: 30,
-        background: colors.green900,
-        color: colors.cream,
+        background: colors.header,
+        color: colors.onHeader,
         overflow: 'hidden',
         flex: 'none',
       }}
@@ -594,14 +594,14 @@ function Hero() {
         aria-hidden="true"
         style={{ position: 'absolute', left: 0, top: 0 }}
       >
-        <circle cx="300" cy="46" r="16" fill={colors.brass300} opacity="0.9" />
-        <circle cx="307" cy="41" r="14" fill={colors.green900} />
-        <circle cx="60" cy="40" r="1.6" fill={colors.brass300} />
-        <circle cx="118" cy="24" r="1.2" fill={colors.brass300} />
-        <circle cx="232" cy="32" r="1.4" fill={colors.brass300} />
+        <circle cx="300" cy="46" r="16" fill={colors.headerAccent} opacity="0.9" />
+        <circle cx="307" cy="41" r="14" fill={colors.header} />
+        <circle cx="60" cy="40" r="1.6" fill={colors.headerAccent} />
+        <circle cx="118" cy="24" r="1.2" fill={colors.headerAccent} />
+        <circle cx="232" cy="32" r="1.4" fill={colors.headerAccent} />
         <g transform="translate(0,144)">
-          <path d={RIDGE_FAR} fill={colors.green800} />
-          <path d={RIDGE_NEAR} fill={colors.green700} />
+          <path d={RIDGE_FAR} fill={colors.headerRoofFar} />
+          <path d={RIDGE_NEAR} fill={colors.headerRoofNear} />
         </g>
       </svg>
       <div
@@ -616,9 +616,9 @@ function Hero() {
           gap: 8,
         }}
       >
-        <Logo size={56} color={colors.cream} />
+        <Logo size={56} color={colors.onHeader} check={colors.headerAccent} />
         <span style={{ fontFamily: fonts.serif, fontSize: 32, lineHeight: 1.05, fontWeight: 500 }}>
-          Ogarnij <em style={{ fontStyle: 'italic', color: colors.brass300 }}>życie</em>
+          Ogarnij <em style={{ fontStyle: 'italic', color: colors.headerAccent }}>życie</em>
         </span>
       </div>
     </div>

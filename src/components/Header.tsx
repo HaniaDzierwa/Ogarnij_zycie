@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router'
-import { colors, dayHeader, fonts, radii, sizes } from '../theme'
+import { colors, dayHeader, fonts, radii, sizes, useResolvedTheme } from '../theme'
 import { ChevronLeftIcon } from './icons.tsx'
 
 export type HeaderTone = 'dark' | 'day' | 'night'
@@ -23,13 +23,38 @@ type Props = {
 }
 
 const palette = {
-  dark: { bg: colors.green900, fg: colors.cream, label: colors.brass300, accent: colors.brass300 },
-  night: { bg: colors.green900, fg: colors.cream, label: colors.brass300, accent: colors.brass300 },
+  dark: {
+    bg: colors.header,
+    fg: colors.onHeader,
+    label: colors.headerAccent,
+    accent: colors.headerAccent,
+  },
+  night: {
+    bg: colors.header,
+    fg: colors.onHeader,
+    label: colors.headerAccent,
+    accent: colors.headerAccent,
+  },
   day: { bg: dayHeader.bg, fg: colors.green900, label: colors.brass700, accent: colors.brass700 },
 }
 
+/** Jasny dzienny nagłówek w ciemnym motywie wyświetla się jak nocny. */
+function useHeaderTone(tone: HeaderTone): HeaderTone {
+  const theme = useResolvedTheme()
+  return tone === 'day' && theme === 'dark' ? 'night' : tone
+}
+
 /** Nagłówek ekranu: 120 px, promień 26, panorama dachów u dołu. */
-export function Header({ tone = 'dark', label, back, topRight, title, aside, before }: Props) {
+export function Header({
+  tone: toneProp = 'dark',
+  label,
+  back,
+  topRight,
+  title,
+  aside,
+  before,
+}: Props) {
+  const tone = useHeaderTone(toneProp)
   const p = palette[tone]
   return (
     <header
@@ -141,7 +166,8 @@ export const RIDGE_NEAR =
   'M0 56V46L36 30L72 46V42L108 26L144 42V48L180 36L216 48V42L256 24L296 42V46L330 34L358 44V56Z'
 
 /** Panorama dachów (dwie warstwy, bez okienek – uwaga Hani 2026-10-18), słońce lub księżyc. Szerokość dopasowana do ekranu. */
-export function Roofs({ tone }: { tone: HeaderTone }) {
+export function Roofs({ tone: toneProp }: { tone: HeaderTone }) {
+  const tone = useHeaderTone(toneProp)
   const day = tone === 'day'
   return (
     <svg
@@ -155,10 +181,10 @@ export function Roofs({ tone }: { tone: HeaderTone }) {
     >
       {tone === 'night' && (
         <>
-          <circle cx="318" cy="62" r="12" fill={colors.brass300} />
-          <circle cx="323" cy="58" r="10.5" fill={colors.green900} />
-          <circle cx="282" cy="52" r="1.3" fill={colors.brass300} />
-          <circle cx="344" cy="40" r="1.2" fill={colors.brass300} />
+          <circle cx="318" cy="62" r="12" fill={colors.headerAccent} />
+          <circle cx="323" cy="58" r="10.5" fill={colors.header} />
+          <circle cx="282" cy="52" r="1.3" fill={colors.headerAccent} />
+          <circle cx="344" cy="40" r="1.2" fill={colors.headerAccent} />
         </>
       )}
       {day && (
@@ -177,8 +203,8 @@ export function Roofs({ tone }: { tone: HeaderTone }) {
         </>
       )}
       <g transform="translate(0,64)">
-        <path d={RIDGE_FAR} fill={day ? dayHeader.roofsFar : colors.green800} />
-        <path d={RIDGE_NEAR} fill={day ? dayHeader.roofsNear : colors.green700} />
+        <path d={RIDGE_FAR} fill={day ? dayHeader.roofsFar : colors.headerRoofFar} />
+        <path d={RIDGE_NEAR} fill={day ? dayHeader.roofsNear : colors.headerRoofNear} />
       </g>
     </svg>
   )

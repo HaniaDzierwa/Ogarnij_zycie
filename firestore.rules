@@ -386,7 +386,7 @@ service cloud.firestore {
 
     function validUser(d) {
       return d.keys().hasOnly(['name', 'houseId', 'notif', 'cleanupDays', 'taskReminderTime',
-          'summaryTimes', 'summaryContent'])
+          'summaryTimes', 'summaryContent', 'theme'])
         && str(d.name, 40)
         && (d.houseId == null || (d.houseId is string && existsAfter(
              /databases/$(database)/documents/houses/$(d.houseId)/members/$(request.auth.uid))))
@@ -398,7 +398,9 @@ service cloud.firestore {
         && isTime(d.taskReminderTime)
         // godziny podsumowań (decyzja Hani 2026-10-30): lista, najwyżej 5; stare konta – bez pola
         && (!('summaryTimes' in d) || (d.summaryTimes is list && d.summaryTimes.size() <= 5))
-        && (!('summaryContent' in d) || validSummaryContent(d.summaryContent));
+        && (!('summaryContent' in d) || validSummaryContent(d.summaryContent))
+        // motyw (decyzja Hani 2026-11-20): każdy domownik swój; stare konta – bez pola
+        && (!('theme' in d) || d.theme in ['system', 'light', 'dark']);
     }
 
     /** Co przychodzi w podsumowaniach: pięć pól prawda / fałsz. */

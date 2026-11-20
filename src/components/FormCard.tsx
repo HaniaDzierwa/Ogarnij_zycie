@@ -2,7 +2,7 @@
 // z wierszami „ikona · nazwa · wartość · ˅”, które rozwijają się po dotknięciu (jeden naraz).
 
 import { type ReactNode } from 'react'
-import { colors, fonts, shadows } from '../theme'
+import { colors, fonts, priorities, shadows } from '../theme'
 import { PlusIcon } from './icons.tsx'
 
 /** Biała karta z wierszami. */
@@ -85,12 +85,13 @@ export function FormRow({
           height="16"
           viewBox="0 0 24 24"
           fill="none"
-          stroke="#9AA59D"
+          stroke="currentColor"
           strokeWidth="2.4"
           strokeLinecap="round"
           strokeLinejoin="round"
           aria-hidden="true"
           style={{
+            color: priorities.low.line, // szary szewron (#9AA59D w jasnym)
             flex: 'none',
             transition: 'transform 150ms ease',
             transform: open ? 'rotate(180deg)' : 'none',

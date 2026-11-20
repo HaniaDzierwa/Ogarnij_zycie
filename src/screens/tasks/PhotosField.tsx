@@ -17,7 +17,7 @@ import {
   type PhotoTile,
   type TaskPhoto,
 } from '../../photos/draft.ts'
-import { colors, fonts } from '../../theme'
+import { colors, fonts, priorities, shadows } from '../../theme'
 import { GalleryPicker } from './GalleryPicker.tsx'
 import { PhotoCropper } from './PhotoCropper.tsx'
 import type { CropRect } from '../../photos/crop.ts'
@@ -51,7 +51,7 @@ const HINT =
   'Aparat albo galeria – możesz zaznaczyć kilka zdjęć naraz. Zmniejszamy je do 1080 px, żeby szybko się wysłały.'
 const HINT_REPEAT =
   'Zdjęcia „przy każdym powtórzeniu” zobaczysz też w następnych terminach. Usunięcie takiego zdjęcia usuwa je ze wszystkich powtórzeń.'
-const ERROR = '#8C3D27'
+const ERROR = priorities.high.fg
 
 const label: CSSProperties = {
   fontSize: 11,
@@ -305,7 +305,7 @@ export function usePhotoField(p: PhotoFieldProps | undefined): {
             height: 20,
             borderRadius: 10,
             background: 'rgba(255,252,246,0.92)',
-            color: colors.brass700,
+            color: '#7A5C2C',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -338,7 +338,7 @@ export function usePhotoField(p: PhotoFieldProps | undefined): {
             height: 24,
             borderRadius: 12,
             background: 'rgba(31,61,46,0.78)',
-            color: colors.white,
+            color: colors.onPhoto,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -371,7 +371,7 @@ export function usePhotoField(p: PhotoFieldProps | undefined): {
             height: 24,
             borderRadius: 12,
             background: 'rgba(31,61,46,0.78)',
-            color: colors.white,
+            color: colors.onPhoto,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -518,7 +518,7 @@ export function usePhotoField(p: PhotoFieldProps | undefined): {
         padding: 16,
         borderRadius: 20,
         background: colors.white,
-        boxShadow: '0 6px 20px rgba(31,61,46,0.10)',
+        boxShadow: shadows.card,
       }}
     >
       <span style={{ fontFamily: fonts.serif, fontSize: 19, fontWeight: 500 }}>
@@ -566,7 +566,7 @@ export function usePhotoField(p: PhotoFieldProps | undefined): {
                 marginTop: 1,
                 borderRadius: 10,
                 boxSizing: 'border-box',
-                border: on ? `6px solid ${colors.green900}` : `2px solid #9AA59D`,
+                border: on ? `6px solid ${colors.green900}` : `2px solid ${priorities.low.line}`,
                 background: colors.white,
               }}
             />

@@ -60,7 +60,7 @@ export function PushCard() {
           : 'Przypomnimy o terminach zadań i wydarzeniach, a rano – co pilne i co dziś. Dowiesz się też, gdy domownik coś doda lub ogarnie. Zmienisz to w Ustawieniach.'}
       </p>
       {push.error && (
-        <span role="alert" style={{ fontSize: 14, fontWeight: 700, color: '#A4492F' }}>
+        <span role="alert" style={{ fontSize: 14, fontWeight: 700, color: colors.danger }}>
           {push.error}
         </span>
       )}

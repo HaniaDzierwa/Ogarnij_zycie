@@ -124,7 +124,7 @@ export function ClearSheet({
             fontSize: 16,
             fontWeight: 800,
             background: ids.length ? priorities.high.line : colors.borderSoft,
-            color: ids.length ? colors.white : colors.muted,
+            color: ids.length ? colors.onDanger : colors.muted,
           }}
         >
           <TrashIcon />

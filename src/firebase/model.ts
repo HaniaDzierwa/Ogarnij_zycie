@@ -20,6 +20,7 @@ import type {
   Task,
 } from '../data/types.ts'
 import { builtInEventTypes, DEFAULT_PRIORITY, defaultCategories } from '../theme'
+import type { ThemeChoice } from '../theme/theme.ts'
 
 // ── Ścieżki ────────────────────────────────────────────────────────────────
 
@@ -129,6 +130,8 @@ export type UserDoc = {
   summaryTimes: string[]
   /** Co przychodzi w podsumowaniach. */
   summaryContent: SummaryContent
+  /** Motyw (decyzja Hani 2026-11-20): każdy domownik swój; stare konta – bez pola (= system). */
+  theme?: ThemeChoice
 }
 
 export type HouseDoc = {

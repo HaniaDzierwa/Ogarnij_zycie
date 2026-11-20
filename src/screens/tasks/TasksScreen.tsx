@@ -12,7 +12,7 @@ import { useStore } from '../../data/store.ts'
 import { plural } from '../../data/plural.ts'
 import { moveToTrash } from '../../data/taskOps.ts'
 import type { Task } from '../../data/types.ts'
-import { colors, fonts, priorities, shadows, sizes } from '../../theme'
+import { colors, fonts, priorities, shadows, sizes, themed } from '../../theme'
 import { priorityOf } from '../../data/selectors.ts'
 import { ClearSheet } from './ClearSheet.tsx'
 import { FiltersPanel, TextButton } from './FiltersPanel.tsx'
@@ -166,7 +166,7 @@ export function TasksScreen() {
                 style={{
                   fontSize: 12,
                   fontWeight: 800,
-                  color: colors.cream,
+                  color: colors.onHeader,
                   border: '1px solid rgba(246,241,231,0.35)',
                   padding: '4px 9px',
                   borderRadius: 12,
@@ -434,7 +434,7 @@ export function TasksScreen() {
                             padding: '0 14px',
                             background: colors.white,
                             borderRadius: 18,
-                            boxShadow: '0 4px 14px rgba(31,61,46,0.06)',
+                            boxShadow: `0 4px 14px ${themed('rgba(31,61,46,0.06)', 'rgba(0,0,0,0.3)')}`,
                           }),
                     }}
                   >
@@ -634,7 +634,7 @@ function TabButton({
         fontWeight: 800,
         background: on ? colors.white : 'transparent',
         color: on ? colors.green900 : colors.muted,
-        boxShadow: on ? '0 1px 3px rgba(31,61,46,0.15)' : 'none',
+        boxShadow: on ? `0 1px 3px ${themed('rgba(31,61,46,0.15)', 'rgba(0,0,0,0.4)')}` : 'none',
       }}
     >
       {children}
@@ -649,7 +649,7 @@ function TabButton({
           display: 'inline-flex',
           alignItems: 'center',
           justifyContent: 'center',
-          background: on ? colors.green900 : 'rgba(255,255,255,0.7)',
+          background: on ? colors.green900 : themed('rgba(255,255,255,0.7)', 'rgba(24,37,30,0.7)'),
           color: on ? colors.brass300 : colors.muted,
         }}
       >

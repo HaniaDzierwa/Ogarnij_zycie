@@ -72,7 +72,7 @@ export function PushStatusRow({
         </span>
       )}
       {push.error && (
-        <span role="alert" style={{ fontSize: 13, fontWeight: 700, color: '#A4492F' }}>
+        <span role="alert" style={{ fontSize: 13, fontWeight: 700, color: colors.danger }}>
           {push.error}
         </span>
       )}

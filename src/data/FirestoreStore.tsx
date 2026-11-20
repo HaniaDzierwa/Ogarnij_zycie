@@ -58,7 +58,13 @@ import { cropImage, preparePhoto, thumbFromTile } from '../photos/resize.ts'
 import { kindChangeDraft, photoFieldsAfter, withPhotoFields } from '../photos/taskFields.ts'
 import { syncCollection } from '../firebase/sync.ts'
 import { useHouse } from '../house/house.ts'
-import { builtInEventTypes } from '../theme'
+import {
+  builtInEventTypes,
+  DEFAULT_THEME,
+  isThemeChoice,
+  storedThemeChoice,
+  type ThemeChoice,
+} from '../theme'
 import { nowStamp, today as getToday } from './dates.ts'
 import { eventActivity, taskActivity, type Activity } from './activity.ts'
 import { newId } from './ids.ts'
@@ -161,7 +167,11 @@ function HouseData({ children }: { children: ReactNode }) {
   const [eventTypes, setEventTypesState] = useState<EventType[]>([])
   const [members, setMembers] = useState<Member[]>([])
   const [houseName, setHouseNameState] = useState('')
-  const [userDoc, setUserDoc] = useState<Omit<UserDoc, 'houseId'>>({ ...DEFAULT_USER, name: '' })
+  const [userDoc, setUserDoc] = useState<Omit<UserDoc, 'houseId'>>(() => ({
+    ...DEFAULT_USER,
+    name: '',
+    theme: storedThemeChoice(),
+  }))
   const { toast, show, undo } = useUndoToast()
   // zdjęcia (etap 9): zajęte miejsce i numer ostatniej zmiany liczników domu
   const [photoUsage, setPhotoUsage] = useState({ house: 0, app: 0 })
@@ -185,6 +195,7 @@ function HouseData({ children }: { children: ReactNode }) {
         taskReminderTime: d.taskReminderTime ?? DEFAULT_USER.taskReminderTime,
         summaryTimes: summaryTimesOf(d),
         summaryContent: summaryContentOf(d),
+        theme: isThemeChoice(d.theme) ? d.theme : DEFAULT_THEME,
       })
     })
   }, [uid])
@@ -598,6 +609,7 @@ function HouseData({ children }: { children: ReactNode }) {
       members,
       notifications: userDoc.notif,
       cleanupDays: userDoc.cleanupDays,
+      theme: userDoc.theme ?? DEFAULT_THEME,
       summaryTimes: userDoc.summaryTimes,
       summaryContent: userDoc.summaryContent,
       toast,
@@ -627,6 +639,7 @@ function HouseData({ children }: { children: ReactNode }) {
       setNotifications: (update: (n: NotificationSettings) => NotificationSettings) =>
         updateUser({ notif: update(userDoc.notif) }),
       setCleanupDays: (cleanupDays: CleanupDays) => updateUser({ cleanupDays }),
+      setTheme: (theme: ThemeChoice) => updateUser({ theme }),
       setSummaryTimes: (times: string[]) => updateUser({ summaryTimes: normalizeTimes(times) }),
       setSummaryContent: (summaryContent: SummaryContent) => updateUser({ summaryContent }),
       savePushSubscription: (id, sub) =>

@@ -20,6 +20,7 @@ import { spawnRepeats } from './taskOps.ts'
 import { allPriorities } from './selectors.ts'
 import { StoreContext, useUndoToast, type PhotosApi, type Store } from './store.ts'
 import type { CalendarEvent, CleanupDays, CustomPriority, Task } from './types.ts'
+import { DEFAULT_THEME, type ThemeChoice } from '../theme/theme.ts'
 
 let fakePhotoCounter = 0
 
@@ -66,6 +67,7 @@ export function MockStoreProvider({
   const [eventTypes, setEventTypes] = useState(() => (noEventTypes ? [] : mockEventTypes))
   const [notifications, setNotifications] = useState(mockNotifications)
   const [cleanupDays, setCleanupDays] = useState<CleanupDays>(30)
+  const [theme, setTheme] = useState<ThemeChoice>(DEFAULT_THEME)
   const [summaryTimes, setSummaryTimes] = useState(['08:00', '18:00'])
   const [summaryContent, setSummaryContent] = useState(DEFAULT_USER.summaryContent)
   const { toast, show, undo } = useUndoToast()
@@ -183,6 +185,7 @@ export function MockStoreProvider({
       members: noMembers ? [] : mockMembers,
       notifications,
       cleanupDays,
+      theme,
       summaryTimes,
       summaryContent,
       toast,
@@ -201,6 +204,7 @@ export function MockStoreProvider({
       setEventTypes,
       setNotifications,
       setCleanupDays,
+      setTheme,
       setSummaryTimes: (times: string[]) => setSummaryTimes(normalizeTimes(times)),
       setSummaryContent,
       savePushSubscription: async () => {},
@@ -220,6 +224,7 @@ export function MockStoreProvider({
       eventTypes,
       notifications,
       cleanupDays,
+      theme,
       summaryTimes,
       summaryContent,
       toast,

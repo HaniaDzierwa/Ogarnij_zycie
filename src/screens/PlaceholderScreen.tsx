@@ -18,7 +18,7 @@ export function PlaceholderScreen({ screen }: { screen: ScreenDef }) {
         back={screen.back}
         label={
           <>
-            <Logo color={colors.cream} />
+            <Logo color={colors.onHeader} check={colors.headerAccent} />
             EKRAN {screen.number}
           </>
         }

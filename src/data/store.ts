@@ -8,6 +8,7 @@ import type { CropRect } from '../photos/crop.ts'
 import type { PreparedPhoto } from '../photos/resize.ts'
 import type { DateKey } from './dates.ts'
 import type { Who } from './taskOps.ts'
+import type { ThemeChoice } from '../theme/theme.ts'
 import type {
   CalendarEvent,
   Category,
@@ -69,6 +70,8 @@ export type Store = {
   notifications: NotificationSettings
   /** Sprzątanie ogarniętych: po 7 / 30 dniach, null = nigdy. */
   cleanupDays: CleanupDays
+  /** Motyw: system / jasny / ciemny – zapisany na koncie. */
+  theme: ThemeChoice
   /** Godziny podsumowań „HH:MM” (posortowane, 1–5). */
   summaryTimes: string[]
   /** Co przychodzi w podsumowaniach. */
@@ -93,6 +96,7 @@ export type Store = {
   setEventTypes: (update: (types: EventType[]) => EventType[]) => void
   setNotifications: (update: (n: NotificationSettings) => NotificationSettings) => void
   setCleanupDays: (days: CleanupDays) => void
+  setTheme: (theme: ThemeChoice) => void
   setSummaryTimes: (times: string[]) => void
   setSummaryContent: (content: SummaryContent) => void
   /** Zapis subskrypcji powiadomień tego telefonu przy koncie (etap 6). */

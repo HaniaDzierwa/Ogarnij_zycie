@@ -33,7 +33,7 @@ export function ElementsScreen() {
       <Header
         label={
           <>
-            <Logo color={colors.green900} check={colors.brass500} />
+            <Logo color={colors.header} check={colors.brass500} />
             NAGŁÓWEK · DZIEŃ
           </>
         }
@@ -49,7 +49,7 @@ export function ElementsScreen() {
         tone="night"
         label={
           <>
-            <Logo color={colors.cream} />
+            <Logo color={colors.onHeader} check={colors.headerAccent} />
             NAGŁÓWEK · NOC
           </>
         }

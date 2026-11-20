@@ -163,7 +163,7 @@ export function PhotoViewer({
     height: 44,
     border: 0,
     borderRadius: 22,
-    color: colors.cream,
+    color: colors.onHeader,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -179,7 +179,7 @@ export function PhotoViewer({
         inset: 0,
         zIndex: 60,
         background: BG,
-        color: colors.cream,
+        color: colors.onHeader,
         display: 'flex',
         flexDirection: 'column',
         paddingTop: 'env(safe-area-inset-top)',
@@ -274,7 +274,7 @@ export function PhotoViewer({
                 width: i === index ? 18 : 7,
                 height: 7,
                 borderRadius: 4,
-                background: i === index ? colors.brass300 : 'rgba(246,241,231,0.35)',
+                background: i === index ? colors.headerAccent : 'rgba(246,241,231,0.35)',
               }}
             />
           ))}
@@ -297,7 +297,7 @@ export function PhotoViewer({
               border: '1px solid rgba(246,241,231,0.35)',
               borderRadius: 20,
               background: 'transparent',
-              color: colors.cream,
+              color: colors.onHeader,
               fontSize: 13,
               fontWeight: 800,
             }}
@@ -321,7 +321,7 @@ export function PhotoViewer({
               minHeight: 48,
               padding: '0 8px 0 16px',
               borderRadius: 16,
-              background: colors.green900,
+              background: colors.header,
             }}
           >
             <span style={{ flex: 1, fontSize: 14, fontWeight: 700 }}>Usunięto zdjęcie</span>
@@ -336,7 +336,7 @@ export function PhotoViewer({
                 padding: '0 12px',
                 border: 0,
                 background: 'transparent',
-                color: colors.brass300,
+                color: colors.headerAccent,
                 fontSize: 14,
                 fontWeight: 800,
                 letterSpacing: 1,
@@ -394,8 +394,8 @@ export function PhotoViewer({
                   height: 44,
                   border: 0,
                   borderRadius: 22,
-                  background: '#A4492F',
-                  color: colors.white,
+                  background: colors.danger,
+                  color: colors.onDanger,
                   fontSize: 15,
                   fontWeight: 800,
                 }}
@@ -419,8 +419,8 @@ export function PhotoViewer({
                 height: 48,
                 border: 0,
                 borderRadius: 24,
-                background: colors.cream,
-                color: colors.green900,
+                background: colors.onHeader,
+                color: colors.header,
                 fontSize: 15,
                 fontWeight: 800,
                 opacity: full?.id === photo.id ? 1 : 0.6,

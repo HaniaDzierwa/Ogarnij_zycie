@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { paths, type Tab } from '../app/screens.ts'
-import { colors, radii, shadows, sizes, tabBarFade } from '../theme'
+import { colors, priorities, radii, shadows, sizes, tabBarFade, themed } from '../theme'
 import { CalendarIcon, HouseIcon, PlusIcon, SlidersIcon, TaskIcon } from './icons.tsx'
 
 const tabs: { id: Tab; label: string; to: string; icon: ReactNode }[] = [
@@ -65,7 +65,8 @@ export function TabBar({
           alignItems: 'center',
           padding: 8,
           borderRadius: radii.tabBar,
-          background: colors.green900,
+          // jasny: ciemnozielony pasek; ciemny: karta (#18251E)
+          background: themed(colors.green900, colors.white),
           boxShadow: shadows.tabBar,
           zIndex: 21,
         }}
@@ -84,8 +85,8 @@ export function TabBar({
             height: sizes.plusButton,
             border: 0,
             borderRadius: sizes.plusButton / 2,
-            background: colors.brass300,
-            color: colors.green900,
+            background: colors.headerAccent,
+            color: colors.header,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -110,7 +111,7 @@ export function TabBar({
               width: '100%',
               height: '100%',
               border: 0,
-              background: 'rgba(31,61,46,0.45)',
+              background: colors.overlay,
             }}
           />
           <div
@@ -151,7 +152,7 @@ export function TabBar({
             />
             <MenuItem
               icon={<CalendarIcon size={20} />}
-              iconBg="#EFE3CC"
+              iconBg={priorities.mid.bg}
               label="Wydarzenie w kalendarzu"
               onClick={() => pick(onAddEvent, paths.kalendarzNowe)}
             />
@@ -177,14 +178,14 @@ function TabLink({ tab, active }: { tab: (typeof tabs)[number]; active: boolean 
         fontSize: 11,
         fontWeight: active ? 800 : 700,
         letterSpacing: '0.4px',
-        color: active ? colors.brass300 : colors.onDarkMuted,
+        color: active ? colors.headerAccent : colors.onDarkMuted,
         textDecoration: 'none',
       }}
     >
       {tab.icon}
       {tab.label}
       {active && (
-        <span style={{ width: 4, height: 4, borderRadius: 2, background: colors.brass300 }} />
+        <span style={{ width: 4, height: 4, borderRadius: 2, background: colors.headerAccent }} />
       )}
     </Link>
   )

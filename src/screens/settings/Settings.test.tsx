@@ -12,7 +12,7 @@ test('Ustawienia: sekcje z projektu, bez Wyglądu (tylko jasny motyw), teksty o 
   for (const s of ['ZADANIA', 'PORZĄDKI', 'POWIADOMIENIA']) {
     expect(screen.getByText(s)).toBeDefined()
   }
-  expect(screen.queryByText('WYGLĄD')).toBeNull()
+  expect(screen.getByText('WYGLĄD')).toBeDefined()
   // wariant A (decyzja Hani 2026-11-20): bez pól nicku i nazwy domu – jeden wiersz „Wspólny dom”
   expect(screen.queryByText('TY')).toBeNull()
   expect(screen.queryByRole('textbox')).toBeNull()

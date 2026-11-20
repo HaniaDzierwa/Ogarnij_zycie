@@ -2,6 +2,7 @@ import { createBrowserRouter, RouterProvider } from 'react-router'
 import { FirebaseAuthProvider } from '../auth/FirebaseAuthProvider.tsx'
 import { AutoCleanup } from '../data/AutoCleanup.tsx'
 import { FirestoreStoreProvider } from '../data/FirestoreStore.tsx'
+import { ThemeSync } from '../data/ThemeSync.tsx'
 import { FirebaseHouseProvider } from '../house/FirebaseHouseProvider.tsx'
 import { routes } from './router.tsx'
 
@@ -13,6 +14,7 @@ export default function App() {
       <FirebaseHouseProvider>
         <FirestoreStoreProvider>
           <AutoCleanup />
+          <ThemeSync />
           <RouterProvider router={router} />
         </FirestoreStoreProvider>
       </FirebaseHouseProvider>

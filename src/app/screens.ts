@@ -15,6 +15,7 @@ export type ScreenId =
   | 'kategorie'
   | 'priorytety'
   | 'powiadomienia'
+  | 'wyglad'
   | 'usunKonto'
   | 'zapros'
   | 'dolacz'
@@ -65,6 +66,8 @@ export const paths = {
   priorytety: '/ustawienia/priorytety',
   /** Ustawienia → Powiadomienia – szczegóły (decyzja Hani 2026-11-08). */
   powiadomienia: '/ustawienia/powiadomienia',
+  /** Ustawienia → Wygląd: motyw systemowy / jasny / ciemny (decyzja Hani 2026-11-20). */
+  wyglad: '/ustawienia/wyglad',
   /** Usunięcie konta (etap 7). */
   usunKonto: '/ustawienia/usun-konto',
   zapros: '/ustawienia/domownicy/zapros',
@@ -193,7 +196,18 @@ export const screens: Screen[] = [
       { label: 'Zadania → Priorytety', to: paths.priorytety },
       { label: 'Porządki → Kosz', to: paths.kosz },
       { label: 'Powiadomienia → szczegóły', to: paths.powiadomienia },
+      { label: 'Wygląd → motyw', to: paths.wyglad },
     ],
+  },
+  {
+    id: 'wyglad',
+    path: paths.wyglad,
+    number: '5k',
+    name: 'Wygląd',
+    source: 'kanwa „Motyw jasny i ciemny” (Wyglad.dc.html)',
+    tab: 'ustawienia',
+    back: { to: paths.ustawienia, label: 'USTAWIENIA' },
+    transitions: [{ label: 'Wróć do Ustawień', to: paths.ustawienia }],
   },
   {
     id: 'kategorie',

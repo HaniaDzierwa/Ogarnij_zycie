@@ -1,6 +1,6 @@
 import { Chip, Segmented } from '../../components/ui.tsx'
 import type { Category, PriorityDef } from '../../data/types.ts'
-import { colors } from '../../theme'
+import { colors, shadows } from '../../theme'
 import { showsOf, type GroupBy, type Show } from './tasksView.ts'
 
 /**
@@ -40,7 +40,7 @@ export function FiltersPanel({
         padding: 14,
         borderRadius: 20,
         background: colors.white,
-        boxShadow: '0 6px 20px rgba(31,61,46,0.08)',
+        boxShadow: shadows.card,
       }}
     >
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>

@@ -9,6 +9,15 @@
       content="Zadania, kalendarz i wspólny dom – wszystko w jednym miejscu."
     />
     <meta name="theme-color" content="#F6F1E7" />
+    <script>
+      // Motyw (src/theme/theme.ts) od pierwszej chwili – zanim wczyta się aplikacja.
+      try {
+        var t = localStorage.getItem('oz-theme')
+        var dark = t === 'dark' || (t !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches)
+        document.documentElement.dataset.theme = dark ? 'dark' : 'light'
+        if (dark) document.querySelector('meta[name="theme-color"]').setAttribute('content', '#101A15')
+      } catch (e) {}
+    </script>
     <link rel="icon" href="/favicon.ico" sizes="48x48" />
     <link rel="icon" href="/logo.svg" sizes="any" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/apple-touch-icon-180x180.png" />

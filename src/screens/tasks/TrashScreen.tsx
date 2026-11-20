@@ -11,7 +11,16 @@ import { useStore } from '../../data/store.ts'
 import { plural } from '../../data/plural.ts'
 import { eventTypeOf } from '../../data/selectors.ts'
 import { restoreFromTrash } from '../../data/taskOps.ts'
-import { colors, fonts, noCategory, priorities, shadows } from '../../theme'
+import {
+  colors,
+  eventTint,
+  fonts,
+  noCategory,
+  priorities,
+  shadows,
+  themed,
+  tintDot,
+} from '../../theme'
 import { trashItems, trashWhat, TRASH_DAYS, type TrashItem } from './tasksView.ts'
 
 const elementow = (n: number) => `${n} ${plural(n, ['element', 'elementy', 'elementów'])}`
@@ -73,7 +82,7 @@ export function TrashScreen() {
               width: 18,
               height: 18,
               borderRadius: 6,
-              border: `2px solid ${cat.color}`,
+              border: `2px solid ${tintDot(cat.color)}`,
             }}
           />
         ),
@@ -89,8 +98,8 @@ export function TrashScreen() {
     const time = i.event.from ? ` · ${i.event.from}${i.event.to ? `–${i.event.to}` : ''}` : ''
     return {
       icon: <CalendarIcon size={18} />,
-      iconBg: type.bg,
-      iconFg: type.fg,
+      iconBg: eventTint(type).bg,
+      iconFg: eventTint(type).fg,
       dot: null,
       meta: `${type.name.toUpperCase()} · ${date}${time} · ${who}`,
     }
@@ -279,7 +288,7 @@ export function TrashScreen() {
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          color: colors.white,
+                          color: colors.onDanger,
                           ...(selected.has(keyOf(item))
                             ? { background: priorities.high.line }
                             : { border: `2px solid ${colors.border}` }),
@@ -380,7 +389,7 @@ export function TrashScreen() {
               justifyContent: 'center',
               gap: 8,
               height: 52,
-              border: '1px solid #E7B8A8',
+              border: `1px solid ${themed('#E7B8A8', '#5A2E25')}`,
               borderRadius: 26,
               background: 'transparent',
               color: priorities.high.line,
@@ -463,7 +472,7 @@ export function TrashScreen() {
                 border: 0,
                 borderRadius: 27,
                 background: priorities.high.line,
-                color: colors.white,
+                color: colors.onDanger,
                 fontSize: 16,
                 fontWeight: 800,
               }}

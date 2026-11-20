@@ -86,7 +86,7 @@ export function PhotoCropper({
             width: 18,
             height: 18,
             borderRadius: 9,
-            background: colors.cream,
+            background: colors.onHeader,
             boxShadow: '0 1px 4px rgba(0,0,0,0.4)',
           }}
         />
@@ -112,7 +112,7 @@ export function PhotoCropper({
         inset: 0,
         zIndex: 70,
         background: BG,
-        color: colors.cream,
+        color: colors.onHeader,
         display: 'flex',
         flexDirection: 'column',
         paddingTop: 'env(safe-area-inset-top)',
@@ -131,7 +131,7 @@ export function PhotoCropper({
             height: 36,
             border: 0,
             background: 'transparent',
-            color: colors.brass300,
+            color: colors.headerAccent,
             fontSize: 13,
             fontWeight: 800,
             opacity: isFullRect(rect) ? 0.4 : 1,
@@ -178,7 +178,7 @@ export function PhotoCropper({
               width: `${rect.w * 100}%`,
               height: `${rect.h * 100}%`,
               boxSizing: 'border-box',
-              border: `2px solid ${colors.cream}`,
+              border: `2px solid ${colors.onHeader}`,
               boxShadow: '0 0 0 9999px rgba(10,20,15,0.6)',
               touchAction: 'none',
               cursor: 'move',
@@ -205,7 +205,7 @@ export function PhotoCropper({
               ...button,
               border: '1px solid rgba(246,241,231,0.35)',
               background: 'transparent',
-              color: colors.cream,
+              color: colors.onHeader,
             }}
           >
             {cancelLabel}
@@ -214,7 +214,7 @@ export function PhotoCropper({
             type="button"
             disabled={busy}
             onClick={() => (isFullRect(rect) ? onCancel() : onDone(rect))}
-            style={{ ...button, border: 0, background: colors.cream, color: colors.green900 }}
+            style={{ ...button, border: 0, background: colors.onHeader, color: colors.header }}
           >
             Gotowe
           </button>

@@ -9,7 +9,7 @@ import { REMINDS, setAllDay, type EventEdit } from '../../data/eventOps.ts'
 import { repeatName } from '../../data/repeat.ts'
 import { eventTypeOf } from '../../data/selectors.ts'
 import type { EventType } from '../../data/types.ts'
-import { colors, fonts } from '../../theme'
+import { colors, eventTint, fonts } from '../../theme'
 import { TYPE_SWATCHES } from './calendarView.ts'
 import { label, timeInput } from './formStyles.ts'
 
@@ -106,7 +106,7 @@ export function EventForm({
           icon={RowIcons.tag}
           label="Rodzaj"
           value={
-            <ValueBadge bg={type.bg} fg={type.fg} dot={type.fg}>
+            <ValueBadge bg={eventTint(type).bg} fg={eventTint(type).fg} dot={eventTint(type).fg}>
               {type.name.toUpperCase()}
             </ValueBadge>
           }
@@ -121,7 +121,7 @@ export function EventForm({
                   key={t.id}
                   on={on}
                   onClick={() => pickType(t)}
-                  dot={<Dot color={on ? colors.brass300 : t.fg} />}
+                  dot={<Dot color={on ? colors.brass300 : eventTint(t).fg} />}
                 >
                   {t.name}
                 </Chip>

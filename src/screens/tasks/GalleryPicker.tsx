@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { CheckIcon } from '../../components/icons.tsx'
 import { PHOTO_LIMITS } from '../../firebase/photos.ts'
-import { colors, fonts } from '../../theme'
+import { colors, fonts, priorities, themed } from '../../theme'
 
 /**
  * „Wybierz zdjęcia” (poprawka Hani 2026-11-20): po wyborze kilku zdjęć w galerii telefonu
@@ -129,7 +129,7 @@ export function GalleryPicker({
                   ...(on
                     ? { background: colors.green900, color: colors.cream }
                     : {
-                        border: `2px solid ${colors.white}`,
+                        border: `2px solid ${colors.onPhoto}`,
                         background: 'rgba(31,61,46,0.25)',
                       }),
                 }}
@@ -145,7 +145,7 @@ export function GalleryPicker({
         style={{
           padding: '12px 16px 18px',
           background: colors.white,
-          boxShadow: '0 -6px 20px rgba(31,61,46,0.08)',
+          boxShadow: `0 -6px 20px ${themed('rgba(31,61,46,0.08)', 'rgba(0,0,0,0.35)')}`,
           display: 'flex',
           flexDirection: 'column',
           gap: 10,
@@ -159,7 +159,7 @@ export function GalleryPicker({
             style={{
               fontSize: 12,
               fontWeight: 700,
-              color: warn ? '#8C3D27' : colors.muted,
+              color: warn ? priorities.high.fg : colors.muted,
               textAlign: 'right',
             }}
           >

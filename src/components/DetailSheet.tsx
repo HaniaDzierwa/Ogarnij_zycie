@@ -2,10 +2,10 @@
 // górnym rogu przełącza w edycję z wyraźnym „Zapisz” (uwaga Hani 2026-10-25).
 
 import type { ReactNode } from 'react'
-import { colors, priorities } from '../theme'
+import { colors, themed } from '../theme'
 import { CheckIcon, PencilIcon, TrashIcon } from './icons.tsx'
 import { useSheetClose } from './sheetClose.ts'
-import { ConfirmDialog } from './ui.tsx'
+import { ConfirmDialog, dangerBorder } from './ui.tsx'
 
 /** Górny pasek: odczyt – opis + „Edytuj”; edycja – „Anuluj” + „Zapisz”. */
 export function DetailTopBar({
@@ -80,7 +80,7 @@ export function DetailTopBar({
             alignItems: 'center',
             gap: 8,
             flex: 'none',
-            boxShadow: '0 4px 12px rgba(31,61,46,0.25)',
+            boxShadow: `0 4px 12px ${themed('rgba(31,61,46,0.25)', 'rgba(0,0,0,0.4)')}`,
             opacity: canSave ? 1 : 0.45,
           }}
         >
@@ -201,9 +201,9 @@ export function DetailActions({
         onClick={onDelete}
         style={{
           ...base,
-          border: '1px solid #E7B8A8',
+          border: `1px solid ${dangerBorder}`,
           background: colors.white,
-          color: priorities.high.line,
+          color: colors.danger,
         }}
       >
         <TrashIcon size={16} />

@@ -6,7 +6,7 @@ import { Logo } from '../components/Logo.tsx'
 import { ChevronRightIcon } from '../components/icons.tsx'
 import { useStore } from '../data/store.ts'
 import { DEFAULT_HOUSE_NAME, useHouse } from '../house/house.ts'
-import { colors, fonts, shadows } from '../theme'
+import { colors, fonts, priorities, shadows } from '../theme'
 
 /**
  * 1a Pierwsze uruchomienie (Pierwsze.dc.html, teksty #1–2 z docs/TEKSTY.md).
@@ -86,7 +86,7 @@ export function FirstRunScreen() {
             textAlign: 'left',
             background: colors.white,
             border: isNew ? `2px solid ${colors.green900}` : `1px solid ${colors.borderSoft}`,
-            boxShadow: isNew ? '0 6px 20px rgba(31,61,46,0.10)' : 'none',
+            boxShadow: isNew ? shadows.card : 'none',
           }}
         >
           <OptionIcon bg={colors.successBg}>
@@ -95,7 +95,7 @@ export function FirstRunScreen() {
               height="26"
               viewBox="0 0 24 24"
               fill="none"
-              stroke={colors.green900}
+              style={{ stroke: colors.green900 }}
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -156,7 +156,7 @@ export function FirstRunScreen() {
               aria-describedby={nameError ? 'imie-blad' : undefined}
               style={{
                 height: 48,
-                border: nameError ? '2px solid #A4492F' : `1px solid ${colors.border}`,
+                border: nameError ? `2px solid ${colors.danger}` : `1px solid ${colors.border}`,
                 borderRadius: 14,
                 padding: '0 14px',
                 fontSize: 17,
@@ -170,7 +170,7 @@ export function FirstRunScreen() {
               <span
                 id="imie-blad"
                 role="alert"
-                style={{ fontSize: 13, fontWeight: 700, color: '#8C3D27' }}
+                style={{ fontSize: 13, fontWeight: 700, color: priorities.high.fg }}
               >
                 {nameError}
               </span>
@@ -234,13 +234,13 @@ export function FirstRunScreen() {
             textDecoration: 'none',
           }}
         >
-          <OptionIcon bg="#EFE3CC">
+          <OptionIcon bg={priorities.mid.bg}>
             <svg
               width="26"
               height="26"
               viewBox="0 0 24 24"
               fill="none"
-              stroke="#6E5220"
+              style={{ stroke: priorities.mid.fg }}
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -308,7 +308,7 @@ export function FirstRunScreen() {
                 marginBottom: 10,
                 fontSize: 14,
                 fontWeight: 700,
-                color: '#8C3D27',
+                color: priorities.high.fg,
                 textAlign: 'center',
               }}
             >
@@ -341,7 +341,7 @@ export function FirstRunScreen() {
               height="20"
               viewBox="0 0 24 24"
               fill="none"
-              stroke={colors.brass300}
+              style={{ stroke: colors.brass300 }}
               strokeWidth="2.4"
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -412,8 +412,8 @@ function Hero() {
         position: 'relative',
         height: 300,
         borderRadius: 30,
-        background: colors.green900,
-        color: colors.cream,
+        background: colors.header,
+        color: colors.onHeader,
         overflow: 'hidden',
         flex: 'none',
       }}
@@ -427,15 +427,15 @@ function Hero() {
         aria-hidden="true"
         style={{ position: 'absolute', left: 0, top: 0 }}
       >
-        <circle cx="300" cy="62" r="18" fill={colors.brass300} opacity="0.9" />
-        <circle cx="308" cy="56" r="16" fill={colors.green900} />
-        <circle cx="60" cy="48" r="1.6" fill={colors.brass300} />
-        <circle cx="118" cy="30" r="1.2" fill={colors.brass300} />
-        <circle cx="232" cy="40" r="1.4" fill={colors.brass300} />
-        <circle cx="180" cy="70" r="1" fill={colors.brass300} />
+        <circle cx="300" cy="62" r="18" fill={colors.headerAccent} opacity="0.9" />
+        <circle cx="308" cy="56" r="16" fill={colors.header} />
+        <circle cx="60" cy="48" r="1.6" fill={colors.headerAccent} />
+        <circle cx="118" cy="30" r="1.2" fill={colors.headerAccent} />
+        <circle cx="232" cy="40" r="1.4" fill={colors.headerAccent} />
+        <circle cx="180" cy="70" r="1" fill={colors.headerAccent} />
         <g transform="translate(0,244)">
-          <path d={RIDGE_FAR} fill={colors.green800} />
-          <path d={RIDGE_NEAR} fill={colors.green700} />
+          <path d={RIDGE_FAR} fill={colors.headerRoofFar} />
+          <path d={RIDGE_NEAR} fill={colors.headerRoofNear} />
         </g>
       </svg>
       <div
@@ -451,7 +451,7 @@ function Hero() {
           textAlign: 'center',
         }}
       >
-        <Logo size={72} color={colors.cream} />
+        <Logo size={72} color={colors.onHeader} check={colors.headerAccent} />
         <h1
           style={{
             margin: 0,
@@ -461,7 +461,7 @@ function Hero() {
             fontWeight: 500,
           }}
         >
-          Ogarnij <em style={{ fontStyle: 'italic', color: colors.brass300 }}>życie</em>
+          Ogarnij <em style={{ fontStyle: 'italic', color: colors.headerAccent }}>życie</em>
         </h1>
         <span style={{ fontSize: 15, lineHeight: 1.4, color: colors.onDarkMuted }}>
           Zadania, zakupy i kalendarz całego domu

@@ -137,7 +137,7 @@ export function DeleteAccountScreen() {
             border: 0,
             borderRadius: 26,
             background: priorities.high.line,
-            color: colors.white,
+            color: colors.onDanger,
             fontSize: 16,
             fontWeight: 800,
             opacity: !password || busy ? 0.5 : 1,

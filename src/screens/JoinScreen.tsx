@@ -132,7 +132,7 @@ export function JoinScreen() {
                   fontSize: 14,
                   fontWeight: 700,
                   lineHeight: 1.4,
-                  color: error ? '#A4492F' : colors.green900,
+                  color: error ? colors.danger : colors.green900,
                 }}
               >
                 {error ?? 'Szukam domu…'}
@@ -244,7 +244,7 @@ export function JoinScreen() {
             {error && (
               <span
                 role="alert"
-                style={{ fontSize: 14, fontWeight: 700, lineHeight: 1.4, color: '#A4492F' }}
+                style={{ fontSize: 14, fontWeight: 700, lineHeight: 1.4, color: colors.danger }}
               >
                 {error}
               </span>
@@ -281,7 +281,7 @@ export function JoinScreen() {
                 height="20"
                 viewBox="0 0 24 24"
                 fill="none"
-                stroke={colors.brass300}
+                style={{ stroke: colors.brass300 }}
                 strokeWidth="2.4"
                 strokeLinecap="round"
                 strokeLinejoin="round"

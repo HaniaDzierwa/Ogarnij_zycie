@@ -14,7 +14,7 @@ import { eventEditOf, REMINDS, setAllDay, type EventEdit } from '../../data/even
 import { eventTypeOf } from '../../data/selectors.ts'
 import { useStore } from '../../data/store.ts'
 import type { CalendarEvent, EventType } from '../../data/types.ts'
-import { colors, fonts } from '../../theme'
+import { colors, eventTint, fonts } from '../../theme'
 import { EventForm } from './EventForm.tsx'
 
 /** „Piątek, 16 października” */
@@ -111,8 +111,8 @@ export function EventDetailSheet({
                 width: 42,
                 height: 42,
                 borderRadius: 14,
-                background: type.bg,
-                color: type.fg,
+                background: eventTint(type).bg,
+                color: eventTint(type).fg,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -140,7 +140,7 @@ export function EventDetailSheet({
 
           <div>
             <InfoRow label="RODZAJ">
-              <Dot color={type.fg} />
+              <Dot color={eventTint(type).fg} />
               {type.name}
             </InfoRow>
             <InfoRow label="DZIEŃ">{dayName(day ?? event.date)}</InfoRow>

@@ -7,7 +7,7 @@ import { BottomActions, Card, PrimaryButton, Screen, SectionLabel } from '../../
 import { useStore } from '../../data/store.ts'
 import { INVITE_MINUTES } from '../../firebase/model.ts'
 import { JoinError, useHouse, type InviteState, type Scope } from '../../house/house.ts'
-import { colors, fonts, shadows } from '../../theme'
+import { colors, fonts, priorities, shadows } from '../../theme'
 
 const VALID_MS = INVITE_MINUTES * 60 * 1000
 
@@ -176,11 +176,11 @@ export function InviteScreen() {
             >
               <span style={{ fontSize: 13, color: colors.muted }}>
                 {error ? (
-                  <strong style={{ color: '#A4492F' }}>{error}</strong>
+                  <strong style={{ color: colors.danger }}>{error}</strong>
                 ) : !invite ? (
                   'Tworzę kod…'
                 ) : expired ? (
-                  <strong style={{ color: '#A4492F' }}>Kod wygasł</strong>
+                  <strong style={{ color: colors.danger }}>Kod wygasł</strong>
                 ) : (
                   <>
                     Ważny jeszcze <strong style={{ color: colors.green900 }}>{mmss}</strong>
@@ -246,8 +246,8 @@ export function InviteScreen() {
                       width: 26,
                       height: 26,
                       borderRadius: 13,
-                      background: '#EFE3CC',
-                      color: '#6E5220',
+                      background: priorities.mid.bg,
+                      color: priorities.mid.fg,
                       fontFamily: fonts.serif,
                       fontSize: 14,
                       fontWeight: 600,
@@ -369,7 +369,7 @@ export function InviteScreen() {
                 height="20"
                 viewBox="0 0 24 24"
                 fill="none"
-                stroke={colors.brass300}
+                style={{ stroke: colors.brass300 }}
                 strokeWidth="2.2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
