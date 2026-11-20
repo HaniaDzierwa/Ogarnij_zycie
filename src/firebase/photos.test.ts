@@ -6,6 +6,7 @@ import {
   closeHousePhotosOps,
   deletePhotoOps,
   freeSlot,
+  nextPhotoSeq,
   movePhotoOps,
   photoId,
   type PhotoDoc,
@@ -19,6 +20,12 @@ describe('zdjęcia – id i miejsca', () => {
   test('„tylko tym razem” = {zadanie}_N, „przy każdym powtórzeniu” = {seria}_sN', () => {
     expect(photoId('task', 'z1', 0)).toBe('z1_0')
     expect(photoId('series', 'z1', 4)).toBe('z1_s4')
+  })
+
+  test('numer zmiany liczników: photoSeq domu + 1; stary dom bez pola – 1', () => {
+    expect(nextPhotoSeq({ photoSeq: 7 })).toBe(8)
+    expect(nextPhotoSeq({})).toBe(1)
+    expect(nextPhotoSeq(undefined)).toBe(1)
   })
 
   test('pierwsze wolne miejsce 0–4; pełne – null', () => {
@@ -44,6 +51,7 @@ describe('zdjęcia – paczki zapisu', () => {
     type: 'image/webp' as const,
     tile: bytes(100),
     full: bytes(900),
+    seq: 4,
   }
 
   test('dodanie: kafelek, pełna wersja i oba liczniki wskazujące zdjęcie', () => {
@@ -66,8 +74,8 @@ describe('zdjęcia – paczki zapisu', () => {
     })
     expect('seriesId' in photo).toBe(false)
     expect(photo.tile).toBeInstanceOf(Bytes)
-    expect(ops[2]).toMatchObject({ data: { photoOp: { uid: '', id: 'z1_2' } } })
-    expect(ops[3]).toMatchObject({ data: { op: { house: 'dom1', uid: '', id: 'z1_2' } } })
+    expect(ops[2]).toMatchObject({ data: { photoOp: { uid: '', id: 'z1_2' }, photoSeq: 4 } })
+    expect(ops[3]).toMatchObject({ data: { op: { house: 'dom1', seq: 4 } } })
   })
 
   test('„Tylko ja” – w części prywatnej autora; seria – seriesId', () => {
@@ -83,7 +91,7 @@ describe('zdjęcia – paczki zapisu', () => {
   })
 
   test('usunięcie, przeniesienie i zamknięcie domu', () => {
-    const del = deletePhotoOps({ houseId: 'dom1' }, 'z1_0', 500)
+    const del = deletePhotoOps({ houseId: 'dom1' }, 'z1_0', 500, 1)
     expect(del.slice(0, 2).every((o) => 'delete' in o)).toBe(true)
     expect(del).toHaveLength(4)
     const photo = dataOf(addPhotoOps(opts).ops[0])
@@ -100,8 +108,8 @@ describe('zdjęcia – paczki zapisu', () => {
       'houses/dom1/photos/z1_2',
       'houses/dom1/photoFull/z1_2',
     ])
-    expect(closeHousePhotosOps('dom1', 10)[0]).toMatchObject({
-      data: { photoBytes: 0, photoOp: { closing: true } },
+    expect(closeHousePhotosOps('dom1', 10, 2)[0]).toMatchObject({
+      data: { photoBytes: 0, photoOp: { closing: true }, photoSeq: 2 },
     })
   })
 })

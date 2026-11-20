@@ -48,6 +48,7 @@ import {
   closeHousePhotosOps,
   deletePhotoOps,
   movePhotoOps,
+  nextPhotoSeq,
   type PhotoDoc,
   type PhotoFullDoc,
   type PhotoOp,
@@ -758,9 +759,13 @@ describe('zdjęcia', () => {
   const SHARED: PhotoPlace = { houseId: 'dom1' }
   const MINE: PhotoPlace = { houseId: 'dom1', privateUid: 'hania' }
   const bytes = (n: number) => new Uint8Array(n).fill(7)
+  /** Numer kolejnej zmiany liczników – z dokumentu domu, jak w aplikacji. */
+  const nextSeq = async () =>
+    nextPhotoSeq((await getDoc(doc(db('hania'), paths.house('dom1')))).data())
   /** Zdjęcie 1000 + 5000 bajtów do zadania z1, miejsce 0 – jak w aplikacji. */
-  const add = (as: string, over: Partial<Parameters<typeof addPhotoOps>[0]> = {}) =>
+  const add = async (as: string, over: Partial<Parameters<typeof addPhotoOps>[0]> = {}) =>
     addPhotoOps({
+      seq: await nextSeq(),
       place: SHARED,
       uid: as,
       kind: 'task',
@@ -801,47 +806,51 @@ describe('zdjęcia', () => {
       await updateDoc(doc(fs, paths.house('dom1')), { photoBytes: house })
       await setDoc(doc(fs, paths.photoUsage()), {
         photoBytes: app,
-        op: { house: 'x', uid: '', id: 'x' },
+        op: { house: 'x', seq: 0 },
       })
     })
 
   test('domownik dodaje zdjęcie: kafelek, pełna wersja i oba liczniki jedną paczką; domownicy je widzą', async () => {
-    await assertSucceeds(commit('ola', add('ola')))
+    await assertSucceeds(commit('ola', await add('ola')))
     expect(await houseBytes()).toBe(6000)
     expect(await appBytes()).toBe(6000)
     await assertSucceeds(getDoc(photo('hania')))
     await assertSucceeds(getDoc(full('hania')))
     await assertSucceeds(getDocs(collection(db('hania'), paths.photos('dom1'))))
     // drugie zdjęcie – liczniki rosną dalej
-    await assertSucceeds(commit('hania', add('hania', { slot: 1 })))
+    await assertSucceeds(commit('hania', await add('hania', { slot: 1 })))
     expect(await houseBytes()).toBe(12000)
   })
 
   test('obcy nie czyta (nawet znając id), nie dodaje i nie usuwa; niezalogowany – nic', async () => {
-    await commit('hania', add('hania'))
+    await commit('hania', await add('hania'))
     await assertFails(getDoc(photo('obcy')))
     await assertFails(getDoc(full('obcy')))
     await assertFails(getDocs(collection(db('obcy'), paths.photos('dom1'))))
     await assertFails(getDoc(doc(db(), `${paths.photos('dom1')}/z1_0`)))
-    await assertFails(commit('obcy', add('obcy', { slot: 1 })))
-    await assertFails(commit('obcy', deletePhotoOps(SHARED, 'z1_0', 6000)))
+    await assertFails(commit('obcy', await add('obcy', { slot: 1 })))
+    await assertFails(commit('obcy', deletePhotoOps(SHARED, 'z1_0', 6000, await nextSeq())))
   })
 
   test('„dodane przez” = zalogowany; zdjęcia nikt nie zmienia', async () => {
-    await assertFails(commit('ola', patch(add('ola'), 0, { createdBy: 'hania' })))
-    await commit('ola', add('ola'))
+    await assertFails(commit('ola', patch(await add('ola'), 0, { createdBy: 'hania' })))
+    await commit('ola', await add('ola'))
     await assertFails(updateDoc(photo('ola'), { type: 'image/jpeg' }))
     await assertFails(updateDoc(full('hania'), { full: Bytes.fromUint8Array(bytes(10)) }))
   })
 
   test('liczniki muszą się zgadzać: bez liczników, zaniżony licznik, sam licznik – odrzucone', async () => {
-    const ops = add('ola')
+    const ops = await add('ola')
     await assertFails(commit('ola', ops.slice(0, 2)))
     await assertFails(commit('ola', ops.slice(0, 3)))
     await assertFails(commit('ola', [ops[0], ops[1], ops[3]]))
     await assertFails(commit('ola', patch(ops, 2, { photoBytes: increment(5999) })))
     await assertFails(commit('ola', patch(ops, 3, { photoBytes: increment(1) })))
     await assertFails(commit('ola', patch(ops, 2, { photoOp: { uid: '', id: 'z1_1' } })))
+    // stary albo przeskoczony numer zmiany
+    await assertFails(
+      commit('ola', patch(patch(ops, 2, { photoSeq: 5 }), 3, { op: { house: 'dom1', seq: 5 } })),
+    )
     // sam licznik, bez zdjęcia
     await assertFails(commit('ola', [ops[2]]))
     await assertFails(commit('ola', [ops[3]]))
@@ -850,30 +859,30 @@ describe('zdjęcia', () => {
     await assertFails(
       setDoc(doc(db('ola'), paths.photoUsage()), {
         photoBytes: 0,
-        op: { house: 'dom1', uid: '', id: 'z1_0' },
+        op: { house: 'dom1', seq: 2 },
       }),
     )
   })
 
   test('zły kształt: za duży kafelek lub pełna wersja, zły typ, miejsce spoza 0–4, nieznane pole', async () => {
-    await assertFails(commit('ola', add('ola', { tile: bytes(60_001) })))
-    await assertFails(commit('ola', add('ola', { full: bytes(700_001) })))
-    await assertFails(commit('ola', patch(add('ola'), 0, { type: 'image/png' })))
-    await assertFails(commit('ola', add('ola', { slot: 5 })))
-    await assertFails(commit('ola', patch(add('ola'), 0, { extra: 1 })))
-    await assertFails(commit('ola', patch(add('ola'), 1, { extra: 1 })))
+    await assertFails(commit('ola', await add('ola', { tile: bytes(60_001) })))
+    await assertFails(commit('ola', await add('ola', { full: bytes(700_001) })))
+    await assertFails(commit('ola', patch(await add('ola'), 0, { type: 'image/png' })))
+    await assertFails(commit('ola', await add('ola', { slot: 5 })))
+    await assertFails(commit('ola', patch(await add('ola'), 0, { extra: 1 })))
+    await assertFails(commit('ola', patch(await add('ola'), 1, { extra: 1 })))
     // rozmiar niezgodny z kafelkiem i pełną wersją
-    await assertFails(commit('ola', patch(add('ola'), 0, { size: 6001 })))
+    await assertFails(commit('ola', patch(await add('ola'), 0, { size: 6001 })))
   })
 
   test('zdjęcie wskazuje zadanie z tego domu; id zgodne z miejscem', async () => {
-    await assertFails(commit('ola', add('ola', { owner: 'nieznane' })))
-    await assertFails(commit('ola', patch(add('ola'), 0, { slot: 1 })))
-    await assertFails(commit('ola', patch(add('ola'), 0, { taskId: 'z2' })))
+    await assertFails(commit('ola', await add('ola', { owner: 'nieznane' })))
+    await assertFails(commit('ola', patch(await add('ola'), 0, { slot: 1 })))
+    await assertFails(commit('ola', patch(await add('ola'), 0, { taskId: 'z2' })))
   })
 
   test('zdjęcia serii: id {seria}_s0…4, tylko z seriesId; domownicy je widzą', async () => {
-    const ops = add('ola', { kind: 'series', owner: 'seria1', slot: 2 })
+    const ops = await add('ola', { kind: 'series', owner: 'seria1', slot: 2 })
     expect(ops[0].path.endsWith('/seria1_s2')).toBe(true)
     await assertFails(commit('ola', patch(ops, 0, { taskId: 'z1' })))
     await assertFails(commit('ola', patch(ops, 0, { kind: 'task' })))
@@ -883,19 +892,21 @@ describe('zdjęcia', () => {
 
   test('limit: dom ponad 150 MB albo aplikacja ponad 600 MB – odrzucone', async () => {
     await setCounters(PHOTO_LIMITS.houseBytes - 3000, 1000)
-    await assertFails(commit('ola', add('ola')))
+    await assertFails(commit('ola', await add('ola')))
     await setCounters(1000, PHOTO_LIMITS.appBytes - 3000)
-    await assertFails(commit('ola', add('ola')))
+    await assertFails(commit('ola', await add('ola')))
     await setCounters(PHOTO_LIMITS.houseBytes - 6000, PHOTO_LIMITS.appBytes - 6000)
-    await assertSucceeds(commit('ola', add('ola')))
+    await assertSucceeds(commit('ola', await add('ola')))
   })
 
   test('usuwanie: domownik usuwa (liczniki w dół); bez liczników – odrzucone; pełna wersja tylko z kafelkiem', async () => {
-    await commit('hania', add('hania'))
+    await commit('hania', await add('hania'))
     await assertFails(deleteDoc(full('ola')))
-    await assertFails(commit('ola', deletePhotoOps(SHARED, 'z1_0', 6000).slice(0, 2)))
-    await assertFails(commit('ola', deletePhotoOps(SHARED, 'z1_0', 5000)))
-    await assertSucceeds(commit('ola', deletePhotoOps(SHARED, 'z1_0', 6000)))
+    await assertFails(
+      commit('ola', deletePhotoOps(SHARED, 'z1_0', 6000, await nextSeq()).slice(0, 2)),
+    )
+    await assertFails(commit('ola', deletePhotoOps(SHARED, 'z1_0', 5000, await nextSeq())))
+    await assertSucceeds(commit('ola', deletePhotoOps(SHARED, 'z1_0', 6000, await nextSeq())))
     expect(await houseBytes()).toBe(0)
     expect(await appBytes()).toBe(0)
     expect((await getDoc(full('hania'))).exists()).toBe(false)
@@ -906,19 +917,19 @@ describe('zdjęcia', () => {
       doc(db('hania'), `${paths.privateTasks('dom1', 'hania')}/p1`),
       taskToDoc(sampleTask({ id: 'p1', private: true }), 'hania'),
     )
-    await assertFails(commit('ola', add('ola', { place: MINE, owner: 'p1' })))
-    await assertSucceeds(commit('hania', add('hania', { place: MINE, owner: 'p1' })))
+    await assertFails(commit('ola', await add('ola', { place: MINE, owner: 'p1' })))
+    await assertSucceeds(commit('hania', await add('hania', { place: MINE, owner: 'p1' })))
     expect(await houseBytes()).toBe(6000)
     await assertSucceeds(getDoc(photo('hania', MINE, 'p1_0')))
     await assertFails(getDoc(photo('ola', MINE, 'p1_0')))
     await assertFails(getDoc(full('ola', MINE, 'p1_0')))
     await assertFails(getDoc(photo('obcy', MINE, 'p1_0')))
-    await assertFails(commit('ola', deletePhotoOps(MINE, 'p1_0', 6000)))
-    await assertSucceeds(commit('hania', deletePhotoOps(MINE, 'p1_0', 6000)))
+    await assertFails(commit('ola', deletePhotoOps(MINE, 'p1_0', 6000, await nextSeq())))
+    await assertSucceeds(commit('hania', deletePhotoOps(MINE, 'p1_0', 6000, await nextSeq())))
   })
 
   test('przeniesienie do „Tylko ja” i z powrotem: liczniki bez zmian; przy tym nie da się ich obniżyć', async () => {
-    await commit('ola', add('ola'))
+    await commit('ola', await add('ola'))
     // zadanie Hani przechodzi do „Tylko ja” (to samo id)
     await setDoc(
       doc(db('hania'), `${paths.privateTasks('dom1', 'hania')}/z1`),
@@ -935,7 +946,7 @@ describe('zdjęcia', () => {
     await assertFails(
       commit('hania', [
         ...movePhotoOps(MINE, SHARED, 'z1_0', data, fullData),
-        ...deletePhotoOps(MINE, 'z1_0', 6000).slice(2),
+        ...deletePhotoOps(MINE, 'z1_0', 6000, await nextSeq()).slice(2),
       ]),
     )
     await assertSucceeds(commit('hania', movePhotoOps(MINE, SHARED, 'z1_0', data, fullData)))
@@ -943,10 +954,10 @@ describe('zdjęcia', () => {
   })
 
   test('usunięcie domu: założycielka zeruje liczniki i usuwa zdjęcia bez liczenia; domownik – nie', async () => {
-    await commit('ola', add('ola'))
-    await assertFails(commit('ola', closeHousePhotosOps('dom1', 6000)))
-    await assertFails(commit('hania', closeHousePhotosOps('dom1', 5000)))
-    await assertSucceeds(commit('hania', closeHousePhotosOps('dom1', 6000)))
+    await commit('ola', await add('ola'))
+    await assertFails(commit('ola', closeHousePhotosOps('dom1', 6000, await nextSeq())))
+    await assertFails(commit('hania', closeHousePhotosOps('dom1', 5000, await nextSeq())))
+    await assertSucceeds(commit('hania', closeHousePhotosOps('dom1', 6000, await nextSeq())))
     expect(await houseBytes()).toBe(0)
     expect(await appBytes()).toBe(0)
     await assertFails(deleteDoc(photo('ola')))

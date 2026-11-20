@@ -117,6 +117,7 @@ service cloud.firestore {
     function validTask(d) {
       return d.keys().hasOnly(['title', 'categoryId', 'priority', 'due', 'dueWeek', 'repeat', 'done',
           'subtasks', 'note', 'createdBy', 'doneAt', 'doneBy', 'deleted', 'deletedAt', 'deletedBy',
+          'seriesId', 'photos', 'thumb',
           'updatedAt', 'updatedBy'])
         && text(d.title, 200)
         && strOrNull(d.categoryId, 100)
@@ -176,11 +177,17 @@ service cloud.firestore {
 
     // ── Zdjęcia (etap 9, docs/PLAN.md) ──────────────────────────────────────
     // Zdjęcie = kafelek z opisem (photos/{id}) + pełna wersja (photoFull/{id}); „Tylko ja” – to samo
-    // w private/{uid}/. Każde dodanie / usunięcie zmienia w tej samej paczce dwa liczniki miejsca:
-    // domu (photoBytes ≤ 150 MB) i całej aplikacji (meta/photos ≤ 600 MB), dokładnie o rozmiar
-    // zdjęcia, i wskazuje je (photoOp / op). Limit 5 zdjęć: stałe miejsca – id {zadanie}_0…4
-    // („tylko tym razem”) i {seria}_s0…4 („przy każdym powtórzeniu”); razem 5 pilnuje aplikacja.
-    // Liczba odczytów w regułach jest ograniczona – dlatego bez zbędnych exists / get.
+    // w private/{uid}/. Limit 5 zdjęć: stałe miejsca – id {zadanie}_0…4 („tylko tym razem”)
+    // i {seria}_s0…4 („przy każdym powtórzeniu”); razem 5 pilnuje aplikacja.
+    //
+    // Miejsce: każde dodanie / usunięcie zmienia w tej samej paczce licznik domu (photoBytes ≤ 150 MB,
+    // photoSeq + 1, photoOp = to zdjęcie) i licznik aplikacji (meta/photos ≤ 600 MB, op = dom i jego
+    // photoSeq). Łańcuch – każda reguła sprawdza tylko sąsiada:
+    //   zdjęcie → licznik domu zmieniony o jego rozmiar i wskazuje je,
+    //   licznik domu → licznik aplikacji zmieniony w tej paczce (ten sam photoSeq) + zdjęcie naprawdę
+    //                  powstało / zniknęło (nie przeniesione),
+    //   licznik aplikacji → zmieniony o tyle samo co licznik domu.
+    // Reguły mają limit odczytów (get / exists) na paczkę – dlatego tanie warunki stoją pierwsze.
 
     function housePath(houseId) {
       return /databases/$(database)/documents/houses/$(houseId);
@@ -214,79 +221,80 @@ service cloud.firestore {
       return d.keys().hasOnly(['kind', 'taskId', 'seriesId', 'slot', 'type', 'tile', 'size',
           'createdBy', 'createdAt'])
         && d.slot is int && d.slot >= 0 && d.slot < 5
-        && (d.kind == 'task'
-          ? (text(d.taskId, 100) && !('seriesId' in d)
-            && id == d.taskId + '_' + string(d.slot)
-            && taskExistsAfter(houseId, uid, d.taskId))
-          : (d.kind == 'series' && text(d.seriesId, 100) && !('taskId' in d)
-            && id == d.seriesId + '_s' + string(d.slot)))
         && d.type in ['image/webp', 'image/jpeg']
         && d.tile is bytes && d.tile.size() <= 60000
-        && d.size == d.tile.size() + getAfter(fullPath(houseId, uid, id)).data.full.size()
-        && d.createdAt is timestamp;
+        && d.createdAt is timestamp
+        && (d.kind == 'task'
+          ? (text(d.taskId, 100) && !('seriesId' in d)
+            && id == d.taskId + '_' + string(d.slot))
+          : (d.kind == 'series' && text(d.seriesId, 100) && !('taskId' in d)
+            && id == d.seriesId + '_s' + string(d.slot)))
+        && (d.kind == 'series' || taskExistsAfter(houseId, uid, d.taskId))
+        && d.size == d.tile.size() + getAfter(fullPath(houseId, uid, id)).data.full.size();
     }
 
     function validFull(d) {
       return d.keys().hasOnly(['full']) && d.full is bytes && d.full.size() <= 700000;
     }
 
-    /** Licznik przed / po paczce (stary dom albo brak licznika aplikacji = 0). */
-    function appBytesBefore() {
-      return exists(metaPath()) ? get(metaPath()).data.photoBytes : 0;
-    }
-
-    /** Oba liczniki zmienione o `delta` i wskazują to zdjęcie. */
+    /** Licznik domu zmieniony o `delta` i wskazuje to zdjęcie. */
     function countersMoved(houseId, uid, id, delta) {
-      let h = getAfter(housePath(houseId)).data;
-      let m = getAfter(metaPath()).data;
-      return h.photoBytes == get(housePath(houseId)).data.get('photoBytes', 0) + delta
-        && h.photoOp == { 'uid': uid, 'id': id }
-        && m.photoBytes == appBytesBefore() + delta
-        && m.op == { 'house': houseId, 'uid': uid, 'id': id };
+      let after = getAfter(housePath(houseId)).data;
+      return after.get('photoOp', null) == { 'uid': uid, 'id': id }
+        && after.get('photoBytes', 0) == get(housePath(houseId)).data.get('photoBytes', 0) + delta;
     }
 
-    /** W tej paczce zdjęcie powstaje (delta > 0) albo znika (delta < 0) – dokładnie tej wielkości. */
-    // Przeniesienie (movedIn / movedOut) nie zmienia liczników – dlatego drugie miejsce (wspólne ↔
-    // „Tylko ja”) musi zostać puste.
-    function photoOpDone(houseId, uid, id, delta) {
+    /**
+     * Licznik domu: zdjęcie naprawdę powstało (delta > 0) albo zniknęło (delta < 0), a nie zostało
+     * przeniesione między „Wspólne” a „Tylko ja” (przeniesienie nie zmienia liczników).
+     */
+    function photoAnchored(houseId, uid, id, delta) {
       let p = photoPath(houseId, uid, id);
-      let other = photoPath(houseId, uid == '' ? me() : '', id);
       return (uid == '' || uid == me())
         && (delta > 0
-          ? (!exists(p) && !exists(other) && getAfter(p).data.size == delta)
-          : (!existsAfter(p) && !existsAfter(other) && get(p).data.size == -delta));
+          ? getAfter(p).data.size == delta
+          : (delta < 0
+            && !existsAfter(p)
+            && get(p).data.size == -delta
+            && !existsAfter(photoPath(houseId, uid == '' ? me() : '', id))));
     }
 
     /** Przeniesienie między „Wspólne” a „Tylko ja”: to samo zdjęcie znika ze starego miejsca. */
     function movedIn(houseId, fromUid, id, d) {
-      let s = get(photoPath(houseId, fromUid, id)).data;
-      return !existsAfter(photoPath(houseId, fromUid, id))
-        && s.size == d.size && s.kind == d.kind && s.createdBy == d.createdBy
+      let p = photoPath(houseId, fromUid, id);
+      return exists(p) && !existsAfter(p) && samePhoto(get(p).data, d);
+    }
+
+    function samePhoto(s, d) {
+      return s.size == d.size && s.kind == d.kind && s.createdBy == d.createdBy
         && s.createdAt == d.createdAt;
     }
 
     function movedOut(houseId, toUid, id) {
-      return !exists(photoPath(houseId, toUid, id))
-        && getAfter(photoPath(houseId, toUid, id)).data.size == resource.data.size;
+      let p = photoPath(houseId, toUid, id);
+      return existsAfter(p) && !exists(p) && getAfter(p).data.size == resource.data.size;
     }
 
     /** Usuwanie domu: założyciel wyzerował licznik domu („closing”) – zdjęcia bez liczenia. */
     function houseClosing(houseId) {
-      return isOwner(houseId)
-        && get(housePath(houseId)).data.get('photoOp', null) == { 'closing': true };
+      return get(housePath(houseId)).data.get('photoOp', null) == { 'closing': true }
+        && isOwner(houseId);
     }
 
-    /** Licznik aplikacji: zmiana tylko razem ze zdjęciem albo przy usuwaniu domu. */
+    /** Licznik aplikacji: zmieniony o tyle samo co licznik domu wskazanego w `op`, w tej paczce. */
     function validUsage(before, d) {
       return d.keys().hasOnly(['photoBytes', 'op'])
         && d.photoBytes is int && d.photoBytes >= 0 && d.photoBytes <= 629145600
-        && d.op is map
-        && (d.op.keys().hasOnly(['house', 'uid', 'id'])
-          ? photoOpDone(d.op.house, d.op.uid, d.op.id, d.photoBytes - before)
-          : (d.op.keys().hasOnly(['house', 'closing']) && d.op.closing == true
-            && isOwner(d.op.house)
-            && before - d.photoBytes == get(housePath(d.op.house)).data.get('photoBytes', 0)
-            && getAfter(housePath(d.op.house)).data.photoBytes == 0));
+        && d.op is map && d.op.keys().hasOnly(['house', 'seq']) && d.op.seq is int
+        && usageMatchesHouse(d.op.house, d.op.seq, d.photoBytes - before);
+    }
+
+    function usageMatchesHouse(houseId, seq, delta) {
+      let hb = get(housePath(houseId)).data;
+      let ha = getAfter(housePath(houseId)).data;
+      return ha.get('photoSeq', 0) == seq
+        && seq == hb.get('photoSeq', 0) + 1
+        && delta == ha.get('photoBytes', 0) - hb.get('photoBytes', 0);
     }
 
     match /meta/photos {
@@ -448,24 +456,28 @@ service cloud.firestore {
         && request.resource.data.ownerUid != me()
         && getAfter(/databases/$(database)/documents/houses/$(houseId)/members/$(request.resource.data.ownerUid)).data.role == 'owner';
 
-      // licznik miejsca na zdjęcia (etap 9): tylko razem z dodaniem / usunięciem zdjęcia w tej
-      // samej paczce; najwyżej 150 MB na dom
+      // licznik miejsca na zdjęcia (etap 9): tylko razem z dodaniem / usunięciem zdjęcia i zmianą
+      // licznika aplikacji w tej samej paczce; najwyżej 150 MB na dom
       allow update: if request.resource.data.diff(resource.data).affectedKeys()
-          .hasOnly(['photoBytes', 'photoOp'])
+          .hasOnly(['photoBytes', 'photoOp', 'photoSeq'])
+        && request.resource.data.photoSeq == resource.data.get('photoSeq', 0) + 1
         && request.resource.data.photoBytes is int
         && request.resource.data.photoBytes >= 0
         && request.resource.data.photoBytes <= 157286400
         && request.resource.data.photoOp is map
         && request.resource.data.photoOp.keys().hasOnly(['uid', 'id'])
-        && photoOpDone(houseId, request.resource.data.photoOp.uid, request.resource.data.photoOp.id,
+        && getAfter(metaPath()).data.op == { 'house': houseId, 'seq': request.resource.data.photoSeq }
+        && photoAnchored(houseId, request.resource.data.photoOp.uid, request.resource.data.photoOp.id,
             request.resource.data.photoBytes - resource.data.get('photoBytes', 0));
 
       // usuwanie domu: założyciel zeruje licznik razem z licznikiem aplikacji (closeHousePhotosOps)
-      allow update: if isOwner(houseId)
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['photoBytes', 'photoOp'])
+      allow update: if request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['photoBytes', 'photoOp', 'photoSeq'])
         && request.resource.data.photoBytes == 0
         && request.resource.data.photoOp == { 'closing': true }
-        && getAfter(metaPath()).data.op == { 'house': houseId, 'closing': true };
+        && request.resource.data.photoSeq == resource.data.get('photoSeq', 0) + 1
+        && isOwner(houseId)
+        && getAfter(metaPath()).data.op == { 'house': houseId, 'seq': request.resource.data.photoSeq };
 
       // usunięcie domu (usuwanie konta założyciela, „usuń dom u wszystkich”)
       allow delete: if isOwner(houseId);
@@ -597,8 +609,8 @@ service cloud.firestore {
 
       match /photos/{id} {
         allow read: if isMember(houseId);
-        allow create: if isMemberAfter(houseId)
-          && validPhoto(houseId, '', id, request.resource.data)
+        allow create: if validPhoto(houseId, '', id, request.resource.data)
+          && isMemberAfter(houseId)
           && ((request.resource.data.createdBy == me()
               && request.resource.data.createdAt == request.time
               && countersMoved(houseId, '', id, request.resource.data.size))
@@ -612,26 +624,25 @@ service cloud.firestore {
             || houseClosing(houseId));
       }
 
-      // pełna wersja – razem ze swoim kafelkiem (ta sama paczka)
+      // pełna wersja – razem ze swoim kafelkiem (ta sama paczka; kafelek sprawdza jej rozmiar)
       match /photoFull/{id} {
         allow read: if isMember(houseId);
-        allow create: if validFull(request.resource.data)
-          && !exists(photoPath(houseId, '', id))
-          && existsAfter(photoPath(houseId, '', id));
+        allow create: if validFull(request.resource.data) && existsAfter(photoPath(houseId, '', id));
         allow update: if false;
         allow delete: if isMember(houseId) && !existsAfter(photoPath(houseId, '', id));
       }
 
       match /private/{uid}/photos/{id} {
         allow read: if isMember(houseId) && uid == me();
-        allow create: if isMemberAfter(houseId) && uid == me()
+        allow create: if uid == me()
           && validPhoto(houseId, uid, id, request.resource.data)
+          && isMemberAfter(houseId)
           && ((request.resource.data.createdBy == me()
               && request.resource.data.createdAt == request.time
               && countersMoved(houseId, uid, id, request.resource.data.size))
             || movedIn(houseId, '', id, request.resource.data));
         allow update: if false;
-        allow delete: if isMember(houseId) && uid == me()
+        allow delete: if uid == me() && isMember(houseId)
           && (countersMoved(houseId, uid, id, -resource.data.size)
             || movedOut(houseId, '', id)
             || houseClosing(houseId));
@@ -640,10 +651,9 @@ service cloud.firestore {
       match /private/{uid}/photoFull/{id} {
         allow read: if isMember(houseId) && uid == me();
         allow create: if uid == me() && validFull(request.resource.data)
-          && !exists(photoPath(houseId, uid, id))
           && existsAfter(photoPath(houseId, uid, id));
         allow update: if false;
-        allow delete: if isMember(houseId) && uid == me()
+        allow delete: if uid == me() && isMember(houseId)
           && !existsAfter(photoPath(houseId, uid, id));
       }
     }

@@ -73,22 +73,40 @@ export type PhotoPlace = { houseId: string; privateUid?: string }
 const photoPath = (p: PhotoPlace, id: string) => `${paths.photos(p.houseId, p.privateUid)}/${id}`
 const fullPath = (p: PhotoPlace, id: string) => `${paths.photoFull(p.houseId, p.privateUid)}/${id}`
 
-/** Oba liczniki o `delta` bajtów; `photoOp` / `op` wskazują zdjęcie (reguły sprawdzają zgodność). */
-function counterOps(p: PhotoPlace, id: string, delta: number): PhotoOp[] {
-  const uid = p.privateUid ?? ''
+/**
+ * Numer kolejnej zmiany liczników domu: `photoSeq` z dokumentu domu + 1. Wiąże licznik domu
+ * z licznikiem aplikacji w tej samej paczce (reguły). Gdy dwie osoby zmienią zdjęcia naraz,
+ * jedna paczka zostanie odrzucona – wtedy wystarczy spróbować jeszcze raz.
+ */
+export function nextPhotoSeq(house: { photoSeq?: unknown } | undefined): number {
+  const n = house?.photoSeq
+  return (typeof n === 'number' && Number.isInteger(n) ? n : 0) + 1
+}
+
+/** Oba liczniki o `delta` bajtów; dom wskazuje zdjęcie, licznik aplikacji – dom i numer zmiany. */
+function counterOps(
+  houseId: string,
+  houseOp: Record<string, unknown>,
+  delta: number,
+  seq: number,
+  bytes?: number,
+): PhotoOp[] {
   return [
     {
-      path: paths.house(p.houseId),
-      data: { photoBytes: increment(delta), photoOp: { uid, id } },
-      mergeFields: ['photoBytes', 'photoOp'],
+      path: paths.house(houseId),
+      data: { photoBytes: bytes ?? increment(delta), photoOp: houseOp, photoSeq: seq },
+      mergeFields: ['photoBytes', 'photoOp', 'photoSeq'],
     },
     {
       path: paths.photoUsage(),
-      data: { photoBytes: increment(delta), op: { house: p.houseId, uid, id } },
+      data: { photoBytes: increment(delta), op: { house: houseId, seq } },
       mergeFields: ['photoBytes', 'op'],
     },
   ]
 }
+
+const photoCounters = (p: PhotoPlace, id: string, delta: number, seq: number) =>
+  counterOps(p.houseId, { uid: p.privateUid ?? '', id }, delta, seq)
 
 /** Dodanie zdjęcia: kafelek, pełna wersja i oba liczniki – jedną paczką. */
 export function addPhotoOps(opts: {
@@ -101,8 +119,10 @@ export function addPhotoOps(opts: {
   type: PhotoType
   tile: Uint8Array
   full: Uint8Array
+  /** nextPhotoSeq(dom) */
+  seq: number
 }): { id: string; size: number; ops: PhotoOp[] } {
-  const { place, uid, kind, owner, slot, type, tile, full } = opts
+  const { place, uid, kind, owner, slot, type, tile, full, seq } = opts
   const id = photoId(kind, owner, slot)
   const size = tile.length + full.length
   const photo: PhotoDoc = {
@@ -124,17 +144,22 @@ export function addPhotoOps(opts: {
         path: fullPath(place, id),
         data: { full: Bytes.fromUint8Array(full) } satisfies PhotoFullDoc,
       },
-      ...counterOps(place, id, size),
+      ...photoCounters(place, id, size, seq),
     ],
   }
 }
 
 /** Usunięcie zdjęcia: kafelek, pełna wersja i oba liczniki w dół – jedną paczką. */
-export function deletePhotoOps(place: PhotoPlace, id: string, size: number): PhotoOp[] {
+export function deletePhotoOps(
+  place: PhotoPlace,
+  id: string,
+  size: number,
+  seq: number,
+): PhotoOp[] {
   return [
     { path: photoPath(place, id), delete: true },
     { path: fullPath(place, id), delete: true },
-    ...counterOps(place, id, -size),
+    ...photoCounters(place, id, -size, seq),
   ]
 }
 
@@ -161,17 +186,6 @@ export function movePhotoOps(
  * Usuwanie domu (usunięcie konta założyciela): najpierw licznik domu na 0, a wspólny w dół o całe
  * miejsce domu. Potem założyciel usuwa zdjęcia bez liczenia każdego z osobna.
  */
-export function closeHousePhotosOps(houseId: string, houseBytes: number): PhotoOp[] {
-  return [
-    {
-      path: paths.house(houseId),
-      data: { photoBytes: 0, photoOp: { closing: true } },
-      mergeFields: ['photoBytes', 'photoOp'],
-    },
-    {
-      path: paths.photoUsage(),
-      data: { photoBytes: increment(-houseBytes), op: { house: houseId, closing: true } },
-      mergeFields: ['photoBytes', 'op'],
-    },
-  ]
+export function closeHousePhotosOps(houseId: string, houseBytes: number, seq: number): PhotoOp[] {
+  return counterOps(houseId, { closing: true }, -houseBytes, seq, 0)
 }
