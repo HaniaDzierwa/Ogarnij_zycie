@@ -217,13 +217,13 @@ Projekt: kanwa „Zadania cykliczne” w Claude Design (ekrany 1c/1e – zadanie
 6. Przeniesienie zadania cyklicznego do „Tylko ja” – zdjęcia serii idą z nim.
 
 **Odbiór (wstępnie):**
-- [ ] Zdjęcie z aparatu i z galerii dodaje się na iPhonie i Androidzie, widać je od razu (także bez internetu)
-- [ ] Lista zadań dalej szybka; miniatura i liczba zdjęć przy zadaniu
-- [ ] Podgląd: przesuwanie, powiększanie, usuwanie z COFNIJ, zapisanie zdjęcia na telefonie (iPhone i Android)
-- [ ] Zadanie w Koszu i przywrócone – zdjęcia razem z nim; „Tylko ja” – zdjęć nie widzą domownicy
-- [ ] Zadanie cykliczne: zdjęcie „przy każdym” widać w następnym wystąpieniu, „tylko tym razem” – nie; oba rodzaje naraz w jednym zadaniu
-- [ ] Ustawienia pokazują zajęte miejsce na zdjęcia; po limicie komunikat, a zadania dalej się zapisują
-- [ ] Testy reguł przechodzą u Hani
+- [x] Zdjęcie z aparatu i z galerii dodaje się na iPhonie i Androidzie, widać je od razu (także bez internetu)
+- [x] Lista zadań dalej szybka; miniatura i liczba zdjęć przy zadaniu
+- [x] Podgląd: przesuwanie, powiększanie, usuwanie z COFNIJ, zapisanie zdjęcia na telefonie (iPhone i Android)
+- [x] Zadanie w Koszu i przywrócone – zdjęcia razem z nim; „Tylko ja” – zdjęć nie widzą domownicy
+- [x] Zadanie cykliczne: zdjęcie „przy każdym” widać w następnym wystąpieniu, „tylko tym razem” – nie; oba rodzaje naraz w jednym zadaniu
+- [x] Ustawienia pokazują zajęte miejsce na zdjęcia; po limicie komunikat, a zadania dalej się zapisują
+- [x] Testy reguł przechodzą u Hani
 
 ---
 
