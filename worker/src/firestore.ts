@@ -194,6 +194,63 @@ export function firestore(
     async remove(path: string) {
       await call(`${base}/${path}`, { method: 'DELETE' })
     },
+
+    /** Zdjęcia (etap 9) z kolekcji `photos` pod `parent`, gdzie pole = wartość – tylko id i rozmiar. */
+    async photosWhere(
+      parent: string,
+      field: 'taskId' | 'seriesId',
+      value: string,
+    ): Promise<{ id: string; size: number }[]> {
+      const json = (await call(`${base}/${parent}:runQuery`, {
+        method: 'POST',
+        body: JSON.stringify({
+          structuredQuery: {
+            from: [{ collectionId: 'photos' }],
+            where: {
+              fieldFilter: {
+                field: { fieldPath: field },
+                op: 'EQUAL',
+                value: { stringValue: value },
+              },
+            },
+            // bez kafelka (do 60 KB na zdjęcie)
+            select: { fields: [{ fieldPath: 'size' }] },
+          },
+        }),
+      })) as { document?: RawDoc }[]
+      return json
+        .filter((r) => r.document)
+        .map((r) => {
+          const d = toDoc(r.document!)
+          return { id: d.id, size: Number(d.data.size ?? 0) }
+        })
+    },
+
+    /**
+     * Usunięcie zdjęć (kafelek + pełna wersja) razem z licznikami miejsca domu i aplikacji – jedną
+     * paczką (konto serwisowe – bez reguł, więc liczniki zmieniamy sami).
+     */
+    async removePhotos(houseId: string, parent: string, photos: { id: string; size: number }[]) {
+      if (!photos.length) return
+      const total = photos.reduce((n, p) => n + p.size, 0)
+      const name = (path: string) => `projects/${projectId}/databases/(default)/documents/${path}`
+      const decrement = (path: string) => ({
+        update: { name: name(path), fields: {} },
+        updateMask: { fieldPaths: [] },
+        updateTransforms: [
+          { fieldPath: 'photoBytes', increment: { integerValue: String(-total) } },
+        ],
+      })
+      const writes = [
+        ...photos.flatMap((p) => [
+          { delete: name(`${parent}/photos/${p.id}`) },
+          { delete: name(`${parent}/photoFull/${p.id}`) },
+        ]),
+        { ...decrement(`houses/${houseId}`), currentDocument: { exists: true } },
+        decrement('meta/photos'),
+      ]
+      await call(`${base}:commit`, { method: 'POST', body: JSON.stringify({ writes }) })
+    },
   }
 }
 

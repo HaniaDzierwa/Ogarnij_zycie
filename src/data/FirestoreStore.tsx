@@ -2,6 +2,7 @@ import {
   collection,
   doc,
   getDoc,
+  getDocs,
   onSnapshot,
   query,
   setDoc,
@@ -40,12 +41,19 @@ import { listenAfterWrites } from '../firebase/listen.ts'
 import {
   addPhotoOps,
   deletePhotoOps,
+  movePhotoOps,
   type PhotoDoc,
   type PhotoFullDoc,
   type PhotoOp,
   type PhotoPlace,
 } from '../firebase/photos.ts'
-import { planPhotos, seriesOf, sortPhotos, type TaskPhoto } from '../photos/draft.ts'
+import {
+  photosOfGoneTasks,
+  planPhotos,
+  seriesOf,
+  sortPhotos,
+  type TaskPhoto,
+} from '../photos/draft.ts'
 import { preparePhoto, thumbFromTile } from '../photos/resize.ts'
 import { kindChangeDraft, photoFieldsAfter, withPhotoFields } from '../photos/taskFields.ts'
 import { syncCollection } from '../firebase/sync.ts'
@@ -367,6 +375,34 @@ function HouseData({ children }: { children: ReactNode }) {
     (list: Task[]) => spawnRepeats(list, day, uid, () => newId('t')),
     [day, uid],
   )
+  /**
+   * Zadania usunięte na zawsze („Opróżnij kosz”, sprzątanie po 30 dniach) – ich zdjęcia też znikają,
+   * a zdjęcia serii, gdy w serii nie zostało już żadne zadanie (etap 9). Każde – osobna paczka
+   * z licznikami. Przeniesienie wspólne ↔ „Tylko ja” to nie usunięcie (to samo id zostaje).
+   */
+  const removeGonePhotos = useCallback(
+    (before: Task[], after: Task[]) => {
+      if (!houseId) return
+      for (const { task: t, series } of photosOfGoneTasks(before, after)) {
+        const place: PhotoPlace = { houseId, privateUid: t.private ? uid : undefined }
+        const coll = collection(db, paths.photos(houseId, place.privateUid))
+        void Promise.all([
+          getDocs(query(coll, where('taskId', '==', t.id))),
+          series ? getDocs(query(coll, where('seriesId', '==', series))) : null,
+        ])
+          .then((snaps) => {
+            for (const snap of snaps)
+              for (const d of snap?.docs ?? []) {
+                const size = (d.data() as Partial<PhotoDoc>).size ?? 0
+                photoSeq.current += 1
+                commitPhotoOps(deletePhotoOps(place, d.id, size, photoSeq.current))
+              }
+          })
+          .catch(reportError)
+      }
+    },
+    [houseId, uid],
+  )
   const setTasks = useMemo(() => {
     const set = makeSetter<Task>(
       'tasks',
@@ -376,8 +412,12 @@ function HouseData({ children }: { children: ReactNode }) {
       paths.privateTasks,
       (p, n) => taskActivity(p, n, day),
     )
-    return (update: (list: Task[]) => Task[]) => set((list) => withRepeats(update(list)))
-  }, [makeSetter, setTasksState, day, withRepeats])
+    return (update: (list: Task[]) => Task[]) => {
+      const before = latest.current.tasks
+      set((list) => withRepeats(update(list)))
+      removeGonePhotos(before, latest.current.tasks)
+    }
+  }, [makeSetter, setTasksState, day, withRepeats, removeGonePhotos])
   const setCategories = useMemo(
     () => makeSetter<Category>('categories', setCategoriesState, paths.categories, categoryToDoc),
     [makeSetter],
@@ -434,6 +474,21 @@ function HouseData({ children }: { children: ReactNode }) {
   const photos = useMemo<PhotosApi>(() => {
     const api: PhotosApi = {
       prepare: preparePhoto,
+      move: async (saved, privateUid) => {
+        if (!houseId) return
+        const to: PhotoPlace = { houseId, privateUid }
+        for (const p of saved) {
+          const from = p.place
+          const [photo, full] = await Promise.all([
+            getDoc(doc(db, `${paths.photos(from.houseId, from.privateUid)}/${p.id}`)),
+            getDoc(doc(db, `${paths.photoFull(from.houseId, from.privateUid)}/${p.id}`)),
+          ])
+          if (!photo.exists() || !full.exists()) continue
+          commitPhotoOps(
+            movePhotoOps(from, to, p.id, photo.data() as PhotoDoc, full.data() as PhotoFullDoc),
+          )
+        }
+      },
       changeKind: async (task, saved, photo, kind) => {
         const full = await api.loadFull(photo)
         api.save(task, saved, await kindChangeDraft(photo, kind, full, thumbFromTile))

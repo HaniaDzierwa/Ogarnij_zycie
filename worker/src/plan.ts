@@ -335,3 +335,31 @@ export function cleanupPlan(
     ],
   }
 }
+
+/** Zadanie z bazy – do sprzątania zdjęć (etap 9). */
+export type TaskRef = { path: string; id: string; seriesId?: string; photos?: number }
+
+/**
+ * Zdjęcia do usunięcia razem z zadaniami usuwanymi na zawsze (Kosz po 30 dniach): zdjęcia zadania,
+ * a zdjęcia serii („przy każdym powtórzeniu”) – tylko gdy w tym miejscu (wspólne / „Tylko ja”)
+ * nie zostało już żadne zadanie tej serii.
+ */
+export function photoCleanupPlan(
+  toDelete: string[],
+  tasks: TaskRef[],
+): { parent: string; taskId: string; seriesId: string | null }[] {
+  const deleting = new Set(toDelete)
+  return tasks
+    .filter((t) => deleting.has(t.path) && (t.photos ?? 0) > 0)
+    .map((t) => {
+      const parent = t.path.slice(0, t.path.lastIndexOf('/tasks/'))
+      const series = t.seriesId ?? t.id
+      const alive = tasks.some(
+        (x) =>
+          !deleting.has(x.path) &&
+          x.path.startsWith(`${parent}/tasks/`) &&
+          (x.seriesId ?? x.id) === series,
+      )
+      return { parent, taskId: t.id, seriesId: alive ? null : series }
+    })
+}

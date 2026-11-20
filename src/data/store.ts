@@ -28,6 +28,8 @@ export type PhotosApi = {
   watch: (task: Task, onChange: (list: TaskPhoto[]) => void) => () => void
   /** Zapis zmian z arkusza („Dodaj zadanie” / „Zapisz”); zadanie jest już na liście. */
   save: (task: Task, saved: TaskPhoto[], draft: PhotoDraft) => void
+  /** Zadanie przechodzi do „Tylko ja” (uid autora) albo do wspólnych (undefined) – zdjęcia z nim. */
+  move: (saved: TaskPhoto[], privateUid: string | undefined) => Promise<void>
   /** „Przenieś do: przy każdym powtórzeniu / tylko tym razem” (usunięcie i dodanie). */
   changeKind: (task: Task, saved: TaskPhoto[], photo: TaskPhoto, kind: PhotoKind) => Promise<void>
   /** Pełna wersja zdjęcia (podgląd) – dopiero na żądanie. */

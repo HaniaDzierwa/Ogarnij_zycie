@@ -120,3 +120,22 @@ export function planPhotos(
     first: tiles[0] ?? null,
   }
 }
+
+/**
+ * Zadania usunięte na zawsze (są w `before`, nie ma ich w `after`) ze zdjęciami – i czy usunąć też
+ * zdjęcia serii (gdy w tym miejscu nie zostało żadne zadanie tej serii). Przeniesienie wspólne ↔
+ * „Tylko ja” zostawia to samo id, więc nie jest usunięciem.
+ */
+export function photosOfGoneTasks(
+  before: Task[],
+  after: Task[],
+): { task: Task; series: string | null }[] {
+  const kept = new Set(after.map((t) => t.id))
+  return before
+    .filter((t) => !kept.has(t.id) && (t.photos ?? 0) > 0)
+    .map((t) => {
+      const series = seriesOf(t)
+      const alive = after.some((x) => x.private === t.private && seriesOf(x) === series)
+      return { task: t, series: alive ? null : series }
+    })
+}

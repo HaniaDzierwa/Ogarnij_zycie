@@ -9,6 +9,7 @@ import {
   CLEANUP_TIME,
   isQuiet,
   localNow,
+  photoCleanupPlan,
   summaryContentOf,
   summaryFor,
   summaryTimesOf,
@@ -17,6 +18,7 @@ import {
   type Event,
   type Message,
   type Task,
+  type TaskRef,
   type User,
 } from './plan.ts'
 import { sendPush, type Subscription } from './webpush.ts'
@@ -234,6 +236,20 @@ async function cleanup(db: Firestore, users: User[], day: string, now: number) {
       )
       for (const path of plan.toTrash)
         await db.update(path, { deleted: true, deletedAt: new Date(now), deletedBy: 'sprzatanie' })
+      // zdjęcia zadań usuwanych na zawsze – najpierw, z licznikami miejsca (etap 9)
+      const refs: TaskRef[] = lists.flat().map((d) => ({
+        path: d.path,
+        id: d.id,
+        seriesId: typeof d.data.seriesId === 'string' ? d.data.seriesId : undefined,
+        photos: typeof d.data.photos === 'number' ? d.data.photos : undefined,
+      }))
+      for (const c of photoCleanupPlan(plan.toDelete, refs)) {
+        const photos = [
+          ...(await db.photosWhere(c.parent, 'taskId', c.taskId)),
+          ...(c.seriesId ? await db.photosWhere(c.parent, 'seriesId', c.seriesId) : []),
+        ]
+        await db.removePhotos(houseId, c.parent, photos)
+      }
       for (const path of plan.toDelete) await db.remove(path)
       // wpisy „co się stało” starsze niż tydzień – już niepotrzebne
       for (const a of await db.list(`houses/${houseId}/activity`))

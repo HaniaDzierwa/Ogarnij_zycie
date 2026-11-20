@@ -2,6 +2,8 @@
 
 import { describe, expect, test } from 'vitest'
 import {
+  photoCleanupPlan,
+  type TaskRef,
   activityMessage,
   cleanupPlan,
   daysSince,
@@ -281,5 +283,33 @@ describe('wydarzenia cykliczne w podsumowaniach (etap 8)', () => {
     expect(summaryFor(user, [], [yearly], DAY, '08:00', true)!.url).toBe(
       '/kalendarz?dzien=2026-10-26',
     )
+  })
+})
+
+describe('sprzątanie zdjęć (etap 9)', () => {
+  const t = (path: string, over: Partial<TaskRef> = {}): TaskRef => ({
+    path,
+    id: path.split('/').pop()!,
+    photos: 1,
+    ...over,
+  })
+
+  test('zdjęcia zadania usuwanego na zawsze; bez zdjęć – nic', () => {
+    const tasks = [t('houses/d/tasks/a'), t('houses/d/tasks/b', { photos: undefined })]
+    expect(photoCleanupPlan(['houses/d/tasks/a', 'houses/d/tasks/b'], tasks)).toEqual([
+      { parent: 'houses/d', taskId: 'a', seriesId: 'a' },
+    ])
+  })
+
+  test('zdjęcia serii zostają, póki w tym miejscu jest inne zadanie z serii', () => {
+    const tasks = [
+      t('houses/d/tasks/a1', { seriesId: 's' }),
+      t('houses/d/tasks/a2', { seriesId: 's', photos: undefined }),
+      t('houses/d/private/u/tasks/p1', { seriesId: 'x' }),
+    ]
+    expect(photoCleanupPlan(['houses/d/tasks/a1', 'houses/d/private/u/tasks/p1'], tasks)).toEqual([
+      { parent: 'houses/d', taskId: 'a1', seriesId: null },
+      { parent: 'houses/d/private/u', taskId: 'p1', seriesId: 'x' },
+    ])
   })
 })

@@ -2,6 +2,7 @@ import { describe, expect, test } from 'vitest'
 import { mockTasks } from '../data/mock.ts'
 import {
   canAddPhoto,
+  photosOfGoneTasks,
   draftBytes,
   planPhotos,
   seriesOf,
@@ -139,5 +140,30 @@ describe('miejsce na zdjęcia', () => {
     expect(formatMB(3.44 * 1024 * 1024)).toBe('3,4 MB')
     expect(formatMB(12.6 * 1024 * 1024)).toBe('13 MB')
     expect(formatMB(150 * 1024 * 1024)).toBe('150 MB')
+  })
+})
+
+describe('zdjęcia zadań usuniętych na zawsze', () => {
+  const base = mockTasks('2026-10-09')[0]
+  const task = (id: string, over: Partial<typeof base> = {}) => ({
+    ...base,
+    id,
+    photos: 1,
+    ...over,
+  })
+
+  test('usunięte ze zdjęciami – tak; bez zdjęć albo przeniesione do „Tylko ja” – nie', () => {
+    const a = task('a')
+    const b = task('b', { photos: undefined })
+    const c = task('c')
+    const res = photosOfGoneTasks([a, b, c], [{ ...c, private: true }])
+    expect(res.map((r) => [r.task.id, r.series])).toEqual([['a', 'a']])
+  })
+
+  test('zdjęcia serii zostają, póki jest inne zadanie z serii', () => {
+    const done = task('a1', { seriesId: 's' })
+    const next = task('a2', { seriesId: 's' })
+    expect(photosOfGoneTasks([done, next], [next])[0].series).toBeNull()
+    expect(photosOfGoneTasks([done], [])[0].series).toBe('s')
   })
 })

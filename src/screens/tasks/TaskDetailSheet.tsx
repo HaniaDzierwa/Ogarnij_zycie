@@ -62,7 +62,7 @@ export function TaskDetailSheet({
   onTrash,
   onClose,
 }: Props) {
-  const { priorities: prioList, photos: photoStore, members, showUndo } = useStore()
+  const { priorities: prioList, photos: photoStore, members, showUndo, currentUid } = useStore()
   // null – tryb odczytu; w edycji: kopia robocza i stan z chwili rozpoczęcia
   const [draft, setDraft] = useState<TaskEdit | null>(null)
   const [base, setBase] = useState<TaskEdit | null>(null)
@@ -112,6 +112,14 @@ export function TaskDetailSheet({
     onSave({ ...draft, title: draft.title.trim(), note: draft.note.trim() })
     if (draftChanged(photoDraft))
       photoStore.save({ ...task, private: draft.private }, savedPhotos, photoDraft)
+    // „Kto widzi” zmienione – zdjęcia przechodzą razem z zadaniem (bez tych usuniętych w edycji)
+    if (draft.private !== task.private) {
+      const keep = savedPhotos.filter((p) => !photoDraft.removed.includes(p.id))
+      if (keep.length)
+        void photoStore
+          .move(keep, draft.private ? currentUid : undefined)
+          .catch((e) => console.error('Nie udało się przenieść zdjęć', e))
+    }
     stopEdit()
   }
   const requestClose = () => (dirty ? setDiscard('close') : onClose())

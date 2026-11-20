@@ -79,6 +79,13 @@ export function MockStoreProvider({
   const photos = useMemo<PhotosApi>(() => {
     const api: PhotosApi = {
       usage: { house: photoBytes, app: photoBytes },
+      move: async (saved, privateUid) => {
+        const ids = new Set(saved.map((p) => p.id))
+        photoList.current = photoList.current.map((p) =>
+          ids.has(p.id) ? { ...p, place: { ...p.place, privateUid } } : p,
+        )
+        photoListeners.current.forEach((run) => run())
+      },
       changeKind: async (task, saved, photo, kind) =>
         api.save(
           task,

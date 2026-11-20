@@ -27,6 +27,7 @@ import {
   type InviteDoc,
   type UserDoc,
 } from '../firebase/model.ts'
+import { closeHousePhotosOps, deletePhotoOps, type PhotoOp } from '../firebase/photos.ts'
 import {
   DEFAULT_HOUSE_NAME,
   HouseContext,
@@ -54,6 +55,46 @@ async function readInvite(code: string): Promise<InviteDoc & { createdAt: Timest
   if (d.usedBy) throw new JoinError('used')
   if (inviteLeftMs(d.createdAt) === 0) throw new JoinError('expired')
   return d
+}
+
+/** Paczka zdjęć (etap 9) – czekamy na serwer (usuwanie konta działa tylko z internetem). */
+async function commitPhotoOps(ops: PhotoOp[]) {
+  const batch = writeBatch(db)
+  for (const op of ops) {
+    const ref = doc(db, op.path)
+    if ('delete' in op) batch.delete(ref)
+    else if (op.mode === 'update') batch.update(ref, op.data)
+    else if (op.mode === 'merge') batch.set(ref, op.data, { merge: true })
+    else batch.set(ref, op.data)
+  }
+  await batch.commit()
+}
+
+/** Liczniki zdjęć domu prosto z serwera. */
+async function houseCounters(houseId: string) {
+  const d = (await getDocFromServer(doc(db, paths.house(houseId)))).data()
+  return { bytes: Number(d?.photoBytes ?? 0), seq: Number(d?.photoSeq ?? 0) }
+}
+
+/** Konto znika, dom zostaje: własne zdjęcia „Tylko ja” – każde z licznikami w dół. */
+async function removeOwnPhotos(houseId: string, uid: string) {
+  const snap = await getDocs(collection(db, paths.photos(houseId, uid)))
+  if (snap.empty) return
+  let { seq } = await houseCounters(houseId)
+  for (const d of snap.docs)
+    await commitPhotoOps(
+      deletePhotoOps({ houseId, privateUid: uid }, d.id, Number(d.data().size ?? 0), ++seq),
+    )
+}
+
+/** Usuwanie domu: liczniki na zero (dom i aplikacja), potem wszystkie zdjęcia bez liczenia. */
+async function removeHousePhotos(houseId: string, uid: string) {
+  const { bytes, seq } = await houseCounters(houseId)
+  if (bytes > 0) await commitPhotoOps(closeHousePhotosOps(houseId, bytes, seq + 1))
+  await removeAll(paths.photos(houseId))
+  await removeAll(paths.photoFull(houseId))
+  await removeAll(paths.photos(houseId, uid))
+  await removeAll(paths.photoFull(houseId, uid))
 }
 
 /** Usuwa wszystkie dokumenty kolekcji (paczkami po 400 – limit paczki to 500). */
@@ -248,6 +289,9 @@ export function FirebaseHouseProvider({ children }: { children: ReactNode }) {
           throw new AuthError(e instanceof FirebaseError ? e.code : 'unknown')
         }
         if (houseId) {
+          // zdjęcia (etap 9) – najpierw, póki jestem domownikiem; przy usuwaniu domu wszystkie
+          if (mode.kind === 'delete-house') await removeHousePhotos(houseId, uid)
+          else await removeOwnPhotos(houseId, uid)
           // własne „Tylko ja” – póki jestem domownikiem (reguły)
           await removeAll(paths.privateTasks(houseId, uid))
           await removeAll(paths.privateEvents(houseId, uid))
