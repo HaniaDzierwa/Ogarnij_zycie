@@ -24,6 +24,7 @@ const saved = (id: string, slot: number, kind: TaskPhoto['kind'] = 'task'): Task
   kind,
   slot,
   size: 1000,
+  type: 'image/webp',
   tileUrl: `url-${id}`,
   createdBy: 'hania',
   place: { houseId: 'dom1' },

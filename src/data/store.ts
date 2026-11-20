@@ -27,6 +27,8 @@ export type PhotosApi = {
   watch: (task: Task, onChange: (list: TaskPhoto[]) => void) => () => void
   /** Zapis zmian z arkusza („Dodaj zadanie” / „Zapisz”); zadanie jest już na liście. */
   save: (task: Task, saved: TaskPhoto[], draft: PhotoDraft) => void
+  /** Pełna wersja zdjęcia (podgląd) – dopiero na żądanie. */
+  loadFull: (photo: TaskPhoto) => Promise<Blob>
   /** Zajęte miejsce na zdjęcia w bajtach: dom i cała aplikacja. */
   usage: { house: number; app: number }
 }

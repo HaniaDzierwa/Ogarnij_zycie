@@ -79,6 +79,7 @@ export function MockStoreProvider({
   const photos = useMemo<PhotosApi>(
     () => ({
       usage: { house: photoBytes, app: photoBytes },
+      loadFull: async (photo) => new Blob([`PELNE-${photo.id}`], { type: photo.type }),
       prepare: async (file) => {
         const n = ++fakePhotoCounter
         const tile = new Uint8Array(100).fill(n % 255)
@@ -114,6 +115,7 @@ export function MockStoreProvider({
           kind: 'task' as const,
           slot,
           size: photo.tile.length + photo.full.length,
+          type: photo.type,
           tileUrl: photo.tileUrl,
           createdBy: currentUid,
           place: { houseId: 'dom', privateUid: task.private ? currentUid : undefined },

@@ -16,7 +16,8 @@ export function UndoToast() {
         bottom: 'calc(104px + env(safe-area-inset-bottom))',
         maxWidth: 448,
         margin: '0 auto',
-        zIndex: 25,
+        // nad arkuszami (40) – np. zdjęcie usunięte w arkuszu; pod pytaniami (50)
+        zIndex: 45,
         display: 'flex',
         alignItems: 'center',
         gap: 12,

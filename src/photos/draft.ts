@@ -1,7 +1,13 @@
 // Zdjęcia w arkuszu zadania (etap 9): zmiany zbierane w kopii roboczej i zapisywane dopiero przy
 // „Dodaj zadanie” / „Zapisz” – „Anuluj” cofa je razem z resztą zmian.
 
-import { freeSlot, PHOTO_LIMITS, type PhotoKind, type PhotoPlace } from '../firebase/photos.ts'
+import {
+  freeSlot,
+  PHOTO_LIMITS,
+  type PhotoKind,
+  type PhotoPlace,
+  type PhotoType,
+} from '../firebase/photos.ts'
 import type { Task } from '../data/types.ts'
 import type { PreparedPhoto } from './resize.ts'
 
@@ -11,6 +17,7 @@ export type TaskPhoto = {
   kind: PhotoKind
   slot: number
   size: number
+  type: PhotoType
   tileUrl: string
   createdBy: string
   /** Gdzie leży – wspólne albo „Tylko ja”. */
@@ -56,6 +63,10 @@ export function draftBytes(saved: TaskPhoto[], draft: PhotoDraft): number {
   const del = saved.filter((p) => draft.removed.includes(p.id)).reduce((n, p) => n + p.size, 0)
   return add - del
 }
+
+/** Miniatura z zadania (base64) jako adres obrazka – rodzaj pliku z jego początku. */
+export const thumbSrc = (b64: string) =>
+  `data:${b64.startsWith('/9j/') ? 'image/jpeg' : 'image/webp'};base64,${b64}`
 
 /** Seria zadania cyklicznego (zdjęcia „przy każdym powtórzeniu”) – brak pola = id zadania. */
 export const seriesOf = (t: Pick<Task, 'id' | 'seriesId'>) => t.seriesId ?? t.id

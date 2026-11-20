@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   DetailActions,
   DetailTopBar,
@@ -12,11 +12,18 @@ import { repeatSummary } from '../../data/repeat.ts'
 import { DueBadge } from '../../components/DueBadge.tsx'
 import { type DateKey } from '../../data/dates.ts'
 import { priorityOf } from '../../data/selectors.ts'
-import { useStore } from '../../data/store.ts'
+import { plural } from '../../data/plural.ts'
+import { TOAST_MS, useStore } from '../../data/store.ts'
 import { taskEditOf, type TaskEdit } from '../../data/taskOps.ts'
 import type { Category, Task } from '../../data/types.ts'
 import { colors, fonts, noCategory } from '../../theme'
-import { draftChanged, emptyPhotoDraft, type PhotoDraft } from '../../photos/draft.ts'
+import {
+  draftChanged,
+  emptyPhotoDraft,
+  type PhotoDraft,
+  type TaskPhoto,
+} from '../../photos/draft.ts'
+import { PhotoViewer } from './PhotoViewer.tsx'
 import { useTaskPhotos } from './PhotosField.tsx'
 import { DoneBox, SubtaskToggle } from './TaskRow.tsx'
 import { TaskForm } from './TaskForm.tsx'
@@ -55,14 +62,37 @@ export function TaskDetailSheet({
   onTrash,
   onClose,
 }: Props) {
-  const { priorities: prioList, photos: photoStore } = useStore()
+  const { priorities: prioList, photos: photoStore, members, showUndo } = useStore()
   // null – tryb odczytu; w edycji: kopia robocza i stan z chwili rozpoczęcia
   const [draft, setDraft] = useState<TaskEdit | null>(null)
   const [base, setBase] = useState<TaskEdit | null>(null)
   const [discard, setDiscard] = useState<'close' | 'cancel' | null>(null)
   // zdjęcia (etap 9): zapisane na żywo + zmiany z edycji (zapis dopiero przy „Zapisz”)
-  const savedPhotos = useTaskPhotos(task)
+  const allPhotos = useTaskPhotos(task)
   const [photoDraft, setPhotoDraft] = useState<PhotoDraft>(emptyPhotoDraft)
+  // usunięte z podglądu – ukryte od razu, z bazy znikają po czasie paska „Cofnij”
+  const [hidden, setHidden] = useState<string[]>([])
+  const savedPhotos = allPhotos.filter((p) => !hidden.includes(p.id))
+  const latestPhotos = useRef(allPhotos)
+  useEffect(() => {
+    latestPhotos.current = allPhotos
+  }, [allPhotos])
+  const [viewer, setViewer] = useState<number | null>(null)
+  const deletePhoto = (p: TaskPhoto) => {
+    let cancelled = false
+    const restore = () => {
+      cancelled = true
+      setHidden((h) => h.filter((id) => id !== p.id))
+    }
+    setHidden((h) => [...h, p.id])
+    setTimeout(() => {
+      if (!cancelled) photoStore.save(task, latestPhotos.current, { added: [], removed: [p.id] })
+    }, TOAST_MS)
+    showUndo('Usunięto zdjęcie', restore)
+    return restore
+  }
+  const authorOf = (p: TaskPhoto) =>
+    `dodane: ${members.find((m) => m.uid === p.createdBy)?.name ?? 'domownik'}`
   const editing = draft !== null
   const dirty =
     editing && (JSON.stringify(draft) !== JSON.stringify(base) || draftChanged(photoDraft))
@@ -213,6 +243,66 @@ export function TaskDetailSheet({
 
           <NoteText text={task.note} />
 
+          {savedPhotos.length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div
+                style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}
+              >
+                <span
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 800,
+                    letterSpacing: '1.4px',
+                    color: colors.muted,
+                  }}
+                >
+                  ZDJĘCIA
+                </span>
+                <span
+                  style={{
+                    fontFamily: fonts.serif,
+                    fontStyle: 'italic',
+                    fontSize: 14,
+                    color: colors.brass700,
+                  }}
+                >
+                  {savedPhotos.length} {plural(savedPhotos.length, ['zdjęcie', 'zdjęcia', 'zdjęć'])}
+                </span>
+              </div>
+              <div style={{ display: 'flex', gap: 8, overflowX: 'auto' }}>
+                {savedPhotos.map((p, i) => (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => setViewer(i)}
+                    aria-label={`Otwórz zdjęcie ${i + 1} z ${savedPhotos.length}`}
+                    style={{
+                      width: 104,
+                      height: 104,
+                      flex: 'none',
+                      padding: 0,
+                      border: 0,
+                      borderRadius: 14,
+                      overflow: 'hidden',
+                      background: colors.sand,
+                    }}
+                  >
+                    <img
+                      src={p.tileUrl}
+                      alt=""
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        display: 'block',
+                      }}
+                    />
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           <DetailActions
             onDelete={onTrash}
             primary={{
@@ -228,6 +318,17 @@ export function TaskDetailSheet({
       )}
 
       <span style={{ fontSize: 12, color: colors.muted, textAlign: 'center' }}>{meta}</span>
+
+      {viewer !== null && (
+        <PhotoViewer
+          photos={savedPhotos}
+          start={viewer}
+          title={task.title}
+          author={authorOf}
+          onDelete={deletePhoto}
+          onClose={() => setViewer(null)}
+        />
+      )}
 
       {discard && (
         <DiscardDialog

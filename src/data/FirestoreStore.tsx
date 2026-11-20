@@ -1,6 +1,7 @@
 import {
   collection,
   doc,
+  getDoc,
   onSnapshot,
   query,
   setDoc,
@@ -40,6 +41,7 @@ import {
   addPhotoOps,
   deletePhotoOps,
   type PhotoDoc,
+  type PhotoFullDoc,
   type PhotoOp,
   type PhotoPlace,
 } from '../firebase/photos.ts'
@@ -103,6 +105,7 @@ function photoFromDoc(id: string, d: Partial<PhotoDoc>, place: PhotoPlace): Task
     kind: d.kind === 'series' ? 'series' : 'task',
     slot: typeof d.slot === 'number' ? d.slot : 0,
     size: typeof d.size === 'number' ? d.size : 0,
+    type: d.type === 'image/webp' ? 'image/webp' : 'image/jpeg',
     tileUrl: tile ? `data:${d.type ?? 'image/jpeg'};base64,${tile.toBase64()}` : '',
     createdBy: d.createdBy ?? '',
     place,
@@ -430,6 +433,14 @@ function HouseData({ children }: { children: ReactNode }) {
   const photos = useMemo<PhotosApi>(
     () => ({
       prepare: preparePhoto,
+      loadFull: async (photo) => {
+        const snap = await getDoc(
+          doc(db, `${paths.photoFull(photo.place.houseId, photo.place.privateUid)}/${photo.id}`),
+        )
+        const full = (snap.data() as Partial<PhotoFullDoc> | undefined)?.full
+        if (!full) throw new Error('Brak pełnej wersji zdjęcia')
+        return new Blob([new Uint8Array(full.toUint8Array())], { type: photo.type })
+      },
       usage: photoUsage,
       watch: (task, onChange) => {
         if (!houseId) return () => {}

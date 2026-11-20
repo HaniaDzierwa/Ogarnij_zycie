@@ -1,13 +1,15 @@
 import { useState } from 'react'
 import { SwipeRow } from '../../components/SwipeRow.tsx'
 import { Box } from '../../components/ui.tsx'
-import { CheckIcon, TrashIcon, UndoIcon } from '../../components/icons.tsx'
+import { CameraIcon, CheckIcon, TrashIcon, UndoIcon } from '../../components/icons.tsx'
 import { DueBadge } from '../../components/DueBadge.tsx'
 import { RepeatBadge } from '../../components/RepeatBadge.tsx'
 import { type DateKey } from '../../data/dates.ts'
+import { plural } from '../../data/plural.ts'
 import { priorityOf, subtaskProgress } from '../../data/selectors.ts'
 import { useStore } from '../../data/store.ts'
 import type { Task } from '../../data/types.ts'
+import { thumbSrc } from '../../photos/draft.ts'
 import { colors, fonts, priorities } from '../../theme'
 import type { GroupBy } from './tasksView.ts'
 
@@ -173,6 +175,23 @@ export function TaskRow({
                 <DueBadge due={task.due} today={today} week={task.dueWeek} done={task.done} />
               )}
               {task.repeat && !task.done && <RepeatBadge repeat={task.repeat} />}
+              {!!task.photos && (
+                <span
+                  aria-label={`${task.photos} ${plural(task.photos, ['zdjęcie', 'zdjęcia', 'zdjęć'])}`}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 4,
+                    fontSize: 11,
+                    fontWeight: 800,
+                    letterSpacing: '0.8px',
+                    color: colors.muted,
+                  }}
+                >
+                  <CameraIcon size={14} strokeWidth={2.2} />
+                  {task.photos}
+                </span>
+              )}
               {task.private && (
                 <span
                   style={{
@@ -236,6 +255,22 @@ export function TaskRow({
               </span>
             )}
           </button>
+          {!!task.photos && task.thumb && (
+            <img
+              src={thumbSrc(task.thumb)}
+              alt=""
+              style={{
+                width: 44,
+                height: 44,
+                flex: 'none',
+                alignSelf: 'center',
+                marginRight: hasSteps ? 0 : 12,
+                borderRadius: 10,
+                objectFit: 'cover',
+                opacity: task.done ? 0.6 : 1,
+              }}
+            />
+          )}
           {hasSteps && (
             <button
               type="button"
