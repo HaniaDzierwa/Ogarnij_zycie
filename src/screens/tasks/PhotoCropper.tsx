@@ -19,11 +19,17 @@ const BG = '#14251C'
 export function PhotoCropper({
   src,
   busy,
+  title = 'Przytnij zdjęcie',
+  cancelLabel = 'Anuluj',
   onCancel,
   onDone,
 }: {
   /** Adres obrazka (blob:, data:). */
   src: string
+  /** „Przytnij zdjęcie (2 z 3)” – przy dodawaniu kilku. */
+  title?: string
+  /** Przy dodawaniu: „Bez przycinania” (zdjęcie w całości). */
+  cancelLabel?: string
   /** Przycinanie w toku – przyciski nieaktywne. */
   busy?: boolean
   onCancel: () => void
@@ -100,7 +106,7 @@ export function PhotoCropper({
     <div
       role="dialog"
       aria-modal="true"
-      aria-label="Przytnij zdjęcie"
+      aria-label={title}
       style={{
         position: 'fixed',
         inset: 0,
@@ -115,7 +121,7 @@ export function PhotoCropper({
     >
       <div style={{ padding: '18px 16px 8px', display: 'flex', alignItems: 'baseline', gap: 10 }}>
         <span style={{ fontFamily: fonts.serif, fontSize: 21, fontWeight: 500, flex: 1 }}>
-          Przytnij zdjęcie
+          {title}
         </span>
         <button
           type="button"
@@ -202,7 +208,7 @@ export function PhotoCropper({
               color: colors.cream,
             }}
           >
-            Anuluj
+            {cancelLabel}
           </button>
           <button
             type="button"

@@ -80,6 +80,12 @@ export function usePhotoField(p: PhotoFieldProps | undefined): {
   const [pending, setPending] = useState<PhotoKind[]>([])
   const [error, setError] = useState<string | null>(null)
   const [choice, setChoice] = useState<PhotoKind | null>(null)
+  // przycinanie od razu przy dodawaniu (poprawka Hani 2026-11-20) – pytanie o każde zdjęcie
+  const [askCrop, setAskCrop] = useState<{
+    url: string
+    title: string
+    answer: (rect: CropRect | null) => void
+  } | null>(null)
   // kilka zdjęć z galerii – najpierw własny wybór z limitem i licznikiem „N z 5”
   const [picking, setPicking] = useState<File[] | null>(null)
   // „+ Zdjęcie” w zwykłym zadaniu – sekcja z „Aparat” / „Galeria”, zanim jest pierwsze zdjęcie
@@ -105,6 +111,21 @@ export function usePhotoField(p: PhotoFieldProps | undefined): {
     if (repeating) setChoice('task')
     else setOpened(true)
   }
+
+  /** Ekran przycinania nowego zdjęcia – ramka albo null („Bez przycinania”). */
+  const cropFirst = (file: Blob, title: string) =>
+    new Promise<CropRect | null>((resolve) => {
+      const url = URL.createObjectURL(file)
+      setAskCrop({
+        url,
+        title,
+        answer: (rect) => {
+          URL.revokeObjectURL(url)
+          setAskCrop(null)
+          resolve(rect)
+        },
+      })
+    })
 
   /** Przycinanie: obrazek z nowego zdjęcia albo pełna wersja zapisanego. */
   const startCrop = async (tile: PhotoTile) => {
@@ -156,9 +177,15 @@ export function usePhotoField(p: PhotoFieldProps | undefined): {
         : null
     // po kolei – na telefonie kilka dużych zdjęć naraz to dużo pamięci
     let used = draftBytes(p.saved, p.draft)
-    for (const file of take) {
+    for (const [i, file] of take.entries()) {
       try {
-        const photo = { ...(await store.photos.prepare(file)), kind }
+        // najpierw przycinanie (albo „Bez przycinania”), potem zmniejszanie
+        const rect = await cropFirst(
+          file,
+          take.length > 1 ? `Przytnij zdjęcie (${i + 1} z ${take.length})` : 'Przytnij zdjęcie',
+        )
+        const source = rect ? await store.photos.crop(file, rect) : file
+        const photo = { ...(await store.photos.prepare(source)), kind }
         const size = photo.tile.length + photo.full.length
         if (store.photos.usage.house + used + size > PHOTO_LIMITS.houseBytes)
           note = 'Miejsce na zdjęcia w Waszym domu się skończyło – usuń stare zdjęcia.'
@@ -235,6 +262,16 @@ export function usePhotoField(p: PhotoFieldProps | undefined): {
             setPicking(null)
             void onFiles(chosen)
           }}
+        />
+      )}
+      {askCrop && (
+        <PhotoCropper
+          key={askCrop.url}
+          src={askCrop.url}
+          title={askCrop.title}
+          cancelLabel="Bez przycinania"
+          onCancel={() => askCrop.answer(null)}
+          onDone={(rect) => askCrop.answer(rect)}
         />
       )}
       {cropping && (

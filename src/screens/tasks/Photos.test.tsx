@@ -1,10 +1,26 @@
 // Zdjęcia w arkuszu zadania (etap 9, krok 2) – na przykładowych danych (MockStore udaje zmniejszanie).
 
 import { act, cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react'
-import { afterEach, expect, test, vi } from 'vitest'
+import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { renderApp } from '../../test/renderApp.tsx'
 
-afterEach(cleanup)
+afterEach(() => {
+  cleanup()
+  vi.restoreAllMocks()
+})
+// adresy obrazków (przycinanie, wybór z galerii) – w testach bez prawdziwych plików
+beforeEach(() => {
+  vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:zdjecie')
+  vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {})
+})
+
+/** Przy dodawaniu od razu ekran przycinania – tu „Bez przycinania” (po kolei dla każdego). */
+async function skipCrops(n = 1) {
+  for (let i = 0; i < n; i++) {
+    const cropper = await screen.findByRole('dialog', { name: /^Przytnij zdjęcie/ })
+    fireEvent.click(within(cropper).getByRole('button', { name: 'Bez przycinania' }))
+  }
+}
 
 const photoFile = () => new File(['zdjecie'], 'kran.jpg', { type: 'image/jpeg' })
 
@@ -13,6 +29,7 @@ async function pickPhoto(sheet: HTMLElement, n: number) {
   const input = sheet.querySelector<HTMLInputElement>('input[type="file"]')!
   expect(input.accept).toBe('image/*')
   fireEvent.change(input, { target: { files: [photoFile()] } })
+  await skipCrops()
   await within(sheet).findByAltText(`Zdjęcie ${n}`)
 }
 
@@ -271,6 +288,9 @@ test('kilka zdjęć z galerii: „Wybierz zdjęcia” – najwyżej 5, licznik �
   fireEvent.click(boxes[5])
   expect(counter().textContent).toBe('5 z 5')
   fireEvent.click(within(picker).getByRole('button', { name: 'Dodaj (4)' }))
+  // od razu przycinanie – po kolei, z numerem
+  expect(await screen.findByRole('dialog', { name: 'Przytnij zdjęcie (1 z 4)' })).toBeDefined()
+  await skipCrops(4)
   expect(screen.queryByRole('dialog', { name: 'Wybierz zdjęcia' })).toBeNull()
   expect(await within(sheet).findByAltText('Zdjęcie 5')).toBeDefined()
   expect(within(sheet).getByText('5 z 5')).toBeDefined()
@@ -316,6 +336,10 @@ test('„+ Zdjęcie”: od razu „Aparat” (zdjęcie z aparatu) i „Galeria�
   expect(camera.getAttribute('capture')).toBe('environment')
   expect(camera.multiple).toBe(false)
   fireEvent.change(camera, { target: { files: [photoFile()] } })
+  // zdjęcie z aparatu – od razu ekran przycinania
+  const cropper = await screen.findByRole('dialog', { name: 'Przytnij zdjęcie' })
+  expect(within(cropper).getByRole('button', { name: 'Gotowe' })).toBeDefined()
+  await skipCrops()
   expect(await within(sheet).findByAltText('Zdjęcie 1')).toBeDefined()
 })
 
