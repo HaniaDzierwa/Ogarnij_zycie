@@ -1,6 +1,6 @@
 # Postęp prac
 
-Aktualny etap: **9 – Zdjęcia w zadaniach** (w toku, gałąź `etap-9-zdjecia`)
+Aktualny etap: **10 – Zdjęcia przy wydarzeniach** (do zaplanowania)
 
 | Etap | Status | Akceptacja |
 | --- | --- | --- |
@@ -13,7 +13,8 @@ Aktualny etap: **9 – Zdjęcia w zadaniach** (w toku, gałąź `etap-9-zdjecia`
 | 6 Ustawienia i push (dawniej 7) | zakończony | 2026-10-25 |
 | 7 Testy i publikacja (dawniej 9) | zakończony; usuwanie konta – dorobione 2026-10-25 | 2026-10-25 |
 | 8 Powtarzanie i zwarte arkusze | zakończony (oficjalna strona 2026-11-16) | 2026-11-17 |
-| 9 Zdjęcia w zadaniach | w toku | – |
+| 9 Zdjęcia w zadaniach | zakończony (oficjalna strona 2026-11-20) | 2026-11-20 |
+| 10 Zdjęcia przy wydarzeniach | do zaplanowania (PLAN.md) | – |
 
 Kolejność etapów zmieniona 2026-10-20 (decyzja Hani: testować dopiero we dwoje) – szczegóły w PLAN.md. Wpisy w dzienniku sprzed tej daty używają dawnej numeracji.
 
@@ -319,3 +320,4 @@ Wersja testowa: https://ogarnij-zycie--test-56tdtc0y.web.app (kanał `test`, odn
 - 2026-11-20 · Etap 9 · Kolejne uwagi Hani: (4) zdjęcia przy wydarzeniach – „później”, jako etap 10 w PLAN.md (decyzja Hani); poprawki teraz: (5) przycinanie zdjęcia – przycisk na kafelku w arkuszu, ekran z ramką przesuwaną i rozciąganą za rogi (`PhotoCropper`, `src/photos/crop.ts`), „Całe zdjęcie”; przycięte nowe zdjęcie podmienia się w miejscu, zapisane – usuwane i dodawane przycięte przy „Zapisz”; sprawdzone w Chrome (4000×3000 → wycinek 2000×2400 → 900×1080 WebP); (6) zdjęcie prosto z aparatu – kafelki „Aparat” (`capture`, od razu aparat) i „Galeria” (kilka naraz); w zadaniu cyklicznym po wyborze rodzaju „Zrób zdjęcie” / „Z galerii”. 434 testy, build; wersja testowa zaktualizowana.
 - 2026-11-20 · Etap 9 · Poprawka Hani: przy wyborze z galerii najwyżej 5 zdjęć, licznik „N z 5”. Systemowej galerii strona nie ogranicza, więc po wyborze kilku zdjęć – własny ekran „Wybierz zdjęcia” (`GalleryPicker`): miniatury, zaznaczonych najwyżej tyle, ile się zmieści (z tymi już przy zadaniu), dołożenie ponad limit – „To już limit – odznacz jedno, żeby wybrać inne.”, na dole licznik „N z 5” i „Dodaj (N)”. 434 testy, build; wersja testowa zaktualizowana.
 - 2026-11-20 · Etap 9 · Poprawka Hani: przycinanie od razu przy dodawaniu – po wybraniu zdjęcia (aparat / galeria) ekran „Przytnij zdjęcie” z „Bez przycinania” i „Gotowe”; przy kilku – po kolei („Przytnij zdjęcie (2 z 3)”); przycisk przycinania na kafelku zostaje do poprawek. 434 testy, build; wersja testowa zaktualizowana.
+- 2026-11-20 · Etap 9 · Odbiór: Hania – „wszystko fajnie działa”, zgoda na publikację. Gałąź `etap-9-zdjecia` scalona z `main` (fast-forward), za zgodą Hani Claude opublikował etap 9 na oficjalnej stronie (`npx firebase deploy --only hosting` → https://ogarnij-zycie.web.app), z commita db2aad1; reguły, indeksy i Worker wgrane wcześniej. Etap 9 zakończony. · Sprawdzenie: oficjalna strona po odświeżeniu.

@@ -172,7 +172,7 @@ Projekt: kanwa „Zadania cykliczne” w Claude Design (ekrany 1c/1e – zadanie
 
 ---
 
-## Etap 9 – Zdjęcia w zadaniach (plan z 2026-11-16, do dopracowania z Hanią)
+## Etap 9 – Zdjęcia w zadaniach (plan z 2026-11-16) – zakończony 2026-11-20
 
 **Status:** projekt w Claude Design (kanwa „Zdjęcia w zadaniach”: 1 Nowe zadanie – zdjęcia, 2 Arkusz do odczytu, 3 Lista, 4 Podgląd z „Zapisz na telefonie”, 5 Zadanie cykliczne – przy każdym / tylko tym razem, 6 Ustawienia – miejsce na zdjęcia; zdjęcia zastępcze – Hania nie ma swoich). Start po odbiorze etapu 8 („akceptuję”) i dopracowaniu projektu.
 
