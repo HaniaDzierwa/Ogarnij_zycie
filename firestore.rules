@@ -302,8 +302,9 @@ service cloud.firestore {
     match /meta/photos {
       // „Miejsce na zdjęcia w aplikacji się skończyło” – zalogowany widzi tylko sumę
       allow read: if signedIn();
-      allow create: if signedIn() && validUsage(0, request.resource.data);
-      allow update: if signedIn() && validUsage(resource.data.photoBytes, request.resource.data);
+      // jedna reguła na dodanie i zmianę – mniej obliczeń w paczce
+      allow create, update: if signedIn()
+        && validUsage(resource == null ? 0 : resource.data.photoBytes, request.resource.data);
       allow delete: if false;
     }
 
@@ -445,17 +446,17 @@ service cloud.firestore {
         && request.resource.data.createdAt == request.time
         && existsAfter(memberPath(houseId));
 
-      // domownicy mogą zmienić tylko nazwę
-      allow update: if isMember(houseId)
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name'])
-        && text(request.resource.data.name, 40);
+      // domownicy mogą zmienić tylko nazwę (tanie warunki przed odczytami – limit reguł na paczkę)
+      allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name'])
+        && text(request.resource.data.name, 40)
+        && isMember(houseId);
 
       // przekazanie domu (usuwanie konta założyciela): nowy właściciel to domownik, który w tej
       // samej paczce dostaje rolę „owner”
-      allow update: if isMember(houseId)
+      allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['ownerUid'])
         && resource.data.ownerUid == me()
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['ownerUid'])
         && request.resource.data.ownerUid != me()
+        && isMember(houseId)
         && getAfter(/databases/$(database)/documents/houses/$(houseId)/members/$(request.resource.data.ownerUid)).data.role == 'owner';
 
       // licznik miejsca na zdjęcia (etap 9): tylko razem z dodaniem / usunięciem zdjęcia i zmianą

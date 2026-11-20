@@ -750,6 +750,47 @@ describe('usuwanie konta', () => {
 
 // ── Zdjęcia w zadaniach (etap 9) ────────────────────────────────────────────
 
+/**
+ * Diagnostyka: gdy paczka nie przejdzie, wypisz warunki reguł, które w niej zwróciły błąd
+ * („evaluation error”) – z raportu pokrycia emulatora (porównanie przed / po).
+ */
+const COVERAGE = 'http://127.0.0.1:8080/emulator/v1/projects/demo-ogarnij-zycie:ruleCoverage'
+async function ruleErrors(): Promise<Map<string, number>> {
+  const out = new Map<string, number>()
+  try {
+    const json: unknown = await (await fetch(COVERAGE)).json()
+    const walk = (n: unknown) => {
+      if (!n || typeof n !== 'object') return
+      if (Array.isArray(n)) return n.forEach(walk)
+      const o = n as Record<string, unknown>
+      const pos = o.sourcePosition as { line?: number; column?: number } | undefined
+      if (pos && Array.isArray(o.values))
+        for (const v of o.values as { value?: unknown; count?: number }[]) {
+          const text = JSON.stringify(v.value)
+          if (/rror/.test(text))
+            out.set(`L${pos.line}:${pos.column} ${text.slice(0, 400)}`, v.count ?? 0)
+        }
+      Object.values(o).forEach(walk)
+    }
+    walk(json)
+  } catch (e) {
+    out.set(`(brak raportu pokrycia: ${String(e)})`, 1)
+  }
+  return out
+}
+async function explain<T>(label: string, run: () => Promise<T>): Promise<T> {
+  const before = await ruleErrors()
+  try {
+    return await run()
+  } catch (e) {
+    const after = await ruleErrors()
+    const lines = [...after].filter(([k, n]) => n !== before.get(k)).map(([k]) => k)
+    const report = [`=== ${label} – błędy w regułach ===`, ...lines.slice(0, 40), '===']
+    console.log(report.join('\n'))
+    throw e
+  }
+}
+
 describe('zdjęcia', () => {
   beforeEach(async () => {
     await seed()
@@ -818,7 +859,8 @@ describe('zdjęcia', () => {
     await assertSucceeds(getDoc(full('hania')))
     await assertSucceeds(getDocs(collection(db('hania'), paths.photos('dom1'))))
     // drugie zdjęcie – liczniki rosną dalej
-    await assertSucceeds(commit('hania', await add('hania', { slot: 1 })))
+    const second = await add('hania', { slot: 1 })
+    await explain('drugie zdjęcie', () => assertSucceeds(commit('hania', second)))
     expect(await houseBytes()).toBe(12000)
   })
 
