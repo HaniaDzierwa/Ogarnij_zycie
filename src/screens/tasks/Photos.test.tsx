@@ -244,21 +244,37 @@ test('Ustawienia → Porządki: „Miejsce na zdjęcia” – zajęte z 150 MB, 
 
 // ── Poprawki Hani 2026-11-20 ───────────────────────────────────────────────
 
-test('kilka zdjęć naraz z galerii; ponad limit – dodane pierwsze, z komunikatem', async () => {
+test('kilka zdjęć z galerii: „Wybierz zdjęcia” – najwyżej 5, licznik „N z 5”, odznacz, żeby wybrać inne', async () => {
+  vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:miniatura')
+  vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {})
   const sheet = newTaskSheet()
-  const input = sheet.querySelector<HTMLInputElement>('input[type="file"]')!
-  expect(input.multiple).toBe(true)
-  fireEvent.change(input, { target: { files: [photoFile(), photoFile(), photoFile()] } })
-  expect(await within(sheet).findByAltText('Zdjęcie 3')).toBeDefined()
-  expect(within(sheet).getByText('3 z 5')).toBeDefined()
-  fireEvent.change(input, {
-    target: { files: [photoFile(), photoFile(), photoFile(), photoFile()] },
-  })
+  await pickPhoto(sheet, 1)
+  const gallery = sheet.querySelector<HTMLInputElement>('input[data-zrodlo="galeria"]')!
+  expect(gallery.multiple).toBe(true)
+  // w galerii telefonu wybrane 6 – przy zadaniu jest już 1, zmieszczą się 4
+  fireEvent.change(gallery, { target: { files: Array.from({ length: 6 }, photoFile) } })
+  const picker = screen.getByRole('dialog', { name: 'Wybierz zdjęcia' })
+  const boxes = within(picker).getAllByRole('checkbox')
+  expect(boxes).toHaveLength(6)
+  expect(boxes.filter((b) => b.getAttribute('aria-checked') === 'true')).toHaveLength(4)
+  const counter = () =>
+    within(picker)
+      .getAllByRole('status')
+      .find((x) => /z 5/.test(x.textContent ?? ''))!
+  expect(counter().textContent).toBe('5 z 5')
+  // piątego nie da się dołożyć – najpierw odznacz
+  fireEvent.click(boxes[5])
+  expect(boxes[5].getAttribute('aria-checked')).toBe('false')
+  expect(within(picker).getByText('To już limit – odznacz jedno, żeby wybrać inne.')).toBeDefined()
+  fireEvent.click(boxes[0])
+  expect(counter().textContent).toBe('4 z 5')
+  fireEvent.click(boxes[5])
+  expect(counter().textContent).toBe('5 z 5')
+  fireEvent.click(within(picker).getByRole('button', { name: 'Dodaj (4)' }))
+  expect(screen.queryByRole('dialog', { name: 'Wybierz zdjęcia' })).toBeNull()
   expect(await within(sheet).findByAltText('Zdjęcie 5')).toBeDefined()
   expect(within(sheet).getByText('5 z 5')).toBeDefined()
-  expect(within(sheet).getByRole('alert').textContent).toBe(
-    'Zmieszczą się jeszcze tylko 2 – dodano pierwsze 2.',
-  )
+  vi.restoreAllMocks()
 })
 
 test('„Edytuj” – bez klawiatury: pole nazwy nie dostaje kursora od razu', () => {

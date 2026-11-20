@@ -18,6 +18,7 @@ import {
   type TaskPhoto,
 } from '../../photos/draft.ts'
 import { colors, fonts } from '../../theme'
+import { GalleryPicker } from './GalleryPicker.tsx'
 import { PhotoCropper } from './PhotoCropper.tsx'
 import type { CropRect } from '../../photos/crop.ts'
 
@@ -79,6 +80,8 @@ export function usePhotoField(p: PhotoFieldProps | undefined): {
   const [pending, setPending] = useState<PhotoKind[]>([])
   const [error, setError] = useState<string | null>(null)
   const [choice, setChoice] = useState<PhotoKind | null>(null)
+  // kilka zdjęć z galerii – najpierw własny wybór z limitem i licznikiem „N z 5”
+  const [picking, setPicking] = useState<File[] | null>(null)
   // „+ Zdjęcie” w zwykłym zadaniu – sekcja z „Aparat” / „Galeria”, zanim jest pierwsze zdjęcie
   const [opened, setOpened] = useState(false)
   // przycinane zdjęcie: kafelek, adres obrazka i czy właśnie się przycina
@@ -200,7 +203,8 @@ export function usePhotoField(p: PhotoFieldProps | undefined): {
   const onChange = (e: { target: HTMLInputElement }) => {
     const files = [...(e.target.files ?? [])]
     e.target.value = ''
-    if (files.length) void onFiles(files)
+    if (files.length > 1) setPicking(files)
+    else if (files.length) void onFiles(files)
   }
   const input = (
     <>
@@ -222,6 +226,17 @@ export function usePhotoField(p: PhotoFieldProps | undefined): {
         data-zrodlo="aparat"
         onChange={onChange}
       />
+      {picking && (
+        <GalleryPicker
+          files={picking}
+          already={tiles.length + pending.length}
+          onCancel={() => setPicking(null)}
+          onDone={(chosen) => {
+            setPicking(null)
+            void onFiles(chosen)
+          }}
+        />
+      )}
       {cropping && (
         <PhotoCropper
           src={cropping.url}
