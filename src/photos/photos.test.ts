@@ -18,6 +18,7 @@ import {
   type PreparedPhoto,
 } from './resize.ts'
 import { photoFieldsAfter, withPhotoFields } from './taskFields.ts'
+import { formatMB } from './usage.ts'
 
 const saved = (id: string, slot: number, kind: TaskPhoto['kind'] = 'task'): TaskPhoto => ({
   id,
@@ -129,5 +130,14 @@ describe('liczba zdjęć i miniatura przy zadaniu', () => {
     const none = await photoFieldsAfter(task, list, draft({ removed: ['z1_0', 'z1_1'] }), fromTile)
     const t = withPhotoFields(task, none)
     expect('photos' in t || 'thumb' in t).toBe(false)
+  })
+})
+
+describe('miejsce na zdjęcia', () => {
+  test('MB po polsku: z przecinkiem do 10 MB, potem pełne', () => {
+    expect(formatMB(0)).toBe('0 MB')
+    expect(formatMB(3.44 * 1024 * 1024)).toBe('3,4 MB')
+    expect(formatMB(12.6 * 1024 * 1024)).toBe('13 MB')
+    expect(formatMB(150 * 1024 * 1024)).toBe('150 MB')
   })
 })

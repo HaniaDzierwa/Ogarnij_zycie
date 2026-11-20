@@ -225,3 +225,17 @@ test('podgląd zadania cyklicznego: „Przenieś do…” i pytanie o usunięcie
   fireEvent.click(within(viewer).getByRole('button', { name: 'Usuń zdjęcie' }))
   expect(within(viewer).getByText('Usunąć ze wszystkich powtórzeń?')).toBeDefined()
 })
+
+// ── Krok 5: miejsce na zdjęcia w Ustawieniach ──────────────────────────────
+
+test('Ustawienia → Porządki: „Miejsce na zdjęcia” – zajęte z 150 MB, z paskiem', () => {
+  renderApp('/ustawienia', { today: '2026-10-09' })
+  expect(screen.getByText('Miejsce na zdjęcia')).toBeDefined()
+  expect(screen.getByText('0 MB z 150 MB')).toBeDefined()
+  expect(
+    screen
+      .getByRole('progressbar', { name: 'Zajęte miejsce na zdjęcia' })
+      .getAttribute('aria-valuenow'),
+  ).toBe('0')
+  expect(screen.getByText(/mieści się ok\. 1000 zdjęć/)).toBeDefined()
+})

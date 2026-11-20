@@ -3,7 +3,13 @@ import { Link, useNavigate } from 'react-router'
 import { paths } from '../../app/screens.ts'
 import { useAuth } from '../../auth/auth.ts'
 import { Accent, Header } from '../../components/Header.tsx'
-import { BellIcon, ChevronRightIcon, TrashIcon, UsersIcon } from '../../components/icons.tsx'
+import {
+  BellIcon,
+  CameraIcon,
+  ChevronRightIcon,
+  TrashIcon,
+  UsersIcon,
+} from '../../components/icons.tsx'
 import { Logo } from '../../components/Logo.tsx'
 import { TabBar } from '../../components/TabBar.tsx'
 import {
@@ -20,6 +26,8 @@ import { useBufferedText } from '../../components/useBufferedText.ts'
 import { DEFAULT_HOUSE_NAME } from '../../house/house.ts'
 import { plural } from '../../data/plural.ts'
 import type { CleanupDays, NotificationSettings } from '../../data/types.ts'
+import { PHOTO_LIMITS } from '../../firebase/photos.ts'
+import { formatMB } from '../../photos/usage.ts'
 import { colors, fonts, priorities, shadows } from '../../theme'
 import type { PushState } from '../../push/push.ts'
 import { usePush } from '../../push/usePush.ts'
@@ -292,6 +300,7 @@ export function SettingsScreen() {
                 : 'PUSTO'
             }
           />
+          <PhotoUsage house={store.photos.usage.house} app={store.photos.usage.app} />
         </Card>
       </Section>
 
@@ -467,5 +476,77 @@ function LinkRow({
         <ChevronRightIcon />
       </span>
     </Link>
+  )
+}
+
+/**
+ * Miejsce na zdjęcia (etap 9, projekt „Zdjęcia w zadaniach”, ekran 6): zajęte z limitu domu
+ * (150 MB) z paskiem; po przekroczeniu – kolorem i opisem. Limit całej aplikacji (600 MB) – tylko
+ * gdy się skończył.
+ */
+function PhotoUsage({ house, app }: { house: number; app: number }) {
+  const houseMax = PHOTO_LIMITS.houseBytes
+  const houseFull = house >= houseMax - PHOTO_LIMITS.fullBytes
+  const appFull = app >= PHOTO_LIMITS.appBytes - PHOTO_LIMITS.fullBytes
+  const pct = Math.min(100, Math.round((house / houseMax) * 100))
+  const danger = '#A4492F'
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 10,
+        padding: '14px 18px',
+        borderTop: `1px solid ${colors.line}`,
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <span
+          style={{
+            width: 36,
+            height: 36,
+            flex: 'none',
+            borderRadius: 12,
+            background: colors.sand,
+            color: colors.brass700,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <CameraIcon size={20} />
+        </span>
+        <span style={{ flex: 1, fontSize: 16, fontWeight: 700 }}>Miejsce na zdjęcia</span>
+        <span
+          style={{ fontSize: 14, fontWeight: 800, color: houseFull ? danger : colors.brass700 }}
+        >
+          {formatMB(house)} z {formatMB(houseMax)}
+        </span>
+      </div>
+      <div
+        role="progressbar"
+        aria-label="Zajęte miejsce na zdjęcia"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={pct}
+        style={{ height: 8, borderRadius: 4, background: colors.line, overflow: 'hidden' }}
+      >
+        <div
+          style={{
+            width: `${pct}%`,
+            height: '100%',
+            borderRadius: 4,
+            background: houseFull ? danger : colors.brass500,
+          }}
+        />
+      </div>
+      <span style={{ fontSize: 13, lineHeight: 1.45, color: colors.muted }}>
+        {houseFull
+          ? 'Miejsce na zdjęcia w Waszym domu się skończyło – usuń stare zdjęcia, żeby dodać nowe. Zadania zapisują się normalnie.'
+          : appFull
+            ? 'Miejsce na zdjęcia w aplikacji się skończyło – na razie nie da się dodać nowych. Zadania zapisują się normalnie.'
+            : 'Wspólne dla wszystkich domowników – mieści się ok. 1000 zdjęć. Zdjęcia zadań w Koszu zajmują miejsce, dopóki zadanie nie zniknie na zawsze.'}
+      </span>
+    </div>
   )
 }
