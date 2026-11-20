@@ -1,4 +1,7 @@
-import { useCallback, useMemo, useState, type ReactNode } from 'react'
+import { useCallback, useMemo, useRef, useState, type ReactNode } from 'react'
+import { photoId } from '../firebase/photos.ts'
+import { planPhotos, seriesOf, sortPhotos, type TaskPhoto } from '../photos/draft.ts'
+import { photoFieldsAfter, withPhotoFields } from '../photos/taskFields.ts'
 import { nowStamp, today as getToday, type DateKey } from './dates.ts'
 import {
   mockCategories,
@@ -15,8 +18,10 @@ import { newId } from './ids.ts'
 import { revertChanges } from './listDiff.ts'
 import { spawnRepeats } from './taskOps.ts'
 import { allPriorities } from './selectors.ts'
-import { StoreContext, useUndoToast, type Store } from './store.ts'
+import { StoreContext, useUndoToast, type PhotosApi, type Store } from './store.ts'
 import type { CalendarEvent, CleanupDays, CustomPriority, Task } from './types.ts'
+
+let fakePhotoCounter = 0
 
 /** Przykładowe dane (testy, podgląd ekranów): w pamięci, znikają po odświeżeniu strony. */
 export function MockStoreProvider({
@@ -67,6 +72,64 @@ export function MockStoreProvider({
 
   const who = useCallback(() => ({ uid: currentUid, at: nowStamp(day) }), [day, currentUid])
 
+  // zdjęcia (etap 9) – w pamięci; zmniejszanie udawane (w testach nie ma prawdziwego obrazka)
+  const photoList = useRef<(TaskPhoto & { owner: string })[]>([])
+  const photoListeners = useRef(new Set<() => void>())
+  const [photoBytes, setPhotoBytes] = useState(0)
+  const photos = useMemo<PhotosApi>(
+    () => ({
+      usage: { house: photoBytes, app: photoBytes },
+      prepare: async (file) => {
+        const n = ++fakePhotoCounter
+        const tile = new Uint8Array(100).fill(n % 255)
+        return {
+          key: `nowe-${n}`,
+          type: 'image/webp',
+          full: new Uint8Array(Math.max(1, file.size)),
+          tile,
+          thumb: `MINI${n}`,
+          tileUrl: `data:image/webp;base64,KAFEL${n}`,
+        }
+      },
+      watch: (task, onChange) => {
+        const run = () =>
+          onChange(
+            sortPhotos(
+              photoList.current.filter((p) =>
+                p.kind === 'task' ? p.owner === task.id : p.owner === seriesOf(task),
+              ),
+            ),
+          )
+        photoListeners.current.add(run)
+        run()
+        return () => {
+          photoListeners.current.delete(run)
+        }
+      },
+      save: (task, saved, draft) => {
+        const plan = planPhotos(saved, draft)
+        const removed = new Set(plan.removes.map((p) => p.id))
+        const added = plan.adds.map(({ photo, slot }) => ({
+          id: photoId('task', task.id, slot),
+          kind: 'task' as const,
+          slot,
+          size: photo.tile.length + photo.full.length,
+          tileUrl: photo.tileUrl,
+          createdBy: currentUid,
+          place: { houseId: 'dom', privateUid: task.private ? currentUid : undefined },
+          owner: task.id,
+        }))
+        photoList.current = [...photoList.current.filter((p) => !removed.has(p.id)), ...added]
+        setPhotoBytes(photoList.current.reduce((n, p) => n + p.size, 0))
+        photoListeners.current.forEach((run) => run())
+        void photoFieldsAfter(task, saved, draft, async (url) => `Z:${url.slice(-6)}`).then((f) =>
+          setTasksState((list) => list.map((t) => (t.id === task.id ? withPhotoFields(t, f) : t))),
+        )
+      },
+    }),
+    [photoBytes, currentUid],
+  )
+
   const changeTasks = useCallback(
     (text: string, update: (t: Task[]) => Task[]) => {
       const before = tasks
@@ -114,6 +177,8 @@ export function MockStoreProvider({
       changeTasks,
       changeEvents,
       undo,
+      showUndo: show,
+      photos,
       setCategories,
       setCustomPriorities,
       setEvents,
@@ -147,6 +212,8 @@ export function MockStoreProvider({
       changeTasks,
       changeEvents,
       undo,
+      show,
+      photos,
     ],
   )
 

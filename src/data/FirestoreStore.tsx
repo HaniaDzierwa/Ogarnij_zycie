@@ -2,10 +2,13 @@ import {
   collection,
   doc,
   onSnapshot,
+  query,
   setDoc,
   updateDoc,
   waitForPendingWrites,
+  where,
   writeBatch,
+  type Bytes,
 } from 'firebase/firestore'
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useAuth } from '../auth/auth.ts'
@@ -33,6 +36,16 @@ import {
   type UserDoc,
 } from '../firebase/model.ts'
 import { listenAfterWrites } from '../firebase/listen.ts'
+import {
+  addPhotoOps,
+  deletePhotoOps,
+  type PhotoDoc,
+  type PhotoOp,
+  type PhotoPlace,
+} from '../firebase/photos.ts'
+import { planPhotos, seriesOf, sortPhotos, type TaskPhoto } from '../photos/draft.ts'
+import { preparePhoto, thumbFromTile } from '../photos/resize.ts'
+import { photoFieldsAfter, withPhotoFields } from '../photos/taskFields.ts'
 import { syncCollection } from '../firebase/sync.ts'
 import { useHouse } from '../house/house.ts'
 import { builtInEventTypes } from '../theme'
@@ -42,7 +55,7 @@ import { newId } from './ids.ts'
 import { revertChanges } from './listDiff.ts'
 import { spawnRepeats } from './taskOps.ts'
 import { allPriorities } from './selectors.ts'
-import { StoreContext, useUndoToast, type Store } from './store.ts'
+import { StoreContext, useUndoToast, type PhotosApi, type Store } from './store.ts'
 import type {
   CalendarEvent,
   Category,
@@ -69,6 +82,32 @@ const typeOrder = (a: EventType, b: EventType) => {
 const HOUSE_PARTS = 9
 
 const reportError = (e: unknown) => console.error('Nie udało się zapisać zmian w Firestore', e)
+
+/** Jedna paczka zapisu zdjęcia (bez czekania na serwer – bez internetu wyśle się później). */
+function commitPhotoOps(ops: PhotoOp[]) {
+  const batch = writeBatch(db)
+  for (const op of ops) {
+    const ref = doc(db, op.path)
+    if ('delete' in op) batch.delete(ref)
+    else if (op.mergeFields) batch.set(ref, op.data, { mergeFields: op.mergeFields })
+    else batch.set(ref, op.data)
+  }
+  batch.commit().catch(reportError)
+}
+
+/** Kafelek z bazy → zdjęcie do pokazania. */
+function photoFromDoc(id: string, d: Partial<PhotoDoc>, place: PhotoPlace): TaskPhoto {
+  const tile = d.tile as Bytes | undefined
+  return {
+    id,
+    kind: d.kind === 'series' ? 'series' : 'task',
+    slot: typeof d.slot === 'number' ? d.slot : 0,
+    size: typeof d.size === 'number' ? d.size : 0,
+    tileUrl: tile ? `data:${d.type ?? 'image/jpeg'};base64,${tile.toBase64()}` : '',
+    createdBy: d.createdBy ?? '',
+    place,
+  }
+}
 
 /**
  * Dane domu z Firestore (etap 2, krok 6): zadania, kosz, kategorie, wydarzenia, rodzaje, domownicy,
@@ -112,6 +151,9 @@ function HouseData({ children }: { children: ReactNode }) {
   const [houseName, setHouseNameState] = useState('')
   const [userDoc, setUserDoc] = useState<Omit<UserDoc, 'houseId'>>({ ...DEFAULT_USER, name: '' })
   const { toast, show, undo } = useUndoToast()
+  // zdjęcia (etap 9): zajęte miejsce i numer ostatniej zmiany liczników domu
+  const [photoUsage, setPhotoUsage] = useState({ house: 0, app: 0 })
+  const photoSeq = useRef(0)
   // które części danych domu już przyszły (pierwszy odczyt) – ekrany czekają na komplet
   const [loaded, setLoaded] = useState<ReadonlySet<string>>(new Set())
 
@@ -151,7 +193,11 @@ function HouseData({ children }: { children: ReactNode }) {
         onSnapshot(
           doc(db, paths.house(houseId)),
           (snap) => {
-            setHouseNameState((snap.data() as Partial<HouseDoc> | undefined)?.name ?? '')
+            const h = snap.data() as
+              (Partial<HouseDoc> & { photoBytes?: number; photoSeq?: number }) | undefined
+            setHouseNameState(h?.name ?? '')
+            photoSeq.current = h?.photoSeq ?? 0
+            setPhotoUsage((u) => ({ ...u, house: h?.photoBytes ?? 0 }))
             mark('house')
           },
           onError,
@@ -257,7 +303,16 @@ function HouseData({ children }: { children: ReactNode }) {
         ),
       ),
     ]
-    return () => subs.forEach((unsub) => unsub())
+    // licznik zdjęć całej aplikacji – tylko do komunikatu „miejsce się skończyło” (nie czekamy na niego)
+    const usage = onSnapshot(
+      doc(db, paths.photoUsage()),
+      (snap) => setPhotoUsage((u) => ({ ...u, app: snap.data()?.photoBytes ?? 0 })),
+      () => {},
+    )
+    return () => {
+      subs.forEach((unsub) => unsub())
+      usage()
+    }
   }, [houseId, uid])
 
   /** Zmiana listy: od razu na ekranie, w tle zapis różnic do Firestore. */
@@ -372,6 +427,68 @@ function HouseData({ children }: { children: ReactNode }) {
     [setEvents, show],
   )
 
+  const photos = useMemo<PhotosApi>(
+    () => ({
+      prepare: preparePhoto,
+      usage: photoUsage,
+      watch: (task, onChange) => {
+        if (!houseId) return () => {}
+        const place: PhotoPlace = { houseId, privateUid: task.private ? uid : undefined }
+        const coll = collection(db, paths.photos(houseId, place.privateUid))
+        let own: TaskPhoto[] = []
+        let series: TaskPhoto[] = []
+        const emit = () => onChange(sortPhotos([...own, ...series]))
+        const fail = (e: unknown) => console.error('Nie udało się wczytać zdjęć', e)
+        const unsubs = [
+          onSnapshot(
+            query(coll, where('taskId', '==', task.id)),
+            (snap) => {
+              own = snap.docs.map((d) => photoFromDoc(d.id, d.data(), place))
+              emit()
+            },
+            fail,
+          ),
+          onSnapshot(
+            query(coll, where('seriesId', '==', seriesOf(task))),
+            (snap) => {
+              series = snap.docs.map((d) => photoFromDoc(d.id, d.data(), place))
+              emit()
+            },
+            fail,
+          ),
+        ]
+        return () => unsubs.forEach((u) => u())
+      },
+      save: (task, saved, draft) => {
+        if (!houseId) return
+        const place: PhotoPlace = { houseId, privateUid: task.private ? uid : undefined }
+        const plan = planPhotos(saved, draft)
+        // każda zmiana – osobna paczka z kolejnym numerem zmiany liczników domu
+        let seq = photoSeq.current
+        for (const p of plan.removes) commitPhotoOps(deletePhotoOps(p.place, p.id, p.size, ++seq))
+        for (const { photo, slot } of plan.adds)
+          commitPhotoOps(
+            addPhotoOps({
+              place,
+              uid,
+              kind: 'task',
+              owner: task.id,
+              slot,
+              type: photo.type,
+              tile: photo.tile,
+              full: photo.full,
+              seq: ++seq,
+            }).ops,
+          )
+        photoSeq.current = seq
+        void photoFieldsAfter(task, saved, draft, thumbFromTile).then((f) =>
+          setTasks((list) => list.map((t) => (t.id === task.id ? withPhotoFields(t, f) : t))),
+        )
+      },
+    }),
+    [houseId, uid, photoUsage, setTasks],
+  )
+
   /** Pola profilu – od razu na ekranie, zapis w tle. */
   const updateUser = useCallback(
     (fields: Partial<UserDoc>) => {
@@ -417,6 +534,8 @@ function HouseData({ children }: { children: ReactNode }) {
       changeTasks,
       changeEvents,
       undo,
+      showUndo: show,
+      photos,
       setCategories,
       setCustomPriorities,
       setEvents,
@@ -448,6 +567,8 @@ function HouseData({ children }: { children: ReactNode }) {
       changeTasks,
       changeEvents,
       undo,
+      show,
+      photos,
       setCategories,
       setCustomPriorities,
       setEvents,

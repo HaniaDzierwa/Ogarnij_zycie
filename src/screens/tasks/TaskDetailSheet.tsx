@@ -16,6 +16,8 @@ import { useStore } from '../../data/store.ts'
 import { taskEditOf, type TaskEdit } from '../../data/taskOps.ts'
 import type { Category, Task } from '../../data/types.ts'
 import { colors, fonts, noCategory } from '../../theme'
+import { draftChanged, emptyPhotoDraft, type PhotoDraft } from '../../photos/draft.ts'
+import { useTaskPhotos } from './PhotosField.tsx'
 import { DoneBox, SubtaskToggle } from './TaskRow.tsx'
 import { TaskForm } from './TaskForm.tsx'
 
@@ -53,13 +55,17 @@ export function TaskDetailSheet({
   onTrash,
   onClose,
 }: Props) {
-  const { priorities: prioList } = useStore()
+  const { priorities: prioList, photos: photoStore } = useStore()
   // null – tryb odczytu; w edycji: kopia robocza i stan z chwili rozpoczęcia
   const [draft, setDraft] = useState<TaskEdit | null>(null)
   const [base, setBase] = useState<TaskEdit | null>(null)
   const [discard, setDiscard] = useState<'close' | 'cancel' | null>(null)
+  // zdjęcia (etap 9): zapisane na żywo + zmiany z edycji (zapis dopiero przy „Zapisz”)
+  const savedPhotos = useTaskPhotos(task)
+  const [photoDraft, setPhotoDraft] = useState<PhotoDraft>(emptyPhotoDraft)
   const editing = draft !== null
-  const dirty = editing && JSON.stringify(draft) !== JSON.stringify(base)
+  const dirty =
+    editing && (JSON.stringify(draft) !== JSON.stringify(base) || draftChanged(photoDraft))
 
   const startEdit = () => {
     const e = taskEditOf(task)
@@ -69,10 +75,13 @@ export function TaskDetailSheet({
   const stopEdit = () => {
     setDraft(null)
     setBase(null)
+    setPhotoDraft(emptyPhotoDraft)
   }
   const save = () => {
     if (!draft?.title.trim()) return
     onSave({ ...draft, title: draft.title.trim(), note: draft.note.trim() })
+    if (draftChanged(photoDraft))
+      photoStore.save({ ...task, private: draft.private }, savedPhotos, photoDraft)
     stopEdit()
   }
   const requestClose = () => (dirty ? setDiscard('close') : onClose())
@@ -102,6 +111,7 @@ export function TaskDetailSheet({
           today={today}
           authorUid={task.createdBy}
           onSubmit={save}
+          photos={{ saved: savedPhotos, draft: photoDraft, onDraft: setPhotoDraft }}
         />
       ) : (
         <>

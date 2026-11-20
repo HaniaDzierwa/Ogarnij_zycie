@@ -2,6 +2,8 @@
 // W aplikacji: FirestoreStoreProvider (etap 2); w testach: MockStoreProvider (przykładowe dane).
 
 import { createContext, useCallback, useContext, useRef, useState } from 'react'
+import type { PhotoDraft, TaskPhoto } from '../photos/draft.ts'
+import type { PreparedPhoto } from '../photos/resize.ts'
 import type { DateKey } from './dates.ts'
 import type { Who } from './taskOps.ts'
 import type {
@@ -16,6 +18,18 @@ import type {
   SummaryContent,
   Task,
 } from './types.ts'
+
+/** Zdjęcia w zadaniach (etap 9). */
+export type PhotosApi = {
+  /** Plik z aparatu / galerii → zmniejszone wersje (na telefonie). */
+  prepare: (file: Blob) => Promise<PreparedPhoto>
+  /** Zapisane zdjęcia zadania na żywo – własne i „przy każdym powtórzeniu”. Zwraca „przestań słuchać”. */
+  watch: (task: Task, onChange: (list: TaskPhoto[]) => void) => () => void
+  /** Zapis zmian z arkusza („Dodaj zadanie” / „Zapisz”); zadanie jest już na liście. */
+  save: (task: Task, saved: TaskPhoto[], draft: PhotoDraft) => void
+  /** Zajęte miejsce na zdjęcia w bajtach: dom i cała aplikacja. */
+  usage: { house: number; app: number }
+}
 
 /** Pasek „… · COFNIJ”: tekst + przywrócenie stanu sprzed akcji (zadań albo wydarzeń). */
 export type Toast = { id: number; text: string; restore: () => void }
@@ -60,6 +74,9 @@ export type Store = {
   /** Zmiana wydarzeń z paskiem „Cofnij”. */
   changeEvents: (text: string, update: (events: CalendarEvent[]) => CalendarEvent[]) => void
   undo: () => void
+  /** Pasek „… · COFNIJ” dla zmian poza listami (np. zdjęcie usunięte w arkuszu). */
+  showUndo: (text: string, restore: () => void) => void
+  photos: PhotosApi
   setCategories: (update: (categories: Category[]) => Category[]) => void
   setCustomPriorities: (update: (list: CustomPriority[]) => CustomPriority[]) => void
   setEvents: (update: (events: CalendarEvent[]) => CalendarEvent[]) => void

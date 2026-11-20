@@ -16,6 +16,7 @@ import type { Category } from '../../data/types.ts'
 import { colors, noCategory } from '../../theme'
 import { DueField } from './DueField.tsx'
 import { NewCategoryButton, NewCategoryForm } from './NewCategoryForm.tsx'
+import { usePhotoField, type PhotoFieldProps } from './PhotosField.tsx'
 import { PriorityPicker } from './PriorityPicker.tsx'
 
 type Row = 'cat' | 'prio' | 'due' | 'repeat' | 'vis'
@@ -54,6 +55,7 @@ export function TaskForm({
   onAddCategory,
   authorUid,
   onSubmit,
+  photos,
 }: {
   mode: 'new' | 'edit'
   value: TaskEdit
@@ -66,9 +68,12 @@ export function TaskForm({
   authorUid?: string
   /** Enter w nazwie. */
   onSubmit?: () => void
+  /** Zdjęcia (etap 9): zapisane + kopia robocza zmian. */
+  photos?: PhotoFieldProps
 }) {
   const ids = IDS[mode]
   const { priorities } = useStore()
+  const photoField = usePhotoField(photos)
   const rows = useOpenRow<Row>()
   const [addingCategory, setAddingCategory] = useState(false)
   const [stepsOpen, setStepsOpen] = useState(false)
@@ -357,10 +362,14 @@ export function TaskForm({
         <NoteField id={ids.note} value={value.note} onChange={(note) => set({ note })} />
       )}
 
+      {photoField.input}
+      {photoField.section}
+
       <AddMore
         items={[
           ...(showSteps ? [] : [{ label: 'Kroki', onClick: () => setStepsOpen(true) }]),
           ...(showNote ? [] : [{ label: 'Notatka', onClick: () => setNoteOpen(true) }]),
+          ...(photoField.addItem ? [photoField.addItem] : []),
         ]}
       />
     </>

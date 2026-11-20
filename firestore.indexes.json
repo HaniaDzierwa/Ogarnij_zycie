@@ -18,6 +18,9 @@
         { "order": "DESCENDING", "queryScope": "COLLECTION" },
         { "order": "ASCENDING", "queryScope": "COLLECTION_GROUP" }
       ]
-    }
+    },
+    { "collectionGroup": "photos", "fieldPath": "tile", "indexes": [] },
+    { "collectionGroup": "photoFull", "fieldPath": "full", "indexes": [] },
+    { "collectionGroup": "tasks", "fieldPath": "thumb", "indexes": [] }
   ]
 }

@@ -18,6 +18,7 @@ import { ClearSheet } from './ClearSheet.tsx'
 import { FiltersPanel, TextButton } from './FiltersPanel.tsx'
 import { TaskDetailSheet } from './TaskDetailSheet.tsx'
 import { Chevron, TaskRow } from './TaskRow.tsx'
+import { draftChanged } from '../../photos/draft.ts'
 import { TaskSheet } from './TaskSheet.tsx'
 import {
   categoriesWithNone,
@@ -525,7 +526,7 @@ export function TasksScreen() {
           categories={categories}
           today={today}
           onAddCategory={addCategory}
-          onSave={(draft) => {
+          onSave={(draft, photos) => {
             const id = newId('t')
             const task: Task = {
               ...draft,
@@ -539,6 +540,8 @@ export function TasksScreen() {
               deletedBy: null,
             }
             store.setTasks((list) => [task, ...list])
+            // zdjęcia – po zadaniu (reguły: zdjęcie wskazuje istniejące zadanie)
+            if (draftChanged(photos)) store.photos.save(task, [], photos)
             if (task.subtasks.length) setExpanded(id)
             setTab('todo')
             setSheetOpen(false)

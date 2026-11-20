@@ -69,6 +69,23 @@ export function PlusIcon({ size = 24, strokeWidth = 2.6 }: IconProps & { strokeW
   )
 }
 
+/** Aparat – „Dodaj” zdjęcie i liczba zdjęć przy zadaniu (etap 9). */
+export function CameraIcon({ size = 22, strokeWidth = 2 }: IconProps & { strokeWidth?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      {...stroke}
+      strokeWidth={strokeWidth}
+      aria-hidden="true"
+    >
+      <path d="M4 8h3l2-3h6l2 3h3v11H4z" />
+      <circle cx="12" cy="13" r="3.5" />
+    </svg>
+  )
+}
+
 export function ChevronLeftIcon({ size = 18 }: IconProps) {
   return (
     <svg

@@ -4,6 +4,7 @@ import { Sheet } from '../../components/ui.tsx'
 import { type DateKey } from '../../data/dates.ts'
 import type { TaskEdit } from '../../data/taskOps.ts'
 import type { Category } from '../../data/types.ts'
+import { emptyPhotoDraft, type PhotoDraft } from '../../photos/draft.ts'
 import { DEFAULT_PRIORITY } from '../../theme'
 import { TaskForm } from './TaskForm.tsx'
 
@@ -16,7 +17,8 @@ type Props = {
   today: DateKey
   /** Zwraca id nowej kategorii. */
   onAddCategory: (name: string, color: string) => string
-  onSave: (task: TaskDraft) => void
+  /** `photos` – zdjęcia wybrane w arkuszu (zapis po dodaniu zadania). */
+  onSave: (task: TaskDraft, photos: PhotoDraft) => void
 }
 
 /**
@@ -36,17 +38,21 @@ export function TaskSheet({ onClose, categories, today, onAddCategory, onSave }:
     // nowe – domyślnie „Wspólne” (decyzja Hani 2026-10-25)
     private: false,
   }))
+  const [photos, setPhotos] = useState<PhotoDraft>(emptyPhotoDraft)
 
   const submit = () => {
     const title = draft.title.trim()
     if (!title) return
     const { repeat, ...rest } = draft
-    onSave({
-      ...rest,
-      title,
-      note: draft.note.trim(),
-      ...(repeat && draft.due ? { repeat } : {}),
-    })
+    onSave(
+      {
+        ...rest,
+        title,
+        note: draft.note.trim(),
+        ...(repeat && draft.due ? { repeat } : {}),
+      },
+      photos,
+    )
   }
 
   return (
@@ -59,6 +65,7 @@ export function TaskSheet({ onClose, categories, today, onAddCategory, onSave }:
         today={today}
         onAddCategory={onAddCategory}
         onSubmit={submit}
+        photos={{ saved: [], draft: photos, onDraft: setPhotos }}
       />
       <SheetSubmit ready={!!draft.title.trim()} onSubmit={submit}>
         Dodaj zadanie
