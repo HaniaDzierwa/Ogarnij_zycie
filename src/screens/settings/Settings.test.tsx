@@ -17,7 +17,7 @@ test('Ustawienia: sekcje z projektu, bez Wyglądu (tylko jasny motyw), teksty o 
   expect(screen.queryByText('TY')).toBeNull()
   expect(screen.queryByRole('textbox')).toBeNull()
   expect(screen.getByRole('link', { name: /^Wspólny dom/ }).textContent).toContain(
-    'DOM NA LEŚNEJ · HANIA, KRZYŚ',
+    'DOM NA LEŚNEJ · 2 OSOBY',
   )
   expect(screen.getByText('Dane w Firebase – widzą je tylko domownicy')).toBeDefined()
   expect(screen.getByText('5 ELEMENTÓW · ZADANIA I WYDARZENIA')).toBeDefined()

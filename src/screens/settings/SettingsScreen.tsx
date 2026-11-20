@@ -47,17 +47,11 @@ export function SettingsScreen() {
   const auth = useAuth()
   const navigate = useNavigate()
   const [askSignOut, setAskSignOut] = useState(false)
-  const { userName, members, currentUid, notifications, summaryTimes, cleanupDays } = store
+  const { members, notifications, summaryTimes, cleanupDays } = store
   const { tasks, events, today } = store
-  // imię i nazwa domu – zapis po chwili przerwy w pisaniu (nie po każdej literze)
-  // „HANIA, KRZYŚ” – najpierw Ty, potem domownicy
-  const me = members.find((m) => m.uid === currentUid)
-  const people = [
-    me?.name || userName,
-    ...members.filter((m) => m.uid !== currentUid).map((m) => m.name),
-  ]
-    .filter(Boolean)
-    .join(', ')
+  // „2 OSOBY” – liczba, nie imiona (domowników może być więcej; imiona – na ekranie domu)
+  const count = Math.max(1, members.length)
+  const people = `${count} ${plural(count, ['osoba', 'osoby', 'osób'])}`
   const trash = trashItems(tasks, events, today)
 
   // stan na tym telefonie – do opisu wiersza „Powiadomienia”; szczegóły na osobnym ekranie
