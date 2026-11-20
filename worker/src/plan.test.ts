@@ -2,6 +2,7 @@
 
 import { describe, expect, test } from 'vitest'
 import {
+  orphanCollections,
   photoCleanupPlan,
   type TaskRef,
   activityMessage,
@@ -311,5 +312,16 @@ describe('sprzątanie zdjęć (etap 9)', () => {
       { parent: 'houses/d', taskId: 'a1', seriesId: null },
       { parent: 'houses/d/private/u', taskId: 'p1', seriesId: 'x' },
     ])
+  })
+})
+
+describe('pozostałości usuniętego domu', () => {
+  test('„Tylko ja” każdego domownika i kolekcje domu (w tym zdjęcia)', () => {
+    const paths = orphanCollections('d', ['ola'])
+    expect(paths).toContain('houses/d/private/ola/tasks')
+    expect(paths).toContain('houses/d/private/ola/photos')
+    expect(paths).toContain('houses/d/private/ola/photoFull')
+    expect(paths).toContain('houses/d/photos')
+    expect(paths).toContain('houses/d/members')
   })
 })

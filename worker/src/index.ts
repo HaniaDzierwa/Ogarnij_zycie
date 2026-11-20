@@ -9,6 +9,7 @@ import {
   CLEANUP_TIME,
   isQuiet,
   localNow,
+  orphanCollections,
   photoCleanupPlan,
   summaryContentOf,
   summaryFor,
@@ -206,12 +207,29 @@ export async function run(nowMs: number, env: Env, fetchFn: typeof fetch = fetch
   }
 
   // 4. Raz dziennie (3:00) – sprzątanie wg ustawienia założyciela domu
-  if (time === CLEANUP_TIME) await cleanup(db, users, day, start)
+  if (time === CLEANUP_TIME) {
+    await cleanup(db, users, day, start)
+    await removeOrphanHouses(db)
+  }
 
   return { sent: outbox.length }
 }
 
 const ACTIVITY_DAYS = 7
+
+/** Pozostałości usuniętych domów – wszystko pod dokumentem domu, którego już nie ma. */
+async function removeOrphanHouses(db: Firestore) {
+  for (const houseId of await db.missingIds('houses')) {
+    try {
+      const uids = await db.missingIds(`houses/${houseId}/private`)
+      let n = 0
+      for (const path of orphanCollections(houseId, uids)) n += await db.removeCollection(path)
+      console.log('Pozostałości usuniętego domu', houseId, n)
+    } catch (e) {
+      console.error('Pozostałości domu', houseId, e)
+    }
+  }
+}
 
 async function cleanup(db: Firestore, users: User[], day: string, now: number) {
   const houses = new Set(users.map((u) => u.houseId).filter((h): h is string => !!h))

@@ -54,3 +54,44 @@ describe('zdjęcia w Workerze (etap 9)', () => {
     })
   })
 })
+
+describe('pozostałości usuniętych domów', () => {
+  const root = 'projects/p/databases/(default)/documents'
+
+  test('brakujące dokumenty: tylko te bez czasu utworzenia (showMissing)', async () => {
+    let url = ''
+    const fetchFn = (async (u: string) => {
+      url = u
+      return new Response(
+        JSON.stringify({
+          documents: [
+            { name: `${root}/houses/stary` },
+            { name: `${root}/houses/dom1`, createTime: '2026-10-18T10:00:00Z' },
+          ],
+        }),
+        { status: 200 },
+      )
+    }) as typeof fetch
+    const db = firestore('p', async () => 'tok', fetchFn)
+    expect(await db.missingIds('houses')).toEqual(['stary'])
+    expect(url).toContain('showMissing=true')
+  })
+
+  test('usunięcie kolekcji: same nazwy, usuwane paczką', async () => {
+    const bodies: unknown[] = []
+    const fetchFn = (async (u: string, init?: RequestInit) => {
+      if (init?.method === 'POST') {
+        bodies.push(JSON.parse(String(init.body)))
+        return new Response('{}', { status: 200 })
+      }
+      expect(u).toContain('mask.fieldPaths=')
+      return new Response(
+        JSON.stringify({ documents: [{ name: `${root}/a/1` }, { name: `${root}/a/2` }] }),
+        { status: 200 },
+      )
+    }) as typeof fetch
+    const db = firestore('p', async () => 'tok', fetchFn)
+    expect(await db.removeCollection('a')).toBe(2)
+    expect(bodies).toEqual([{ writes: [{ delete: `${root}/a/1` }, { delete: `${root}/a/2` }] }])
+  })
+})

@@ -195,6 +195,45 @@ export function firestore(
       await call(`${base}/${path}`, { method: 'DELETE' })
     },
 
+    /**
+     * Id dokumentów, których już nie ma, ale zostały pod nimi kolekcje (np. usunięty dom
+     * z cudzymi danymi „Tylko ja”) – `showMissing`.
+     */
+    async missingIds(collectionPath: string): Promise<string[]> {
+      const out: string[] = []
+      let pageToken = ''
+      do {
+        const url = `${base}/${collectionPath}?showMissing=true&pageSize=300&mask.fieldPaths=brak${pageToken ? `&pageToken=${pageToken}` : ''}`
+        const json = (await call(url)) as {
+          documents?: { name: string; createTime?: string }[]
+          nextPageToken?: string
+        }
+        for (const d of json.documents ?? []) if (!d.createTime) out.push(d.name.split('/').pop()!)
+        pageToken = json.nextPageToken ?? ''
+      } while (pageToken)
+      return out
+    },
+
+    /** Usunięcie wszystkich dokumentów kolekcji (same nazwy, bez treści – paczkami po 400). */
+    async removeCollection(collectionPath: string): Promise<number> {
+      const names: string[] = []
+      let pageToken = ''
+      do {
+        const url = `${base}/${collectionPath}?pageSize=300&mask.fieldPaths=brak${pageToken ? `&pageToken=${pageToken}` : ''}`
+        const json = (await call(url)) as { documents?: { name: string }[]; nextPageToken?: string }
+        names.push(...(json.documents ?? []).map((d) => d.name))
+        pageToken = json.nextPageToken ?? ''
+      } while (pageToken)
+      for (let i = 0; i < names.length; i += 400)
+        await call(`${base}:commit`, {
+          method: 'POST',
+          body: JSON.stringify({
+            writes: names.slice(i, i + 400).map((name) => ({ delete: name })),
+          }),
+        })
+      return names.length
+    },
+
     /** Zdjęcia (etap 9) z kolekcji `photos` pod `parent`, gdzie pole = wartość – tylko id i rozmiar. */
     async photosWhere(
       parent: string,

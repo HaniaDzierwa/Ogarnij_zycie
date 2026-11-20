@@ -363,3 +363,31 @@ export function photoCleanupPlan(
       return { parent, taskId: t.id, seriesId: alive ? null : series }
     })
 }
+
+/** Kolekcje domu (wspólne i „Tylko ja” każdego domownika). */
+const HOUSE_COLLECTIONS = [
+  'tasks',
+  'events',
+  'categories',
+  'priorities',
+  'eventTypes',
+  'members',
+  'activity',
+  'photos',
+  'photoFull',
+]
+const PRIVATE_COLLECTIONS = ['tasks', 'events', 'photos', 'photoFull']
+
+/**
+ * Pozostałości usuniętego domu (decyzja Hani 2026-11-20): dokumentu domu już nie ma, ale zostały
+ * dane – zwykle „Tylko ja” innych domowników (reguły nie pozwalają ich usunąć nikomu poza autorem).
+ * Liczników nie zmieniamy – przy usuwaniu domu licznik aplikacji zmalał już o całe jego miejsce.
+ */
+export function orphanCollections(houseId: string, privateUids: string[]): string[] {
+  return [
+    ...privateUids.flatMap((uid) =>
+      PRIVATE_COLLECTIONS.map((c) => `houses/${houseId}/private/${uid}/${c}`),
+    ),
+    ...HOUSE_COLLECTIONS.map((c) => `houses/${houseId}/${c}`),
+  ]
+}
