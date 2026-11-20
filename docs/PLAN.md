@@ -244,6 +244,7 @@ Projekt: kanwa „Zadania cykliczne” w Claude Design (ekrany 1c/1e – zadanie
 3. Uwagi Hani → `docs/POSTEP.md`, każda jako „poprawka teraz” lub „później”.
 4. Poprawki „teraz” w tym samym etapie, ponowne sprawdzenie.
 5. Akceptacja („akceptuję”) → kolejny etap.
+6. Publikacja na oficjalnej stronie: najpierw numer wersji w `package.json` – `1.<etap>.0` po etapie, `1.<etap>.<n>` przy poprawkach (decyzja Hani 2026-11-20); w Ustawieniach widać numer i datę budowania.
 
 Blokuje przejście dalej: utrata lub pomieszanie danych, ekran różny od projektu bez zgody, niedziałający przycisk lub przejście.
 

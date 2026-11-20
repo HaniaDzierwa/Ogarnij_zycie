@@ -28,6 +28,7 @@ import { plural } from '../../data/plural.ts'
 import type { CleanupDays, NotificationSettings } from '../../data/types.ts'
 import { PHOTO_LIMITS } from '../../firebase/photos.ts'
 import { formatMB } from '../../photos/usage.ts'
+import { APP_VERSION_LABEL } from '../../version.ts'
 import { colors, fonts, priorities, shadows } from '../../theme'
 import type { PushState } from '../../push/push.ts'
 import { usePush } from '../../push/usePush.ts'
@@ -335,7 +336,7 @@ export function SettingsScreen() {
             color: colors.muted,
           }}
         >
-          ogarnij życie · wersja 1.0
+          {APP_VERSION_LABEL}
         </span>
         <span style={{ fontSize: 12, color: colors.muted }}>
           Dane w Firebase – widzą je tylko domownicy
