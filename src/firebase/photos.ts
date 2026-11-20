@@ -62,9 +62,13 @@ export function freeSlot(taken: number[]): number | null {
   return null
 }
 
-/** Jedna operacja paczki: zapis (z `mergeFields` – tylko te pola) albo usunięcie. */
+/**
+ * Jedna operacja paczki: zapis całego dokumentu, zmiana pól istniejącego (`update`), dopisanie pól
+ * (`merge`) albo usunięcie. Liczniki NIE przez `set` z `mergeFields`: biblioteka Firebase czyści wtedy
+ * pole przed „dodaj do liczby” (increment) i licznik dostawał samą zmianę zamiast sumy.
+ */
 export type PhotoOp =
-  | { path: string; data: Record<string, unknown>; mergeFields?: string[] }
+  | { path: string; data: Record<string, unknown>; mode?: 'update' | 'merge' }
   | { path: string; delete: true }
 
 /** Gdzie leży zdjęcie: wspólne albo „Tylko ja” (uid autora). */
@@ -95,12 +99,14 @@ function counterOps(
     {
       path: paths.house(houseId),
       data: { photoBytes: bytes ?? increment(delta), photoOp: houseOp, photoSeq: seq },
-      mergeFields: ['photoBytes', 'photoOp', 'photoSeq'],
+      // dom zawsze istnieje; update zastępuje całe photoOp (merge złączyłby stare i nowe pola)
+      mode: 'update',
     },
     {
       path: paths.photoUsage(),
       data: { photoBytes: increment(delta), op: { house: houseId, seq } },
-      mergeFields: ['photoBytes', 'op'],
+      // licznika aplikacji może jeszcze nie być; op ma zawsze te same pola (dom, numer)
+      mode: 'merge',
     },
   ]
 }

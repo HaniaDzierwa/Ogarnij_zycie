@@ -91,7 +91,8 @@ function commitPhotoOps(ops: PhotoOp[]) {
   for (const op of ops) {
     const ref = doc(db, op.path)
     if ('delete' in op) batch.delete(ref)
-    else if (op.mergeFields) batch.set(ref, op.data, { mergeFields: op.mergeFields })
+    else if (op.mode === 'update') batch.update(ref, op.data)
+    else if (op.mode === 'merge') batch.set(ref, op.data, { merge: true })
     else batch.set(ref, op.data)
   }
   batch.commit().catch(reportError)
