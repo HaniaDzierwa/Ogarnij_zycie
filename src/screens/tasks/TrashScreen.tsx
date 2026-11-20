@@ -4,7 +4,7 @@ import { Accent, Header } from '../../components/Header.tsx'
 import { TabBar } from '../../components/TabBar.tsx'
 import { UndoToast } from '../../components/UndoToast.tsx'
 import { Chip, Dot, Screen, Sheet } from '../../components/ui.tsx'
-import { CalendarIcon, TrashIcon, UndoIcon } from '../../components/icons.tsx'
+import { CalendarIcon, CheckIcon, TrashIcon, UndoIcon } from '../../components/icons.tsx'
 import { DAYS_SHORT, MONTHS_SHORT, parseKey } from '../../data/dates.ts'
 import { restoreEvent } from '../../data/eventOps.ts'
 import { useStore } from '../../data/store.ts'
@@ -27,11 +27,28 @@ export function TrashScreen() {
   const store = useStore()
   const { tasks, events, eventTypes, today, categories, members, currentUid } = store
   const [kind, setKind] = useState<Kind>('all')
-  const [confirm, setConfirm] = useState(false)
+  // „Opróżnij kosz” (all) albo „Usuń zaznaczone” (selected)
+  const [confirm, setConfirm] = useState<'all' | 'selected' | null>(null)
+  // wybór kilku elementów do usunięcia na zawsze (poprawka Hani 2026-11-20)
+  const [selecting, setSelecting] = useState(false)
+  const [selected, setSelected] = useState<ReadonlySet<string>>(new Set())
+  const keyOf = (i: TrashItem) => `${i.kind}:${i.id}`
   const items = trashItems(tasks, events, today)
   const n = items.length
   const nTasks = items.filter((i) => i.kind === 'task').length
   const shown = items.filter((i) => kind === 'all' || i.kind === kind)
+  const picked = shown.filter((i) => selected.has(keyOf(i)))
+  const toggle = (i: TrashItem) =>
+    setSelected((s) => {
+      const next = new Set(s)
+      if (next.has(keyOf(i))) next.delete(keyOf(i))
+      else next.add(keyOf(i))
+      return next
+    })
+  const stopSelecting = () => {
+    setSelecting(false)
+    setSelected(new Set())
+  }
 
   const others = members.filter((m) => m.uid !== currentUid)
   const alsoFor =
@@ -137,10 +154,33 @@ export function TrashScreen() {
               { id: 'event', name: 'Wydarzenia', count: n - nTasks },
             ] as const
           ).map((k) => (
-            <Chip key={k.id} on={kind === k.id} onClick={() => setKind(k.id)}>
+            <Chip
+              key={k.id}
+              on={kind === k.id}
+              onClick={() => {
+                setKind(k.id)
+                setSelected(new Set())
+              }}
+            >
               {k.name} <span style={{ opacity: 0.65, fontWeight: 600 }}>{k.count}</span>
             </Chip>
           ))}
+          <span style={{ flex: 1 }} />
+          <button
+            type="button"
+            onClick={() => (selecting ? stopSelecting() : setSelecting(true))}
+            style={{
+              height: 36,
+              padding: '0 6px',
+              border: 0,
+              background: 'transparent',
+              color: colors.brass700,
+              fontSize: 14,
+              fontWeight: 800,
+            }}
+          >
+            {selecting ? 'Gotowe' : 'Wybierz'}
+          </button>
         </div>
       )}
 
@@ -210,6 +250,45 @@ export function TrashScreen() {
                     borderBottom: `1px solid ${colors.line}`,
                   }}
                 >
+                  {selecting && (
+                    <button
+                      type="button"
+                      role="checkbox"
+                      aria-checked={selected.has(keyOf(item))}
+                      aria-label={`Zaznacz: ${item.title}`}
+                      onClick={() => toggle(item)}
+                      style={{
+                        width: 44,
+                        height: 44,
+                        margin: '-4px -6px -4px -8px',
+                        flex: 'none',
+                        border: 0,
+                        padding: 0,
+                        background: 'transparent',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <span
+                        style={{
+                          width: 24,
+                          height: 24,
+                          boxSizing: 'border-box',
+                          borderRadius: 7,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: colors.white,
+                          ...(selected.has(keyOf(item))
+                            ? { background: priorities.high.line }
+                            : { border: `2px solid ${colors.border}` }),
+                        }}
+                      >
+                        {selected.has(keyOf(item)) && <CheckIcon size={14} strokeWidth={3} />}
+                      </span>
+                    </button>
+                  )}
                   <span
                     aria-hidden="true"
                     style={{
@@ -263,35 +342,38 @@ export function TrashScreen() {
                       zniknie za {dni(item.left)}
                     </span>
                   </span>
-                  <button
-                    type="button"
-                    aria-label={`Przywróć: ${item.title}`}
-                    onClick={() => restore(item)}
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: 6,
-                      height: 40,
-                      padding: '0 14px',
-                      borderRadius: 20,
-                      border: `1px solid ${colors.brass500}`,
-                      background: colors.white,
-                      color: colors.brass700,
-                      fontSize: 13,
-                      fontWeight: 800,
-                      flex: 'none',
-                    }}
-                  >
-                    <UndoIcon size={16} strokeWidth={2.4} />
-                    Przywróć
-                  </button>
+                  {!selecting && (
+                    <button
+                      type="button"
+                      aria-label={`Przywróć: ${item.title}`}
+                      onClick={() => restore(item)}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 6,
+                        height: 40,
+                        padding: '0 14px',
+                        borderRadius: 20,
+                        border: `1px solid ${colors.brass500}`,
+                        background: colors.white,
+                        color: colors.brass700,
+                        fontSize: 13,
+                        fontWeight: 800,
+                        flex: 'none',
+                      }}
+                    >
+                      <UndoIcon size={16} strokeWidth={2.4} />
+                      Przywróć
+                    </button>
+                  )}
                 </div>
               )
             })}
           </div>
           <button
             type="button"
-            onClick={() => setConfirm(true)}
+            disabled={selecting && picked.length === 0}
+            onClick={() => setConfirm(selecting ? 'selected' : 'all')}
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -304,30 +386,48 @@ export function TrashScreen() {
               color: priorities.high.line,
               fontSize: 15,
               fontWeight: 800,
+              opacity: selecting && picked.length === 0 ? 0.5 : 1,
             }}
           >
             <TrashIcon />
-            Opróżnij kosz
+            {selecting
+              ? picked.length
+                ? `Usuń zaznaczone (${picked.length})`
+                : 'Zaznacz, co usunąć'
+              : 'Opróżnij kosz'}
           </button>
         </>
       )}
 
       {confirm && n > 0 && (
-        <Sheet open onClose={() => setConfirm(false)} label="Opróżnij kosz">
+        <Sheet
+          open
+          onClose={() => setConfirm(null)}
+          label={confirm === 'all' ? 'Opróżnij kosz' : 'Usuń zaznaczone'}
+        >
           <span style={{ fontFamily: fonts.serif, fontSize: 26, fontWeight: 500 }}>
             Usunąć <em style={{ color: priorities.high.line }}>na zawsze?</em>
           </span>
           <span style={{ fontSize: 15, lineHeight: 1.45, color: colors.muted2 }}>
-            W koszu{' '}
-            {n === 1
-              ? 'jest 1 element'
-              : `${plural(n, ['jest', 'są', 'jest'])} ${elementow(n)} – ${trashWhat(items)}`}
+            {confirm === 'all' ? (
+              <>
+                W koszu{' '}
+                {n === 1
+                  ? 'jest 1 element'
+                  : `${plural(n, ['jest', 'są', 'jest'])} ${elementow(n)} – ${trashWhat(items)}`}
+              </>
+            ) : (
+              <>
+                Zaznaczone: {elementow(picked.length)}
+                {picked.length > 1 ? ` – ${trashWhat(picked)}` : ''}
+              </>
+            )}
             . Tego nie da się cofnąć{alsoFor}.
           </span>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: 8, marginTop: 4 }}>
             <button
               type="button"
-              onClick={() => setConfirm(false)}
+              onClick={() => setConfirm(null)}
               style={{
                 height: 54,
                 border: `1px solid ${colors.border}`,
@@ -343,9 +443,20 @@ export function TrashScreen() {
             <button
               type="button"
               onClick={() => {
-                store.setTasks((list) => list.filter((t) => !t.deleted))
-                store.setEvents((list) => list.filter((e) => !e.deleted))
-                setConfirm(false)
+                if (confirm === 'all') {
+                  store.setTasks((list) => list.filter((t) => !t.deleted))
+                  store.setEvents((list) => list.filter((e) => !e.deleted))
+                } else {
+                  const keys = new Set(picked.map(keyOf))
+                  store.setTasks((list) =>
+                    list.filter((t) => !(t.deleted && keys.has(`task:${t.id}`))),
+                  )
+                  store.setEvents((list) =>
+                    list.filter((e) => !(e.deleted && keys.has(`event:${e.id}`))),
+                  )
+                  stopSelecting()
+                }
+                setConfirm(null)
               }}
               style={{
                 height: 54,

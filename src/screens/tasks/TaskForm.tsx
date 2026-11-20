@@ -107,7 +107,6 @@ export function TaskForm({
         value={value.title}
         onChange={(title) => set({ title })}
         onEnter={onSubmit}
-        autoFocus={mode === 'edit'}
       />
 
       <FormCard>

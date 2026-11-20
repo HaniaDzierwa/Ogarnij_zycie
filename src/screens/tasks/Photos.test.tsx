@@ -32,7 +32,7 @@ test('nowe zadanie: „+ Zdjęcie” → sekcja ZDJĘCIA z licznikiem; × usuwa,
   // „+ Zdjęcie” znika – dalej kafelek „Dodaj”
   expect(within(sheet).queryByRole('button', { name: 'Zdjęcie' })).toBeNull()
   expect(within(sheet).getByRole('button', { name: 'Dodaj zdjęcie' })).toBeDefined()
-  expect(within(sheet).getByText(/zmniejszamy do 1080 px/)).toBeDefined()
+  expect(within(sheet).getByText(/do 1080 px/)).toBeDefined()
 
   fireEvent.click(within(sheet).getByRole('button', { name: 'Usuń zdjęcie 1' }))
   expect(within(sheet).queryByAltText('Zdjęcie 1')).toBeNull()
@@ -238,4 +238,52 @@ test('Ustawienia → Porządki: „Miejsce na zdjęcia” – zajęte z 150 MB, 
       .getAttribute('aria-valuenow'),
   ).toBe('0')
   expect(screen.getByText(/mieści się ok\. 1000 zdjęć/)).toBeDefined()
+})
+
+// ── Poprawki Hani 2026-11-20 ───────────────────────────────────────────────
+
+test('kilka zdjęć naraz z galerii; ponad limit – dodane pierwsze, z komunikatem', async () => {
+  const sheet = newTaskSheet()
+  const input = sheet.querySelector<HTMLInputElement>('input[type="file"]')!
+  expect(input.multiple).toBe(true)
+  fireEvent.change(input, { target: { files: [photoFile(), photoFile(), photoFile()] } })
+  expect(await within(sheet).findByAltText('Zdjęcie 3')).toBeDefined()
+  expect(within(sheet).getByText('3 z 5')).toBeDefined()
+  fireEvent.change(input, {
+    target: { files: [photoFile(), photoFile(), photoFile(), photoFile()] },
+  })
+  expect(await within(sheet).findByAltText('Zdjęcie 5')).toBeDefined()
+  expect(within(sheet).getByText('5 z 5')).toBeDefined()
+  expect(within(sheet).getByRole('alert').textContent).toBe(
+    'Zmieszczą się jeszcze tylko 2 – dodano pierwsze 2.',
+  )
+})
+
+test('„Edytuj” – bez klawiatury: pole nazwy nie dostaje kursora od razu', () => {
+  renderApp('/zadania', { today: '2026-10-09' })
+  fireEvent.click(screen.getByRole('button', { name: 'Otwórz zadanie Baterie AA do pilota' }))
+  const detail = screen.getByRole('dialog', { name: 'Zadanie' })
+  fireEvent.click(within(detail).getByRole('button', { name: 'Edytuj' }))
+  expect(document.activeElement).not.toBe(within(detail).getByLabelText('NAZWA'))
+})
+
+test('Kosz: „Wybierz” → zaznaczone elementy usunięte na zawsze, reszta zostaje', () => {
+  renderApp('/ustawienia/kosz', { today: '2026-10-09' })
+  expect(screen.getByText('5 elementów')).toBeDefined()
+  fireEvent.click(screen.getByRole('button', { name: 'Wybierz' }))
+  // w trybie wyboru – bez „Przywróć”, przycisk na dole nieaktywny, dopóki nic nie zaznaczone
+  expect(screen.queryByRole('button', { name: /^Przywróć: / })).toBeNull()
+  const remove = screen.getByRole('button', { name: /Zaznacz, co usunąć/ })
+  expect((remove as HTMLButtonElement).disabled).toBe(true)
+  const boxes = screen.getAllByRole('checkbox')
+  fireEvent.click(boxes[0])
+  fireEvent.click(boxes[1])
+  expect(boxes[0].getAttribute('aria-checked')).toBe('true')
+  fireEvent.click(screen.getByRole('button', { name: /Usuń zaznaczone \(2\)/ }))
+  const sheet = screen.getByRole('dialog', { name: 'Usuń zaznaczone' })
+  expect(within(sheet).getByText(/Zaznaczone: 2 elementy/)).toBeDefined()
+  fireEvent.click(within(sheet).getByRole('button', { name: 'Usuń na zawsze' }))
+  expect(screen.getByText('3 elementy')).toBeDefined()
+  // po usunięciu – znów zwykły widok z „Przywróć”
+  expect(screen.getAllByRole('button', { name: /^Przywróć: / })).toHaveLength(3)
 })

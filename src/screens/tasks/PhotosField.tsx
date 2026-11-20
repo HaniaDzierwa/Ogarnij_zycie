@@ -38,7 +38,8 @@ export function useTaskPhotos(task: Task | null): TaskPhoto[] {
   return task ? list : []
 }
 
-const HINT = 'Aparat albo galeria. Zdjęcie zmniejszamy do 1080 px, żeby szybko się wysłało.'
+const HINT =
+  'Aparat albo galeria – możesz zaznaczyć kilka zdjęć naraz. Zmniejszamy je do 1080 px, żeby szybko się wysłały.'
 const HINT_REPEAT =
   'Zdjęcia „przy każdym powtórzeniu” zobaczysz też w następnych terminach. Usunięcie takiego zdjęcia usuwa je ze wszystkich powtórzeń.'
 const ERROR = '#8C3D27'
@@ -85,26 +86,42 @@ export function usePhotoField(p: PhotoFieldProps | undefined): {
     else pick('task')
   }
 
-  const onFile = async (file: File) => {
+  /** Jedno albo kilka zdjęć naraz (poprawka Hani 2026-11-20) – razem najwyżej 5 przy zadaniu. */
+  const onFiles = async (files: File[]) => {
     const kind = kindRef.current
-    setPending((list) => [...list, kind])
-    try {
-      const photo = { ...(await store.photos.prepare(file)), kind }
-      const size = photo.tile.length + photo.full.length
-      const used = draftBytes(p.saved, p.draft) + size
-      if (store.photos.usage.house + used > PHOTO_LIMITS.houseBytes)
-        setError('Miejsce na zdjęcia w Waszym domu się skończyło – usuń stare zdjęcia.')
-      else if (store.photos.usage.app + used > PHOTO_LIMITS.appBytes)
-        setError('Miejsce na zdjęcia w aplikacji się skończyło.')
-      else p.onDraft((d) => ({ ...d, added: [...d.added, photo] }))
-    } catch {
-      setError('Nie udało się wczytać zdjęcia. Spróbuj z innym.')
-    } finally {
-      setPending((list) => {
-        const i = list.indexOf(kind)
-        return i < 0 ? list : [...list.slice(0, i), ...list.slice(i + 1)]
-      })
+    const room = PHOTO_LIMITS.perTask - tiles.length - pending.length
+    const take = files.slice(0, Math.max(0, room))
+    const skipped = files.length - take.length
+    if (!take.length) return
+    setPending((list) => [...list, ...take.map(() => kind)])
+    let note: string | null =
+      skipped > 0
+        ? `Zmieszczą się jeszcze tylko ${take.length} – dodano pierwsze ${take.length}.`
+        : null
+    // po kolei – na telefonie kilka dużych zdjęć naraz to dużo pamięci
+    let used = draftBytes(p.saved, p.draft)
+    for (const file of take) {
+      try {
+        const photo = { ...(await store.photos.prepare(file)), kind }
+        const size = photo.tile.length + photo.full.length
+        if (store.photos.usage.house + used + size > PHOTO_LIMITS.houseBytes)
+          note = 'Miejsce na zdjęcia w Waszym domu się skończyło – usuń stare zdjęcia.'
+        else if (store.photos.usage.app + used + size > PHOTO_LIMITS.appBytes)
+          note = 'Miejsce na zdjęcia w aplikacji się skończyło.'
+        else {
+          used += size
+          p.onDraft((d) => ({ ...d, added: [...d.added, photo] }))
+        }
+      } catch {
+        note = 'Nie udało się wczytać zdjęcia. Spróbuj z innym.'
+      } finally {
+        setPending((list) => {
+          const i = list.indexOf(kind)
+          return i < 0 ? list : [...list.slice(0, i), ...list.slice(i + 1)]
+        })
+      }
     }
+    if (note) setError(note)
   }
 
   const remove = (t: PhotoTile) => {
@@ -132,11 +149,12 @@ export function usePhotoField(p: PhotoFieldProps | undefined): {
       ref={inputRef}
       type="file"
       accept="image/*"
+      multiple
       hidden
       onChange={(e) => {
-        const file = e.target.files?.[0]
+        const files = [...(e.target.files ?? [])]
         e.target.value = ''
-        if (file) void onFile(file)
+        if (files.length) void onFiles(files)
       }}
     />
   )
