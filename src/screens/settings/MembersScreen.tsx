@@ -1,23 +1,24 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router'
 import { paths } from '../../app/screens.ts'
 import { Accent, Header } from '../../components/Header.tsx'
-import { PlusIcon } from '../../components/icons.tsx'
+import { HouseIcon, PlusIcon } from '../../components/icons.tsx'
 import { TabBar } from '../../components/TabBar.tsx'
 import { Card, ConfirmDialog, Screen, SectionLabel, Sheet } from '../../components/ui.tsx'
 import { useStore } from '../../data/store.ts'
 import type { Member } from '../../data/types.ts'
-import { useHouse } from '../../house/house.ts'
+import { DEFAULT_HOUSE_NAME, useHouse } from '../../house/house.ts'
 import { colors, fonts, priorities } from '../../theme'
 
 /**
- * 5a Domownicy (z Synchronizacja.dc.html bez części o synchronizacji – Firebase synchronizuje sam,
- * decyzja Hani 2026-10-18): lista domowników i „Zaproś domownika”; gdy nikogo – „Na razie tylko Ty”
- * (teksty #4–6). Podgląd pustego domu: `?stan=sam`. Dotknięcie domownika – arkusz („Usuń z domu”
- * tylko dla założyciela); „Opuść dom” – każdy oprócz założyciela (decyzje Hani 2026-10-25).
+ * 5a Wspólny dom (dawniej „Domownicy”; wariant A, decyzja Hani 2026-11-20): wszystko o domu w jednym
+ * miejscu – nazwa domu („Zmień”), Twój nick („Zmień nick”), domownicy i „Zaproś domownika”; gdy
+ * nikogo – „Na razie tylko Ty” (teksty #4–6). Podgląd pustego domu: `?stan=sam`. Dotknięcie
+ * domownika – arkusz („Usuń z domu” tylko dla założyciela); „Opuść dom” – każdy oprócz założyciela
+ * (decyzje Hani 2026-10-25).
  */
 export function MembersScreen() {
-  const { members, currentUid, houseName } = useStore()
+  const { members, currentUid, houseName, userName, setUserName, setHouseName } = useStore()
   const house = useHouse()
   const navigate = useNavigate()
   const [params] = useSearchParams()
@@ -27,6 +28,10 @@ export function MembersScreen() {
   const iAmOwner = me?.role === 'owner'
   const [openUid, setOpenUid] = useState<string | null>(null)
   const [leaving, setLeaving] = useState(false)
+  const [editing, setEditing] = useState<'house' | 'nick' | null>(null)
+  // „Dom na Leśnej” → „Dom na ” + wyróżnione „Leśnej”
+  const words = houseName.trim().split(/\s+/)
+  const lastWord = words.length > 1 ? words.pop() : ''
   const opened = others.find((m) => m.uid === openUid)
 
   return (
@@ -42,20 +47,58 @@ export function MembersScreen() {
               color: colors.onDarkMuted2,
             }}
           >
-            DOMOWNICY
+            WSPÓLNY DOM
           </span>
         }
         title={
-          <>
-            Wspólny <Accent>dom</Accent>
-          </>
-        }
-        aside={
-          <span style={{ fontSize: 12, fontWeight: 700, color: colors.onDarkMuted3 }}>
-            z bliskimi
-          </span>
+          lastWord ? (
+            <>
+              {words.join(' ')} <Accent>{lastWord}</Accent>
+            </>
+          ) : (
+            <Accent>{houseName}</Accent>
+          )
         }
       />
+
+      <Card
+        style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 8px 14px 16px' }}
+      >
+        <span
+          aria-hidden="true"
+          style={{
+            width: 36,
+            height: 36,
+            flex: 'none',
+            borderRadius: 12,
+            background: colors.sand,
+            color: colors.brass700,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <HouseIcon size={20} />
+        </span>
+        <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <span
+            style={{ fontSize: 11, fontWeight: 800, letterSpacing: '1.4px', color: colors.muted }}
+          >
+            NAZWA DOMU
+          </span>
+          <span style={{ fontSize: 16, fontWeight: 700, overflowWrap: 'anywhere' }}>
+            {houseName}
+          </span>
+        </span>
+        <button
+          type="button"
+          onClick={() => setEditing('house')}
+          aria-label="Zmień nazwę domu"
+          style={changeButton}
+        >
+          Zmień
+        </button>
+      </Card>
 
       {others.length === 0 && (
         <Card
@@ -85,6 +128,34 @@ export function MembersScreen() {
       <section style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         <SectionLabel>DOMOWNICY</SectionLabel>
         <Card radius={22}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 12,
+              padding: '12px 8px 12px 18px',
+              minHeight: 64,
+              borderBottom: `1px solid ${colors.line}`,
+            }}
+          >
+            <Avatar name={userName} />
+            <span
+              style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 3 }}
+            >
+              <span style={{ fontSize: 16, fontWeight: 700 }}>
+                {userName || 'Ty'}{' '}
+                <span style={{ fontWeight: 600, color: colors.muted }}>(Ty)</span>
+              </span>
+              <span
+                style={{ fontSize: 11, fontWeight: 800, letterSpacing: '1px', color: colors.muted }}
+              >
+                {me?.role === 'owner' ? 'ZAŁOŻYCIEL DOMU' : 'DOMOWNIK'}
+              </span>
+            </span>
+            <button type="button" onClick={() => setEditing('nick')} style={changeButton}>
+              Zmień nick
+            </button>
+          </div>
           {others.map((m) => (
             <button
               key={m.uid}
@@ -195,6 +266,39 @@ export function MembersScreen() {
         />
       )}
 
+      {editing === 'house' && (
+        <EditTextSheet
+          id="nazwa-domu"
+          title="Nazwa domu"
+          initial={houseName}
+          maxLength={40}
+          placeholder={DEFAULT_HOUSE_NAME}
+          hint={() => 'Widzą ją wszyscy domownicy i nowi przy dołączaniu.'}
+          onSave={setHouseName}
+          onClose={() => setEditing(null)}
+        />
+      )}
+      {editing === 'nick' && (
+        <EditTextSheet
+          id="nick"
+          title="Twój nick"
+          initial={userName}
+          maxLength={20}
+          placeholder="np. Hania, Mama, Szefowa"
+          hint={(v) => (
+            <>
+              Start przywita Cię:{' '}
+              <em style={{ fontFamily: fonts.serif, color: colors.brass700 }}>
+                „Dzień dobry, {v || 'Ty'}”
+              </em>
+              . Domownicy zobaczą ten nick przy Twoich zmianach.
+            </>
+          )}
+          onSave={setUserName}
+          onClose={() => setEditing(null)}
+        />
+      )}
+
       {leaving && (
         <ConfirmDialog
           title="Opuścić dom?"
@@ -301,6 +405,153 @@ function MemberSheet({
             setConfirming(false)
             onRemove()
           }}
+        />
+      )}
+    </Sheet>
+  )
+}
+
+const changeButton = {
+  height: 44,
+  padding: '0 10px',
+  flex: 'none',
+  border: 0,
+  background: 'transparent',
+  color: colors.brass700,
+  fontSize: 14,
+  fontWeight: 800,
+} as const
+
+function Avatar({ name }: { name: string }) {
+  return (
+    <span
+      aria-hidden="true"
+      style={{
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        background: colors.green900,
+        color: colors.brass300,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontFamily: fonts.serif,
+        fontStyle: 'italic',
+        fontSize: 18,
+        flex: 'none',
+      }}
+    >
+      {name.charAt(0).toUpperCase() || '?'}
+    </span>
+  )
+}
+
+/**
+ * Arkusz z jednym polem (nazwa domu, nick): „Zapisz” / „Anuluj”; dotknięcie obok zwija, a gdy coś
+ * zmieniono – najpierw „Odrzucić zmiany?”. Pustego nie da się zapisać.
+ */
+function EditTextSheet({
+  id,
+  title,
+  initial,
+  maxLength,
+  placeholder,
+  hint,
+  onSave,
+  onClose,
+}: {
+  id: string
+  title: string
+  initial: string
+  maxLength: number
+  placeholder: string
+  hint: (value: string) => ReactNode
+  onSave: (value: string) => void
+  onClose: () => void
+}) {
+  const [value, setValue] = useState(initial)
+  const [asking, setAsking] = useState(false)
+  const text = value.trim()
+  const dirty = text !== initial.trim()
+  const save = () => {
+    if (!text) return
+    if (dirty) onSave(text)
+    onClose()
+  }
+  return (
+    <Sheet
+      open
+      onClose={() => (dirty ? setAsking(true) : onClose())}
+      confirmClose={dirty}
+      label={title}
+    >
+      <label htmlFor={id} style={{ fontFamily: fonts.serif, fontSize: 24, fontWeight: 500 }}>
+        {title}
+      </label>
+      <input
+        id={id}
+        type="text"
+        maxLength={maxLength}
+        placeholder={placeholder}
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        onKeyDown={(e) => e.key === 'Enter' && save()}
+        style={{
+          height: 48,
+          border: `1px solid ${colors.border}`,
+          borderRadius: 14,
+          padding: '0 14px',
+          fontSize: 16,
+          fontWeight: 700,
+          color: colors.green900,
+          background: colors.white,
+          outlineColor: colors.green900,
+          minWidth: 0,
+        }}
+      />
+      <span style={{ fontSize: 13, lineHeight: 1.45, color: colors.muted }}>{hint(text)}</span>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: 8, marginTop: 4 }}>
+        <button
+          type="button"
+          onClick={() => (dirty ? setAsking(true) : onClose())}
+          style={{
+            height: 52,
+            border: `1px solid ${colors.border}`,
+            borderRadius: 26,
+            background: colors.white,
+            color: colors.green900,
+            fontSize: 16,
+            fontWeight: 700,
+          }}
+        >
+          Anuluj
+        </button>
+        <button
+          type="button"
+          disabled={!text}
+          onClick={save}
+          style={{
+            height: 52,
+            border: 0,
+            borderRadius: 26,
+            background: colors.green900,
+            color: colors.cream,
+            fontSize: 16,
+            fontWeight: 800,
+            opacity: text ? 1 : 0.5,
+          }}
+        >
+          Zapisz
+        </button>
+      </div>
+      {asking && (
+        <ConfirmDialog
+          title="Odrzucić zmiany?"
+          message="Zmiany nie zostaną zapisane."
+          confirmLabel="Odrzuć"
+          danger
+          onCancel={() => setAsking(false)}
+          onConfirm={onClose}
         />
       )}
     </Sheet>

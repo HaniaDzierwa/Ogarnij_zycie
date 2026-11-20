@@ -139,8 +139,8 @@ export function JoinScreen() {
               </span>
             )}
             <span style={{ fontSize: 13, lineHeight: 1.45, color: colors.muted }}>
-              Kod widać u osoby, która Cię zaprasza: Ustawienia › Domownicy › Zaproś. Jest ważny 10
-              minut.
+              Kod widać u osoby, która Cię zaprasza: Ustawienia › Wspólny dom › Zaproś domownika.
+              Jest ważny 10 minut.
             </span>
             <span style={{ fontSize: 13, lineHeight: 1.45, color: colors.muted }}>
               Masz link? Otwórz go na tym telefonie – dołączysz od razu.

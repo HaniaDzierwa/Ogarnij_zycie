@@ -1,4 +1,4 @@
-import { act, cleanup, fireEvent, screen, waitFor } from '@testing-library/react'
+import { act, cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, expect, test, vi } from 'vitest'
 import { renderApp } from '../../test/renderApp.tsx'
 
@@ -9,19 +9,30 @@ const renderAt = (url: string) => renderApp(url)
 test('Ustawienia: sekcje z projektu, bez Wyglądu (tylko jasny motyw), teksty o Firebase', () => {
   renderAt('/ustawienia')
   expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Po swojemu')
-  for (const s of ['TY', 'WSPÓLNY DOM', 'PORZĄDKI', 'POWIADOMIENIA']) {
+  for (const s of ['ZADANIA', 'PORZĄDKI', 'POWIADOMIENIA']) {
     expect(screen.getByText(s)).toBeDefined()
   }
   expect(screen.queryByText('WYGLĄD')).toBeNull()
-  expect(screen.getByText('KRZYŚ · DZIŚ 13:05')).toBeDefined()
+  // wariant A (decyzja Hani 2026-11-20): bez pól nicku i nazwy domu – jeden wiersz „Wspólny dom”
+  expect(screen.queryByText('TY')).toBeNull()
+  expect(screen.queryByRole('textbox')).toBeNull()
+  expect(screen.getByRole('link', { name: /^Wspólny dom/ }).textContent).toContain(
+    'DOM NA LEŚNEJ · HANIA, KRZYŚ',
+  )
   expect(screen.getByText('Dane w Firebase – widzą je tylko domownicy')).toBeDefined()
   expect(screen.getByText('5 ELEMENTÓW · ZADANIA I WYDARZENIA')).toBeDefined()
 })
 
-test('imię zmienia powitanie i trafia na Start', () => {
-  const router = renderAt('/ustawienia')
-  fireEvent.change(screen.getByLabelText('IMIĘ LUB PSEUDONIM'), { target: { value: 'Mama' } })
-  expect(screen.getByText('„Dzień dobry, Mama”')).toBeDefined()
+test('Wspólny dom → „Zmień nick”: podgląd powitania, „Zapisz” – nowy nick na Starcie', () => {
+  const router = renderAt('/ustawienia/domownicy')
+  fireEvent.click(screen.getByRole('button', { name: 'Zmień nick' }))
+  const sheet = screen.getByRole('dialog', { name: 'Twój nick' })
+  fireEvent.change(within(sheet).getByLabelText('Twój nick'), { target: { value: 'Mama' } })
+  expect(within(sheet).getByText('„Dzień dobry, Mama”')).toBeDefined()
+  expect(within(sheet).getByText(/Domownicy zobaczą ten nick/)).toBeDefined()
+  fireEvent.click(within(sheet).getByRole('button', { name: 'Zapisz' }))
+  expect(screen.queryByRole('dialog', { name: 'Twój nick' })).toBeNull()
+  expect(screen.getByText('Mama')).toBeDefined()
   fireEvent.click(screen.getByRole('link', { name: 'Start' }))
   expect(router.state.location.pathname).toBe('/')
   expect(screen.getByRole('heading', { level: 1 }).textContent).toContain('Mama')
@@ -55,18 +66,21 @@ test('Powiadomienia: w Ustawieniach jeden wiersz z opisem; szczegóły na osobny
   expect(screen.queryByText(/PODSUMOWANIA 8:00/)).toBeNull()
 })
 
-test('Porządki → Kosz i Wspólny dom → Domownicy', () => {
+test('Porządki → Kosz i „Wspólny dom ›” → ekran domu', () => {
   const router = renderAt('/ustawienia')
   fireEvent.click(screen.getByRole('link', { name: /Kosz/ }))
   expect(router.state.location.pathname).toBe('/ustawienia/kosz')
   fireEvent.click(screen.getByRole('link', { name: /USTAWIENIA/ }))
-  fireEvent.click(screen.getByRole('link', { name: /^Domownicy/ }))
+  fireEvent.click(screen.getByRole('link', { name: /^Wspólny dom/ }))
   expect(router.state.location.pathname).toBe('/ustawienia/domownicy')
 })
 
-test('Domownicy: lista z rolą i „Zaproś”, bez synchronizacji (Firebase robi to sam)', () => {
+test('Wspólny dom: nazwa domu w nagłówku, Ty i domownicy z rolą, „Zaproś”, bez synchronizacji', () => {
   const router = renderAt('/ustawienia/domownicy')
-  expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Wspólny dom')
+  expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Dom na Leśnej')
+  expect(screen.getByText('NAZWA DOMU')).toBeDefined()
+  expect(screen.getByText('(Ty)')).toBeDefined()
+  expect(screen.getByText('ZAŁOŻYCIEL DOMU')).toBeDefined()
   expect(screen.getByText('Krzyś')).toBeDefined()
   expect(screen.getByText('DOMOWNIK')).toBeDefined()
   for (const gone of [
@@ -156,15 +170,31 @@ test('Zaproś: „Anuluj zaproszenie” wraca do Domowników; bez internetu – 
   spy.mockRestore()
 })
 
-test('Wspólny dom: nazwa domu do zmiany; pusta wraca do „Nasz dom”', () => {
-  renderAt('/ustawienia')
-  const input = screen.getByLabelText('NAZWA DOMU') as HTMLInputElement
+test('Wspólny dom: „Zmień” nazwę domu; pustej nie da się zapisać; zmiana i dotknięcie obok – pytanie', () => {
+  renderAt('/ustawienia/domownicy')
+  fireEvent.click(screen.getByRole('button', { name: 'Zmień nazwę domu' }))
+  let sheet = screen.getByRole('dialog', { name: 'Nazwa domu' })
+  const input = within(sheet).getByLabelText('Nazwa domu') as HTMLInputElement
   expect(input.value).toBe('Dom na Leśnej')
-  fireEvent.change(input, { target: { value: 'Dzierwowie' } })
-  expect(input.value).toBe('Dzierwowie')
   fireEvent.change(input, { target: { value: '  ' } })
-  fireEvent.blur(input)
-  expect(input.value).toBe('Nasz dom')
+  expect(
+    (within(sheet).getByRole('button', { name: 'Zapisz' }) as HTMLButtonElement).disabled,
+  ).toBe(true)
+  // zmiana i „Anuluj” – najpierw pytanie
+  fireEvent.change(input, { target: { value: 'Dzierwowie' } })
+  fireEvent.click(within(sheet).getByRole('button', { name: 'Anuluj' }))
+  fireEvent.click(
+    within(screen.getByRole('alertdialog', { name: 'Odrzucić zmiany?' })).getByRole('button', {
+      name: 'Odrzuć',
+    }),
+  )
+  expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Dom na Leśnej')
+  // zapis
+  fireEvent.click(screen.getByRole('button', { name: 'Zmień nazwę domu' }))
+  sheet = screen.getByRole('dialog', { name: 'Nazwa domu' })
+  fireEvent.change(within(sheet).getByLabelText('Nazwa domu'), { target: { value: 'Dzierwowie' } })
+  fireEvent.click(within(sheet).getByRole('button', { name: 'Zapisz' }))
+  expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Dzierwowie')
 })
 
 const times = () =>

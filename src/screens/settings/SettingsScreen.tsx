@@ -6,9 +6,9 @@ import { Accent, Header } from '../../components/Header.tsx'
 import {
   BellIcon,
   CameraIcon,
+  HouseIcon,
   ChevronRightIcon,
   TrashIcon,
-  UsersIcon,
 } from '../../components/icons.tsx'
 import { Logo } from '../../components/Logo.tsx'
 import { TabBar } from '../../components/TabBar.tsx'
@@ -22,8 +22,6 @@ import {
   SectionLabel,
 } from '../../components/ui.tsx'
 import { useStore } from '../../data/store.ts'
-import { useBufferedText } from '../../components/useBufferedText.ts'
-import { DEFAULT_HOUSE_NAME } from '../../house/house.ts'
 import { plural } from '../../data/plural.ts'
 import type { CleanupDays, NotificationSettings } from '../../data/types.ts'
 import { PHOTO_LIMITS } from '../../firebase/photos.ts'
@@ -52,11 +50,14 @@ export function SettingsScreen() {
   const { userName, members, currentUid, notifications, summaryTimes, cleanupDays } = store
   const { tasks, events, today } = store
   // imię i nazwa domu – zapis po chwili przerwy w pisaniu (nie po każdej literze)
-  const nick = useBufferedText(userName, store.setUserName)
-  const house = useBufferedText(store.houseName, store.setHouseName)
-  const name = nick.text.trim()
-  const others = members.filter((m) => m.uid !== currentUid)
-  const other = others[0]
+  // „HANIA, KRZYŚ” – najpierw Ty, potem domownicy
+  const me = members.find((m) => m.uid === currentUid)
+  const people = [
+    me?.name || userName,
+    ...members.filter((m) => m.uid !== currentUid).map((m) => m.name),
+  ]
+    .filter(Boolean)
+    .join(', ')
   const trash = trashItems(tasks, events, today)
 
   // stan na tym telefonie – do opisu wiersza „Powiadomienia”; szczegóły na osobnym ekranie
@@ -74,136 +75,17 @@ export function SettingsScreen() {
         }
       />
 
-      <Section label="TY">
-        <Card style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: 16 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <span
-              aria-hidden="true"
-              style={{
-                width: 46,
-                height: 46,
-                borderRadius: 23,
-                background: colors.green900,
-                color: colors.brass300,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontFamily: fonts.serif,
-                fontStyle: 'italic',
-                fontSize: 22,
-                flex: 'none',
-              }}
-            >
-              {name ? name.charAt(0).toUpperCase() : '?'}
-            </span>
-            <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 5 }}>
-              <label
-                htmlFor="nick"
-                style={{
-                  fontSize: 11,
-                  fontWeight: 800,
-                  letterSpacing: '1.4px',
-                  color: colors.muted,
-                }}
-              >
-                IMIĘ LUB PSEUDONIM
-              </label>
-              <input
-                id="nick"
-                type="text"
-                maxLength={20}
-                placeholder="np. Hania, Mama, Szefowa"
-                value={nick.text}
-                onChange={(e) => nick.change(e.target.value)}
-                onBlur={nick.flush}
-                style={{
-                  height: 44,
-                  border: `1px solid ${colors.border}`,
-                  borderRadius: 14,
-                  padding: '0 14px',
-                  fontSize: 16,
-                  fontWeight: 700,
-                  color: colors.green900,
-                  background: colors.white,
-                  outlineColor: colors.green900,
-                  minWidth: 0,
-                }}
-              />
-            </div>
-          </div>
-          <span style={{ fontSize: 13, lineHeight: 1.45, color: colors.muted }}>
-            Start przywita Cię:{' '}
-            <em style={{ fontFamily: fonts.serif, fontSize: 15, color: colors.brass700 }}>
-              „Dzień dobry, {name || 'Ty'}”
-            </em>
-            . {other ? `${other.name} zobaczy` : 'Domownicy zobaczą'} to imię przy Twoich zmianach.
-          </span>
-        </Card>
-      </Section>
-
-      <Section label="WSPÓLNY DOM">
-        <Card radius={22}>
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 6,
-              padding: '14px 18px',
-              borderBottom: `1px solid ${colors.line}`,
-            }}
-          >
-            <label
-              htmlFor="nazwa-domu"
-              style={{ fontSize: 11, fontWeight: 800, letterSpacing: '1.4px', color: colors.muted }}
-            >
-              NAZWA DOMU
-            </label>
-            <input
-              id="nazwa-domu"
-              type="text"
-              maxLength={40}
-              placeholder={DEFAULT_HOUSE_NAME}
-              value={house.text}
-              onChange={(e) => house.change(e.target.value)}
-              // pusta nazwa nie zostaje
-              onBlur={(e) => {
-                if (e.target.value.trim()) house.flush()
-                else {
-                  house.discard()
-                  store.setHouseName(DEFAULT_HOUSE_NAME)
-                }
-              }}
-              style={{
-                height: 44,
-                border: `1px solid ${colors.border}`,
-                borderRadius: 14,
-                padding: '0 14px',
-                fontSize: 16,
-                fontWeight: 700,
-                color: colors.green900,
-                background: colors.white,
-                outlineColor: colors.green900,
-                minWidth: 0,
-              }}
-            />
-          </div>
-          <LinkRow
-            to={paths.domownicy}
-            icon={<UsersIcon />}
-            iconBg={colors.successBg}
-            iconFg={colors.green900}
-            title="Domownicy"
-            meta={
-              others.length
-                ? others
-                    .map((m) => (m.lastSeen ? `${m.name} · ${m.lastSeen}` : m.name))
-                    .join(', ')
-                    .toUpperCase()
-                : 'TYLKO TY · ZAPROŚ DOMOWNIKA'
-            }
-          />
-        </Card>
-      </Section>
+      {/* nick i nazwa domu – na ekranie „Wspólny dom” (wariant A, decyzja Hani 2026-11-20) */}
+      <Card radius={22}>
+        <LinkRow
+          to={paths.domownicy}
+          icon={<HouseIcon size={20} />}
+          iconBg={colors.successBg}
+          iconFg={colors.green900}
+          title="Wspólny dom"
+          meta={`${store.houseName} · ${people}`.toUpperCase()}
+        />
+      </Card>
 
       <Section label="ZADANIA">
         <Card radius={22}>
