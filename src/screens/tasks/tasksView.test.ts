@@ -5,6 +5,8 @@ import {
   clearCandidates,
   deleteCategory,
   deletePriority,
+  moveCategory,
+  movePriority,
   showsOf,
   tasksWithCategory,
   tasksWithPriority,
@@ -96,6 +98,30 @@ describe('usuwanie kategorii i priorytetów', () => {
     expect(tasksWithCategory(inTrash, 'car')).toBe(0)
     expect(tasksWithPriority(tasks, 'high')).toBeGreaterThan(0)
   })
+  test('przeniesienie kategorii: nowa kolejność, numery całkowite od 0', () => {
+    const ids = (list: { id: string }[]) => list.map((c) => c.id)
+    // Auto na początek
+    const first = moveCategory(mockCategories, 'car', 0)
+    expect(ids(first)).toEqual(['car', 'shop', 'home', 'health', 'office', 'family'])
+    expect(first.map((c) => c.order)).toEqual([0, 1, 2, 3, 4, 5])
+    // Zakupy na 4. miejsce (po Urzędach)
+    expect(ids(moveCategory(mockCategories, 'shop', 3))).toEqual([
+      'home',
+      'health',
+      'office',
+      'shop',
+      'car',
+      'family',
+    ])
+    // niezmienione kategorie zostają tymi samymi obiektami (nie idą do bazy)
+    const same = moveCategory(mockCategories, 'family', 5)
+    expect(same.every((c, i) => c === mockCategories[i])).toBe(true)
+    // za daleko = na koniec
+    expect(ids(moveCategory(mockCategories, 'shop', 99)).at(-1)).toBe('shop')
+    // stare dane z tym samym numerem też dostają porządne numery
+    const tied = mockCategories.map((c) => ({ ...c, order: 0 }))
+    expect(moveCategory(tied, 'home', 0).map((c) => c.order)).toEqual([0, 1, 2, 3, 4, 5])
+  })
   test('usunięta kategoria: zadania z kosza przechodzą do „Bez kategorii”', () => {
     const inTrash = tasks.map((t) => (t.categoryId === 'car' ? { ...t, deleted: true } : t))
     const after = deleteCategory(mockCategories, inTrash, 'car')
@@ -115,6 +141,25 @@ describe('usuwanie kategorii i priorytetów', () => {
     const t = { ...tasks[0], priority: 'p1', deleted: true }
     const after = deletePriority(custom, [t], 'p1')
     expect([after.custom, after.tasks[0].priority]).toEqual([[], 'mid'])
+  })
+  test('przeniesienie własnego priorytetu: między sąsiadów, zmienia się tylko on', () => {
+    const custom = [
+      { id: 'p1', name: 'Na weekend', color: '#3F7A7A', order: 25 },
+      { id: 'p2', name: 'Kiedyś', color: '#6E5F8C', order: 40 },
+    ]
+    const order = (list: typeof custom) => allPriorities(list).map((p) => p.label)
+    // Pilne · Ważne · Na weekend · Przy okazji · Kiedyś → Kiedyś na początek
+    const first = movePriority(allPriorities(custom), custom, 'p2', 0)
+    expect(order(first)).toEqual(['Kiedyś', 'Pilne', 'Ważne', 'Na weekend', 'Przy okazji'])
+    expect(first[0]).toBe(custom[0])
+    // Na weekend na koniec (za Kiedyś)
+    expect(order(movePriority(allPriorities(custom), custom, 'p1', 4))).toEqual([
+      'Pilne',
+      'Ważne',
+      'Przy okazji',
+      'Kiedyś',
+      'Na weekend',
+    ])
   })
 })
 

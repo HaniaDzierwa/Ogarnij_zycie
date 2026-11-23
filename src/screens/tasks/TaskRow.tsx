@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { SwipeRow } from '../../components/SwipeRow.tsx'
 import { Box } from '../../components/ui.tsx'
-import { CameraIcon, CheckIcon, TrashIcon, UndoIcon } from '../../components/icons.tsx'
+import { CameraIcon, CheckIcon, NoteIcon, TrashIcon, UndoIcon } from '../../components/icons.tsx'
 import { DueBadge } from '../../components/DueBadge.tsx'
 import { RepeatBadge } from '../../components/RepeatBadge.tsx'
 import { type DateKey } from '../../data/dates.ts'
@@ -190,6 +190,15 @@ export function TaskRow({
                 >
                   <CameraIcon size={14} strokeWidth={2.2} />
                   {task.photos}
+                </span>
+              )}
+              {task.note.trim() !== '' && (
+                <span
+                  role="img"
+                  aria-label="Ma notatkę"
+                  style={{ display: 'inline-flex', alignItems: 'center', color: colors.muted }}
+                >
+                  <NoteIcon size={14} strokeWidth={2.2} />
                 </span>
               )}
               {task.private && (

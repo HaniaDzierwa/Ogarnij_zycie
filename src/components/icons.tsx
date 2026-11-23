@@ -86,6 +86,34 @@ export function CameraIcon({ size = 22, strokeWidth = 2 }: IconProps & { strokeW
   )
 }
 
+/** Kartka z liniami – zadanie ma notatkę (na liście). */
+export function NoteIcon({ size = 22, strokeWidth = 2 }: IconProps & { strokeWidth?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      {...stroke}
+      strokeWidth={strokeWidth}
+      aria-hidden="true"
+    >
+      <path d="M6 3h9l4 4v14H6z" />
+      <path d="M9.5 11h6M9.5 15h6" />
+    </svg>
+  )
+}
+
+/** Uchwyt ⋮⋮ – przeciąganie wiersza (kolejność kategorii). */
+export function GripIcon({ size = 22 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      {[6, 12, 18].map((y) =>
+        [9, 15].map((x) => <circle key={`${x}-${y}`} cx={x} cy={y} r="1.6" />),
+      )}
+    </svg>
+  )
+}
+
 /** Galeria – „Dodaj z galerii” (etap 9). */
 export function GalleryIcon({ size = 22 }: IconProps) {
   return (

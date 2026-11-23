@@ -361,6 +361,9 @@ test('notatka: przy nowym zadaniu i w arkuszu zadania („Zapisz”)', () => {
     target: { value: 'Paczkomat przy Biedronce, kod 4821' },
   })
   fireEvent.click(within(sheet).getByRole('button', { name: 'Dodaj zadanie' }))
+  // na liście widać, że zadanie ma notatkę
+  const row = screen.getByRole('button', { name: 'Otwórz zadanie Odebrać paczkę' })
+  expect(within(row).getByRole('img', { name: 'Ma notatkę' })).toBeDefined()
   click('Otwórz zadanie Odebrać paczkę')
   const detail = screen.getByRole('dialog', { name: 'Zadanie' })
   expect(within(detail).getByText('Paczkomat przy Biedronce, kod 4821')).toBeDefined()

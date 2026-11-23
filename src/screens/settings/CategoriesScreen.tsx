@@ -2,15 +2,17 @@ import { useState } from 'react'
 import { paths } from '../../app/screens.ts'
 import { Accent, Header } from '../../components/Header.tsx'
 import { TabBar } from '../../components/TabBar.tsx'
+import { SortableList } from '../../components/SortableList.tsx'
 import { Card, Dot, Screen } from '../../components/ui.tsx'
 import { newId } from '../../data/ids.ts'
 import { useStore } from '../../data/store.ts'
 import { NewCategoryButton, NewCategoryForm } from '../tasks/NewCategoryForm.tsx'
-import { deleteCategory, tasksMeta, tasksWithCategory } from '../tasks/tasksView.ts'
+import { deleteCategory, moveCategory, tasksMeta, tasksWithCategory } from '../tasks/tasksView.ts'
 import { EditSheet, ItemRow, TopLabel } from './manage.tsx'
 
 /**
- * Ustawienia → Kategorie: lista kategorii z liczbą zadań, zmiana nazwy i koloru, „+ Nowa kategoria”,
+ * Ustawienia → Kategorie: lista kategorii z liczbą zadań, kolejność przeciąganiem za uchwyt ⋮⋮
+ * (ta sama na liście zadań i w wyborze kategorii), zmiana nazwy i koloru, „+ Nowa kategoria”,
  * usuwanie tylko pustej kategorii (decyzja Hani 2026-10-20; zadania z Kosza → „Bez kategorii”).
  */
 export function CategoriesScreen() {
@@ -37,16 +39,20 @@ export function CategoriesScreen() {
       />
 
       <Card radius={22}>
-        {categories.map((c, i) => (
-          <ItemRow
-            key={c.id}
-            mark={<Dot color={c.color} size={14} />}
-            name={c.name}
-            meta={tasksMeta(tasksWithCategory(tasks, c.id))}
-            onClick={() => setEditId(c.id)}
-            last={i === categories.length - 1}
-          />
-        ))}
+        <SortableList
+          items={categories}
+          onMove={(id, to) => store.setCategories((list) => moveCategory(list, id, to))}
+          handleLabel={(c) => `Przesuń: ${c.name}`}
+          renderItem={(c) => (
+            <ItemRow
+              mark={<Dot color={c.color} size={14} />}
+              name={c.name}
+              meta={tasksMeta(tasksWithCategory(tasks, c.id))}
+              onClick={() => setEditId(c.id)}
+              last
+            />
+          )}
+        />
         {categories.length === 0 && (
           <ItemRow mark={null} name="Brak kategorii" meta="DODAJ PIERWSZĄ PONIŻEJ" last />
         )}

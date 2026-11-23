@@ -41,6 +41,44 @@ test('Kategorie: zmiana nazwy i koloru widać na liście Zadań', () => {
   return screen.findByText('SAMOCHÓD')
 })
 
+test('Kategorie: przeciąganie za uchwyt – ta sama kolejność w Ustawieniach i na liście Zadań', async () => {
+  const router = renderApp('/ustawienia/kategorie')
+  // Zakupy · Dom · Zdrowie · Urzędy · Auto · Rodzina; wiersz ~64 px
+  const grip = screen.getByRole('button', { name: 'Przesuń: Auto' })
+  fireEvent.pointerDown(grip, { clientY: 300, pointerId: 1 })
+  fireEvent.pointerMove(grip, { clientY: 200, pointerId: 1 })
+  fireEvent.pointerMove(grip, { clientY: 0, pointerId: 1 })
+  fireEvent.pointerUp(grip, { pointerId: 1 })
+  expect(rowNames()[0]).toMatch(/^Auto/)
+  expect(rowNames()[1]).toMatch(/^Zakupy/)
+  // za uchwyt nie otwiera się arkusz kategorii
+  expect(screen.queryByRole('dialog', { name: 'Kategoria' })).toBeNull()
+  // krótkie przesunięcie (mniej niż pół wiersza) – nic się nie zmienia
+  const zakupy = screen.getByRole('button', { name: 'Przesuń: Zakupy' })
+  fireEvent.pointerDown(zakupy, { clientY: 100, pointerId: 2 })
+  fireEvent.pointerMove(zakupy, { clientY: 120, pointerId: 2 })
+  fireEvent.pointerUp(zakupy, { pointerId: 2 })
+  expect(rowNames()[1]).toMatch(/^Zakupy/)
+
+  router.navigate('/zadania')
+  // nagłówki grup (zwijane) – w kolejności kategorii
+  const groups = (await screen.findAllByRole('button', { expanded: true }))
+    .map((b) => (b.textContent ?? '').toLowerCase())
+    .filter((t) => /^(zakupy|dom|zdrowie|urzędy|auto|rodzina)/.test(t))
+  expect(groups[0]).toMatch(/^auto/)
+  expect(groups[1]).toMatch(/^zakupy/)
+})
+
+test('Kategorie: uchwyt działa też strzałkami z klawiatury', () => {
+  renderApp('/ustawienia/kategorie')
+  const grip = screen.getByRole('button', { name: 'Przesuń: Zakupy' })
+  fireEvent.keyDown(grip, { key: 'ArrowDown' })
+  expect(rowNames()[0]).toMatch(/^Dom/)
+  expect(rowNames()[1]).toMatch(/^Zakupy/)
+  fireEvent.keyDown(screen.getByRole('button', { name: 'Przesuń: Zakupy' }), { key: 'ArrowUp' })
+  expect(rowNames()[0]).toMatch(/^Zakupy/)
+})
+
 test('Kategorie: nie da się usunąć kategorii z zadaniami; nowa pusta – usuwa się po pytaniu', () => {
   renderApp('/ustawienia/kategorie')
   click(/^Auto/)
@@ -62,22 +100,28 @@ test('Kategorie: nie da się usunąć kategorii z zadaniami; nowa pusta – usuw
   expect(screen.queryByText('Ogród')).toBeNull()
 })
 
-test('Priorytety: wbudowane bez edycji; nowy „Na weekend” po „Ważne” – w arkuszu, filtrze i grupach', async () => {
+test('Priorytety: wbudowane bez edycji i bez uchwytu; nowy „Na weekend” na końcu, przeciągnięty po „Ważne” – w arkuszu, filtrze i grupach', async () => {
   const router = renderApp('/ustawienia/priorytety')
   expect(screen.getAllByText(/^WBUDOWANY/)).toHaveLength(3)
   expect(screen.queryByRole('button', { name: /^Pilne/ })).toBeNull()
+  expect(screen.queryByRole('button', { name: /^Przesuń/ })).toBeNull()
 
   click('+ Nowy priorytet')
   fireEvent.change(screen.getByLabelText('NAZWA NOWEGO PRIORYTETU'), {
     target: { value: 'Na weekend' },
   })
-  click('Po „Ważne”')
   click('Dodaj priorytet')
   expect(rowNames().map((t) => t.split(/WBUDOWANY|BRAK|\d/)[0])).toEqual(['Na weekend'])
-  const names = screen
-    .getAllByText(/^(Pilne|Ważne|Na weekend|Przy okazji)$/)
-    .map((e) => e.textContent)
-  expect(names).toEqual(['Pilne', 'Ważne', 'Na weekend', 'Przy okazji'])
+  const names = () =>
+    screen.getAllByText(/^(Pilne|Ważne|Na weekend|Przy okazji)$/).map((e) => e.textContent)
+  expect(names()).toEqual(['Pilne', 'Ważne', 'Przy okazji', 'Na weekend'])
+
+  // o jeden wiersz w górę (~64 px)
+  const grip = screen.getByRole('button', { name: 'Przesuń: Na weekend' })
+  fireEvent.pointerDown(grip, { clientY: 300, pointerId: 1 })
+  fireEvent.pointerMove(grip, { clientY: 230, pointerId: 1 })
+  fireEvent.pointerUp(grip, { pointerId: 1 })
+  expect(names()).toEqual(['Pilne', 'Ważne', 'Na weekend', 'Przy okazji'])
 
   router.navigate('/zadania?nowe=zadanie')
   const sheet = await screen.findByRole('dialog', { name: 'Nowe zadanie' })

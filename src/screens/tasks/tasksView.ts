@@ -3,7 +3,7 @@
 import { DEFAULT_PRIORITY, noCategory, type Priority } from '../../theme'
 import { diffDays, stampDay, type DateKey } from '../../data/dates.ts'
 import { plural } from '../../data/plural.ts'
-import { allPriorities } from '../../data/selectors.ts'
+import { allPriorities, orderAfter } from '../../data/selectors.ts'
 import type {
   CalendarEvent,
   Category,
@@ -279,6 +279,37 @@ export function deleteCategory(
     categories: categories.filter((c) => c.id !== id),
     tasks: tasks.map((t) => (t.deleted && t.categoryId === id ? { ...t, categoryId: null } : t)),
   }
+}
+
+/**
+ * Przeniesienie kategorii na miejsce `to` (0 = na początek) – przeciąganie w Ustawieniach.
+ * Reguły bazy przyjmują tylko całkowite `order`, więc lista dostaje numery od nowa: 0, 1, 2…
+ * (w bazie zmieniają się tylko kategorie, którym numer się zmienił).
+ */
+export function moveCategory(categories: Category[], id: string, to: number): Category[] {
+  const sorted = [...categories].sort((a, b) => a.order - b.order)
+  const moving = sorted.find((c) => c.id === id)
+  if (!moving) return categories
+  const rest = sorted.filter((c) => c.id !== id)
+  rest.splice(Math.max(0, Math.min(rest.length, to)), 0, moving)
+  return rest.map((c, order) => (c.order === order ? c : { ...c, order }))
+}
+
+/**
+ * Przeniesienie własnego priorytetu na miejsce `to` na liście wszystkich (bez niego, 0 = na
+ * początek). Wbudowane mają stałe miejsca, więc zmienia się tylko `order` przenoszonego – w połowie
+ * między nowymi sąsiadami (reguły bazy przyjmują ułamki).
+ */
+export function movePriority(
+  all: PriorityDef[],
+  custom: CustomPriority[],
+  id: string,
+  to: number,
+): CustomPriority[] {
+  const rest = all.filter((p) => p.id !== id)
+  const at = Math.max(0, Math.min(rest.length, to))
+  const order = orderAfter(rest, at === 0 ? null : rest[at - 1].id)
+  return custom.map((p) => (p.id === id ? { ...p, order } : p))
 }
 
 /** Usunięcie pustego własnego priorytetu; zadania z Kosza z tym priorytetem – „Ważne”. */
